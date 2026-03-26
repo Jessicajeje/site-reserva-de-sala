@@ -12,12 +12,21 @@ const LoginADM = () => {
 
           <Form size="large">
             <Form.Field style={{ marginBottom: '15%', textAlign: 'left' }}>
+              <label style={{ fontSize: '16px', marginBottom: '10px' , textAlign:'center'  }}>E-mail do Administrador:*</label>
+              <Form.Input 
+                fluid 
+                required
+                type="text"
+                placeholder="Digite o e-mail"
+              />
+            </Form.Field>
+                      <Form.Field style={{ marginBottom: '15%', textAlign: 'left' }}>
               <label style={{ fontSize: '16px', marginBottom: '10px' , textAlign:'center'  }}>Senha do Administrador:*</label>
               <Form.Input 
                 fluid 
                 required
                 type="password"
-                placeholder="Digite sua senha"
+                placeholder="Digite a senha"
               />
             </Form.Field>
 

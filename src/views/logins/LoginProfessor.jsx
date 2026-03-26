@@ -13,12 +13,12 @@ const LoginProfessor = () => {
 
           <Form size="large">
             <Form.Field style={{ marginBottom: '10%', textAlign: 'left' }}>
-              <label style={{ fontSize: '16px', marginBottom: '10px' }}>Senha do Administrador:*</label>
+              <label style={{ fontSize: '16px', marginBottom: '10px' }}>E-mail institucional:</label>
               <Form.Input 
                 fluid 
                 required
-                type="password"
-                placeholder="Digite sua senha"
+                type="text"
+                placeholder="Digite seu E-mail:"
               />
             </Form.Field>
                         <Form.Field style={{ marginBottom: '15%', textAlign: 'left' }}>
