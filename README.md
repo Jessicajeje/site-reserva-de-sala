@@ -2,7 +2,7 @@
 
 Status do projeto: Em desenvolvimento inicial.
 
-## 🛠 O que já foi feito:
+## 🛠 O que já foi feito (main):
 - [x] Inicialização do projeto React.
 - [x] Instalação e configuração do **Semantic UI** (v3.0.0-beta.0).
 - [x] Estruturação da pasta `src/views` para páginas.
