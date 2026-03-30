@@ -9,7 +9,7 @@ Status do projeto: Em desenvolvimento inicial.
 - [x] Criação da estrutura de login em `views/logins/`.
 - [x] Desenvolvimento dos layouts: `LoginADM.jsx` e `LoginProfessor.jsx`.
 - [x] Customização inicial do `App.css`.
-- [ ] 
+
 ## 📂 Estrutura de Pastas (Novidades):
 - `src/views/logins/LoginADM.jsx`
 - `src/views/logins/LoginProfessor.jsx`
