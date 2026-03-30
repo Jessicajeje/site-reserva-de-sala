@@ -1,9 +1,17 @@
-import React from 'react'
+import axios from "axios";
+import { notifyError, notifySuccess } from '../../views/util/Util';
 import { Button, Form, Grid, Segment, Header } from "semantic-ui-react";
 import {useState} from 'react';
 
 const CadastroSala = () => {
-    const [bloco, setBloco]= useState();
+    const opcoesBloco = [
+    { key: "b", text: "Bloco B", value: "Bloco_B" },
+    { key: "c", text: "Bloco C", value: "Bloco_C" },
+    { key: "d", text: "Bloco D", value: "Bloco_D" },
+    { key: "a", text: "Bloco A", value: "Bloco_A" }
+    
+  ];
+    const[blocoSelecionado, setBlocoSelecionado]= useState();
     const[numero, setNumero]= useState();
     const [tipo, setTipo] = useState('sala');
     const atualizaTipo = (e, { value }) => setTipo(value);
@@ -11,10 +19,19 @@ const CadastroSala = () => {
     function salvar(){
       let salaRequest = {
         numero: numero,
-        bloco: bloco,
+        blocoSelecionado: blocoSelecionado,
         tipo: tipo
       };
-        console.log("tudo em cima chefe!")
+      
+           axios.post("http://localhost:8080/api/sala", salaRequest)
+            .then((response) => {
+              notifySuccess("Sala cadastrada com sucesso!");
+            })
+            .catch((error) => {
+              console.error(error);
+              notifyError("Erro ao cadastrar sala. Verifique os dados.");
+            });
+
     }
 
   return (
@@ -28,12 +45,15 @@ const CadastroSala = () => {
 
           <Form size="large">
             
-            <Form.Field style={{ marginBottom: '15%', textAlign: 'left' }}>
-              <label style={{ fontSize: '16px', marginBottom: '10px', textAlign: 'left' }}>A qual bloco a sala pertence:*</label>
-              <Form.Input
+            <Form.Field style={{ marginBottom: "1.5em" }}>
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>A qual bloco a sala pertence?:*</label>
+              <Form.Select
                 fluid
                 required
-                type="text"
+                placeholder="Selecione o bloco"
+                options={opcoesBloco}
+                value={blocoSelecionado}
+                onChange={(e, { value }) => setBlocoSelecionado(value)}
               />
             </Form.Field>
 
@@ -43,6 +63,8 @@ const CadastroSala = () => {
                 fluid
                 required
                 type="number"
+                value={numero}
+                onChange={(e, { value }) => setNumero(value)}
               />
             </Form.Field>
 
@@ -62,12 +84,12 @@ const CadastroSala = () => {
         checked={tipo === 'laboratorio'}
         onChange={atualizaTipo}/>
           </Form.Group>
-roup
+
             <Button
               fluid
               size="huge"
               style={{ backgroundColor: "#21ba45", color: "#fff", padding: '15px' }}
-              onChange ={salvar()}
+              onClick ={salvar}
             >
               Concluir
             </Button>
