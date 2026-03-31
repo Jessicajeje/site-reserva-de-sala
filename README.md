@@ -10,7 +10,9 @@ Status do projeto: Em desenvolvimento inicial.
 - [x] Desenvolvimento dos layouts: `LoginADM.jsx` e `LoginProfessor.jsx`.
 - [x] Customização inicial do `App.css`.
 - [x] Implementação das telas de cadastro de turma, disciplina e sala
-
-## 📂 Estrutura de Pastas (Novidades):
-- `src/views/logins/LoginADM.jsx`
-- `src/views/logins/LoginProfessor.jsx`
+      #revisão e melhoria de código, criação de telas
+- [x] conexão com API
+- [x] tela de cadastro do professor
+- [x] revisão de código de cadstro
+- [x] mensagens de sucesso e erro
+- [x] criação do arquivo util/Util.js (mensagens de sucesso e erro)
