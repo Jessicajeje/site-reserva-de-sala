@@ -17,3 +17,4 @@ revisão e melhoria de código, criação de telas
 - [x] revisão de código de cadstro
 - [x] mensagens de sucesso e erro
 - [x] criação do arquivo util/Util.js (mensagens de sucesso e erro)
+- [x] implementação de rotas
