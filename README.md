@@ -14,7 +14,7 @@ Status do projeto: Em desenvolvimento inicial.
 revisão e melhoria de código, criação de telas
 - [x] conexão com API
 - [x] tela de cadastro do professor
-- [x] revisão de código de cadstro
+- [x] revisão de código de cadastro
 - [x] mensagens de sucesso e erro
 - [x] criação do arquivo util/Util.js (mensagens de sucesso e erro)
 - [x] implementação de rotas
