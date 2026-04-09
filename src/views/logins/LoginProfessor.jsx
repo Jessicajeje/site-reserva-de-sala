@@ -1,5 +1,5 @@
-import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
 import { Link } from "react-router-dom";
+import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
 
 const LoginProfessor = () => {
   return (
@@ -40,7 +40,7 @@ const LoginProfessor = () => {
             </Button>
           </Form>
          <Link to={'/cadastro-professor'}> <p>Primeiro acesso? Cadastre-se</p></Link>
-          <Link to={'/cadastro-professor'}> <p>Login administrador</p></Link>
+          <Link to={'/login-adm'}> <p>Login administrador</p></Link>
         </Segment>
 
       </Grid.Column>
