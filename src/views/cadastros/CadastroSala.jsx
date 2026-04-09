@@ -17,6 +17,7 @@ const CadastroSala = () => {
     const atualizaTipo = (e, { value }) => setTipo(value);
 
     function salvar(){
+      
       let salaRequest = {
         numero: numero,
         blocoSelecionado: blocoSelecionado,

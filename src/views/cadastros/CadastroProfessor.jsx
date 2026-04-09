@@ -10,7 +10,7 @@ const CadastroProfessor = () => {
   const [siape, setSiape] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState(""); // Corrigido para string
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [disciplinas, setDisciplinas] = useState([]);
 
   const [opcoesDisciplinas, setOpcoesDisciplinas] = useState([]);

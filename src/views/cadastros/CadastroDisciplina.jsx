@@ -38,7 +38,7 @@ const CadastroDisciplina = () => {
     { key: "qual", text: "Gestão da Qualidade", value: "gestao_qualidade" },
     { key: "tech", text: "Tecnologia da Informação", value: "tecnologia_informacao" },
     { key: "proc", text: "Processos Gerenciais", value: "processos_gerenciais" },
-    { key: "log", text: "Logística", value: "logistica" },
+    { key: "log", text: "Logística", vaLue: "logistica" },
   ];
 
   function salvar() {

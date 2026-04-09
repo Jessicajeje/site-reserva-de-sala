@@ -1,4 +1,4 @@
-import { Button, Form, Grid, Segment, Header } from "semantic-ui-react";
+import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
 
 const LoginADM = () => {
   return (
@@ -7,7 +7,7 @@ const LoginADM = () => {
         
         <Segment raised style={{ padding: '3em' }}>
           <Header as="h1" textAlign="center" style={{ marginBottom: '1.5em', fontSize: '2em' }}>
-            Log-in como Administrador
+            Log-in Administrador
           </Header>
 
           <Form size="large">
