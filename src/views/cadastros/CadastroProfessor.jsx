@@ -1,16 +1,20 @@
-import { useEffect, useState } from "react";
 import axios from "axios";
-import { notifyError, notifySuccess } from '../../views/util/Util';
+import { useLocation} from "react-router-dom";
+import { useEffect, useState } from "react";
 import { IMaskInput } from "react-imask";
-import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
+import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
+import { notifyError, notifySuccess } from '../../views/util/Util';
+import '../logins/estilo.css';
 
 const CadastroProfessor = () => {
-  const [nome, setNome] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [siape, setSiape] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const{state} = useLocation();
+  const [idProfessor, setIdProfessor] = useState();
+  const [nome, setNome] = useState();
+  const [cpf, setCpf] = useState();
+  const [siape, setSiape] = useState();
+  const [email, setEmail] = useState();
+  const [senha, setSenha] = useState();
+  const [confirmarSenha, setConfirmarSenha] = useState( );
   const [disciplinas, setDisciplinas] = useState([]);
 
   const [opcoesDisciplinas, setOpcoesDisciplinas] = useState([]);
@@ -29,6 +33,23 @@ const CadastroProfessor = () => {
         notifyError("Erro ao carregar lista de disciplinas.");
       });
   }, []);
+
+         useEffect(() => {
+    if (state != null && state.id != null) {
+      axios
+        .get("http://localhost:8080/api/professor/" + state.id)
+        .then((response) => {
+          setIdProfessor(response.data.id);
+          setCpf(response.data.cpf);
+          setNome(response.data.nome);
+          setSiape(response.data.siape);
+          setEmail(response.data.email);
+          setDisciplinas(response.data.disciplinas.map(d => d.id));
+          setSenha(response.data.senha);
+        });
+    }
+  
+  }, [state]);
 
 
   function salvar() {
@@ -61,6 +82,28 @@ const CadastroProfessor = () => {
         console.error(error);
         notifyError("Erro ao cadastrar professor. Verifique os dados.");
       });
+
+            if (idProfessor != null) {
+      //Alteração:
+      axios
+        .put("http://localhost:8080/api/professor/" + idProfessor, professorRequest)
+        .then((response) => {
+          notifySuccess("Professor alterado com sucesso.");
+        })
+        .catch((error) => {
+          notifyError("Erro ao alterar um professor.");
+        });
+    } else {
+      //Cadastro:
+      axios
+        .post("http://localhost:8080/api/professor", professorRequest)
+        .then((response) => {
+          notifySuccess("Professor cadastrado com sucesso.");
+        })
+        .catch((error) => {
+          notifyError("Erro ao incluir o professor.");
+        });
+    }
   }
 
   return (
@@ -72,7 +115,28 @@ const CadastroProfessor = () => {
       <Grid.Column style={{ maxWidth: 600 }}>
         <Segment raised style={{ padding: "3em" }}>
           <Header as="h1" textAlign="center" style={{ marginBottom: "1.5em" }}>
-            Cadastro Docente
+            {idProfessor === undefined && (
+            <h2>
+              {" "}
+              <span style={{ color: "darkgray" }}>
+                {" "}
+                Cadastro &nbsp;
+                <Icon name="angle double right" size="small" />{" "}
+              </span>{" "}
+              Docente
+            </h2>
+          )}
+          {idProfessor !== undefined && (
+            <h2>
+              {" "}
+              <span style={{ color: "darkgray" }}>
+                {" "}
+                Alteração &nbsp;
+                <Icon name="angle double right" size="small" />{" "}
+              </span>{" "}
+              Docente
+            </h2>
+          )}
           </Header>
 
           <Form size="large" style={{ textAlign: "left" }}>
