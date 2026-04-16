@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card, Grid, Icon, Header, Modal, Divider } from "semantic-ui-react";
+import { Button, Card, Divider, Grid, Header, Icon, Modal } from "semantic-ui-react";
+import Navbar from "../../Components/navbar/NavbarADM";
 import './Interface.css';
 
 export default function DisciplinasCadastradas() {
@@ -32,7 +33,12 @@ export default function DisciplinasCadastradas() {
   }
 
   return (
-    <section>
+      <section style={{ display: 'flex', minHeight: '100vh' }}>
+    {/* Navbar fixa na esquerda */}
+    <aside style={{ width: '250px', flexShrink: 0 }}>
+      <Navbar />
+    </aside>
+    
       <Header as='h2'>
         Disciplinas cadastradas
       </Header>
