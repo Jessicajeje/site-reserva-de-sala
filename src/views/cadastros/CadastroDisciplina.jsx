@@ -36,6 +36,12 @@ const CadastroDisciplina = () => {
   const [horaInicio, setHoraInicio] = useState("");
   const [horaFim, setHoraFim] = useState("");
   const [areaSelecionada, setAreaSelecionada] = useState("");
+  const[turno, setTurno] = useState();
+  const opcoesTurno = [
+    { key: "manha", text: "Manhã", value: "manha" },
+    { key: "tarde", text: "Tarde", value: "tarde" },
+    { key: "noite", text: "Noite", value: "noite" },
+  ]
 
   const opcoesArea = [
     { key: "adm", text: "Administração", value: "administracao" },
@@ -51,6 +57,7 @@ const CadastroDisciplina = () => {
         .get("http://localhost:8080/api/disciplina/" + state.id)
         .then((response) => {
           setIdDisciplina(response.data.id);
+          setTurno(response.data.turno);
           setNome(response.data.nome);
           setHoraInicio(response.data.horaInicio);
           setHoraFim(response.data.horaFim);
@@ -62,7 +69,7 @@ const CadastroDisciplina = () => {
   
   function salvar() {
     // Validação correta dos campos
-    if (!nome || !areaSelecionada || !horaInicio || !horaFim) {
+    if (!nome || !areaSelecionada || !horaInicio || !horaFim || !turno) {
       alert("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
@@ -70,6 +77,7 @@ const CadastroDisciplina = () => {
     let disciplinaRequest = {
       area: areaSelecionada,
       nome: nome,
+      turno: turno,
       horaInicio: horaInicio,
       horaFim: horaFim,
     };
@@ -146,6 +154,17 @@ const CadastroDisciplina = () => {
                 placeholder="Selecione a área"
                 options={opcoesArea}
                 value={areaSelecionada}
+                onChange={(e, { value }) => setAreaSelecionada(value)}
+              />
+            </Form.Field>
+                        <Form.Field style={{ marginBottom: "1.5em" }}>
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Turno:*</label>
+              <Form.Select
+                fluid
+                required
+                placeholder="Selecione a área"
+                options={opcoesTurno}
+                value={turno}
                 onChange={(e, { value }) => setAreaSelecionada(value)}
               />
             </Form.Field>

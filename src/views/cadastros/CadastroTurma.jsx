@@ -136,7 +136,7 @@ const CadastroTurma = () => {
                   textAlign: "left",
                 }}
               >
-                Número da sala:*
+                Período:*
               </label>
               <Form.Input
                 fluid
