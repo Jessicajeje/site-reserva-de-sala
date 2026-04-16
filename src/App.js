@@ -1,13 +1,15 @@
 
 import './App.css';
-import Rotas from "./Rotas";
-import CadastroSala from './views/cadastros/CadastroSala';
+import Rotas from './Rotas';
+import DisciplinasCadastradas from './views/administrador/DisciplinasCadastradas';
+import TurmasCadastradas from './views/administrador/TurmasCadastradas';
 
 
 function App() {
   return (
     <div className="App">
-  <Rotas/>
+    <Rotas/>
+    <TurmasCadastradas/>
     </div>
   );
 }

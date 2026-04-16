@@ -1,29 +1,2 @@
-.App {
-  text-align: center;
-}
-
-
-  .container {
-    background: white;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
-    text-align: center;
-    width: 100%;
-    max-width: 600px; /* Largura máxima do quadro de login */
-    justify-content: center;
-}
-
-body {
-  background-color: #DADADA; /* Cor de fundo opcional */
-}
-
-body > .grid {
-  height: 100%;
-}
-
-.column {
-  margin: 0 15px; /* Margem de segurança para telas pequenas */
-}
 
 

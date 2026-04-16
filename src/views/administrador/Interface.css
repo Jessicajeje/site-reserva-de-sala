@@ -1,0 +1,41 @@
+/* Card padrão para criação de novos registros (pontilhado) */
+.card-add-new {
+  height: 220px !important;
+  background-color: transparent !important;
+  border: 1px solid #d4d4d5 !important; 
+  box-shadow: none !important;
+  cursor: pointer;
+  transition: 0.3s ease;
+
+  /* Centralização total */
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important; 
+  align-items: center !important;    
+}
+
+.card-add-new:hover {
+  background-color: #f9f9f9 !important;
+}
+
+/* Card de exibição de dados da listagem */
+.card-list-item {
+  height: 220px !important;
+}
+
+/* Estilo para botões de ação (ícones) sem bordas pesadas */
+.btn-action-minimal {
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 8px !important;
+  opacity: 0.8;
+}
+
+.btn-action-minimal:hover {
+  opacity: 1;
+  background-color: rgba(0,0,0,0.05) !important;
+}
+
+Divider{
+  margin-bottom: '5%';
+}

@@ -1,9 +1,12 @@
 import axios from "axios";
+import { useState, useEffect } from 'react';
+import { useLocation } from "react-router-dom";
+import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
-import { Button, Form, Grid, Segment, Header } from "semantic-ui-react";
-import {useState} from 'react';
+import '../logins/estilo.css';
 
 const CadastroSala = () => {
+  const{state} = useLocation();
     const opcoesBloco = [
     { key: "b", text: "Bloco B", value: "Bloco_B" },
     { key: "c", text: "Bloco C", value: "Bloco_C" },
@@ -11,10 +14,24 @@ const CadastroSala = () => {
     { key: "a", text: "Bloco A", value: "Bloco_A" }
     
   ];
+   const [idSala, setIdSala] = useState();
     const[blocoSelecionado, setBlocoSelecionado]= useState();
     const[numero, setNumero]= useState();
     const [tipo, setTipo] = useState('sala');
     const atualizaTipo = (e, { value }) => setTipo(value);
+
+       useEffect(() => {
+    if (state != null && state.id != null) {
+      axios
+        .get("http://localhost:8080/api/sala/" + state.id)
+        .then((response) => {
+          setIdSala(response.data.id);
+          setBlocoSelecionado(response.data.blocoSelecionado);
+          setNumero(response.data.numero);
+        });
+    }
+  
+  }, [state]);
 
     function salvar(){
       
@@ -33,6 +50,27 @@ const CadastroSala = () => {
               notifyError("Erro ao cadastrar sala. Verifique os dados.");
             });
 
+                  if (idSala != null) {
+      //Alteração:
+      axios
+        .put("http://localhost:8080/api/sala/" + idSala, salaRequest)
+        .then((response) => {
+          notifySuccess("Sala alterada com sucesso.");
+        })
+        .catch((error) => {
+          notifyError("Erro ao alterar uma sala.");
+        });
+    } else {
+      //Cadastro:
+      axios
+        .post("http://localhost:8080/api/sala", salaRequest)
+        .then((response) => {
+          notifySuccess("Sala cadastrada com sucesso.");
+        })
+        .catch((error) => {
+          notifyError("Erro ao incluir a sala.");
+        });
+    }
     }
 
   return (
@@ -41,7 +79,28 @@ const CadastroSala = () => {
 
         <Segment raised style={{ padding: '3em' }}>
           <Header as="h1" textAlign="center" style={{ marginBottom: '1.5em', fontSize: '2em' }}>
-            Cadastro de sala/Laboratório
+                        {idSala === undefined && (
+            <h2>
+              {" "}
+              <span style={{ color: "darkgray" }}>
+                {" "}
+                Cadastro &nbsp;
+                <Icon name="angle double right" size="small" />{" "}
+              </span>{" "}
+              Sala
+            </h2>
+          )}
+          {idSala !== undefined && (
+            <h2>
+              {" "}
+              <span style={{ color: "darkgray" }}>
+                {" "}
+                Alteração &nbsp;
+                <Icon name="angle double right" size="small" />{" "}
+              </span>{" "}
+              Sala
+            </h2>
+          )}
           </Header>
 
           <Form size="large">
