@@ -1,4 +1,4 @@
-
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
 import Rotas from './Rotas'
@@ -14,12 +14,14 @@ import LoginADM from './views/logins/LoginADM';
 import LoginProfessor from './views/logins/LoginProfessor';
 import LayoutProfessor from './layouts/LayoutProfessor';
 import ValidarProfessor from './views/administrador/ValidarProfessor';
+import { ToastContainer } from 'react-toastify';
 
 
 function App() {
   return (
     <div className="App">
     <Rotas/>
+    <ToastContainer /> 
     </div>
   );
 }
