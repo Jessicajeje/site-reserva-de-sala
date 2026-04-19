@@ -3,11 +3,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Divider, Header, Icon, Modal, Table } from "semantic-ui-react";
 import './Interface.css';
+import FiltroTurma from "../../Components/filtros/FiltroTurma";
 
 export default function TurmasCadastradas() {
   const [lista, setLista] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [idRemover, setIdRemover] = useState();
+  const [buscaCurso, setBuscaCurso] = useState("");
+const [buscaPeriodo, setBuscaPeriodo] = useState("");
 
   useEffect(() => {
     carregarLista();
@@ -42,6 +45,7 @@ export default function TurmasCadastradas() {
        setOpenModal(false)
    }
   return (
+   
     <div>
       <div style={{ marginTop: "3%" }}>
         <section textAlign="justified">
@@ -49,7 +53,11 @@ export default function TurmasCadastradas() {
         Turmas cadastradas
            </Header>
           <Divider />
-
+          
+      <FiltroTurma 
+        setBuscaCurso={setBuscaCurso} 
+        setBuscaPeriodo={setBuscaPeriodo} 
+      />
           <div style={{ marginTop: "3%" , padding:'2%'}}>
             <Button
               label="Nova turma"
@@ -59,10 +67,16 @@ export default function TurmasCadastradas() {
               as={Link}
               to="/cadastro-turma"
             />
+            
             <br />
             <br />
             <br />
-
+          
+          {lista.length === 0 ? (
+              <div style={{ textAlign: "center", marginTop: "5%" }}>
+                <h3 style={{ opacity: 0.5, color: 'grey' }}>Nenhuma turma cadastrada ainda.</h3>
+              </div>
+            ) : (
             <Table color="green" sortable celled>
               <Table.Header>
                 <Table.Row>
@@ -74,13 +88,21 @@ export default function TurmasCadastradas() {
               </Table.Header>
 
               <Table.Body>
-                {lista.map((turma) => (
+                {lista
+                
+                .filter((turma) => {
+                  return (
+                    turma.curso.toLowerCase().includes(buscaCurso.toLowerCase()) &&
+                    turma.periodo.toLowerCase().includes(buscaPeriodo.toLowerCase())
+                  );
+                })
+                .map((turma) => (
                   <Table.Row key={turma.id}>
                     <Table.Cell>{turma.curso}</Table.Cell>
                     <Table.Cell>{turma.periodo}</Table.Cell>
         
                     <Table.Cell textAlign="center">
-
+                              
                      <Button
                         inverted
                         circular
@@ -112,6 +134,7 @@ export default function TurmasCadastradas() {
                 ))}
               </Table.Body>
             </Table>
+            ) }
           </div>
         </section>
       </div>

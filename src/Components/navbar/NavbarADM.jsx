@@ -11,11 +11,11 @@ export default function Navbar() {
  const [hovered, setHovered] = useState(null);
 
 const menuItems = [
-  { path: "/", icon: <FaHome />, label: "Início" },
+  { path: "/validar-prof", icon: <FaHome />, label: "Início" },
   { path: "/turmas", icon: <FaChalkboardTeacher />, label: "Turmas" },
   { path: "/salas", icon: <FaSchool />, label: "Salas / Laboratórios" },
   { path: "/disciplinas", icon: <FaBook />, label: "Disciplinas" },
-  { path: "/perfil", icon: <FaUserCircle />, label: "Perfil" }
+  { path: "/professores-ativos", icon: <FaUserCircle />, label: "Professores Ativos" }
 ];
 
  const styles = {
