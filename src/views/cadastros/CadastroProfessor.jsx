@@ -6,17 +6,16 @@ import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
 import '../logins/estilo.css';
 
-const CadastroProfessor = () => {
-  const{state} = useLocation();
+export default function CadastroProfessor() {
+  const { state } = useLocation();
   const [idProfessor, setIdProfessor] = useState();
-  const [nome, setNome] = useState();
-  const [cpf, setCpf] = useState();
-  const [siape, setSiape] = useState();
-  const [email, setEmail] = useState();
-  const [senha, setSenha] = useState();
-  const [confirmarSenha, setConfirmarSenha] = useState( );
+  const [nome, setNome] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [siape, setSiape] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [disciplinas, setDisciplinas] = useState([]);
-
   const [opcoesDisciplinas, setOpcoesDisciplinas] = useState([]);
 
   useEffect(() => {
@@ -34,7 +33,7 @@ const CadastroProfessor = () => {
       });
   }, []);
 
-         useEffect(() => {
+  useEffect(() => {
     if (state != null && state.id != null) {
       axios
         .get("http://localhost:8080/api/professor/" + state.id)
@@ -46,88 +45,71 @@ const CadastroProfessor = () => {
           setEmail(response.data.email);
           setDisciplinas(response.data.disciplinas.map(d => d.id));
           setSenha(response.data.senha);
+          // Importante: se estiver editando, talvez queira preencher o confirmarSenha também
+          setConfirmarSenha(response.data.senha); 
         });
     }
-  
   }, [state]);
 
-
   function salvar() {
+    if (!nome || !email || !siape || !cpf || disciplinas.length === 0) {
+      alert("Por favor, preencha todos os campos obrigatórios e selecione ao menos uma disciplina.");
+      return;
+    }
 
+    if (senha !== confirmarSenha) {
+      alert("As senhas não coincidem!");
+      return;
+    }
 
-  if (!nome || !email || !siape || !cpf || disciplinas.length === 0) {
-    alert("Por favor, preencha todos os campos obrigatórios e selecione ao menos uma disciplina.");
-    return;
-  }
+    let professorRequest = {
+      nome: nome,
+      cpf: cpf,
+      email: email,
+      siape: siape,
+      senha: senha,
+      disciplinas: disciplinas
+    };
 
-  else if (senha !== confirmarSenha) {
-    alert("As senhas não coincidem!");
-    return;
-  }
-
-   let professorRequest ={
-    nome: nome,
-    cpf:cpf,
-    email:email,
-    siape:siape,
-    senha:senha,
-    disciplinas:disciplinas
-   }
-
-          if (idProfessor != null) {
-      //Alteração:
+    if (idProfessor != null) {
       axios
         .put("http://localhost:8080/api/professor/" + idProfessor, professorRequest)
-        .then((response) => {
+        .then(() => {
           notifySuccess("Professor alterado com sucesso.");
         })
-        .catch((error) => {
+        .catch(() => {
           notifyError("Erro ao alterar um professor.");
         });
     } else {
-      //Cadastro:
       axios
         .post("http://localhost:8080/api/professor", professorRequest)
-        .then((response) => {
+        .then(() => {
           notifySuccess("Professor cadastrado com sucesso.");
         })
-        .catch((error) => {
+        .catch(() => {
           notifyError("Erro ao incluir o professor.");
         });
     }
   }
 
   return (
-    <Grid
-      textAlign="center"
-      style={{ height: "100vh", backgroundColor: "#f4f4f4" }}
-      verticalAlign="middle"
-    >
+    <Grid textAlign="center" style={{ height: "100vh", backgroundColor: "#f4f4f4" }} verticalAlign="middle">
       <Grid.Column style={{ maxWidth: 600 }}>
         <Segment raised style={{ padding: "3em" }}>
           <Header as="h1" textAlign="center" style={{ marginBottom: "1.5em" }}>
-            {idProfessor === undefined && (
-            <h2>
-              {" "}
-              <span style={{ color: "darkgray" }}>
-                {" "}
-                Cadastro &nbsp;
-                <Icon name="angle double right" size="small" />{" "}
-              </span>{" "}
-              Docente
-            </h2>
-          )}
-          {idProfessor !== undefined && (
-            <h2>
-              {" "}
-              <span style={{ color: "darkgray" }}>
-                {" "}
-                Alteração &nbsp;
-                <Icon name="angle double right" size="small" />{" "}
-              </span>{" "}
-              Docente
-            </h2>
-          )}
+            {idProfessor === undefined ? (
+              <h2>
+                <span style={{ color: "darkgray" }}>
+                  Cadastro <Icon name="angle double right" size="small" />
+                </span> Docente
+              </h2>
+            ) : (
+              <h2>
+                <span style={{ color: "darkgray" }}>
+                  Alteração <Icon name="angle double right" size="small" />
+                </span> Docente
+              </h2>
+            )}
           </Header>
 
           <Form size="large" style={{ textAlign: "left" }}>
@@ -196,7 +178,8 @@ const CadastroProfessor = () => {
                   : false
               }
             />
-             <Form.Field style={{ marginBottom: "2em" }}>
+
+            <Form.Field style={{ marginBottom: "2em" }}>
               <label>Disciplinas que leciona</label>
               <Form.Select
                 fluid
@@ -215,11 +198,7 @@ const CadastroProfessor = () => {
               fluid
               size="huge"
               type="button"
-              style={{
-                backgroundColor: "#21ba45",
-                color: "#fff",
-                marginTop: "1em",
-              }}
+              style={{ backgroundColor: "#21ba45", color: "#fff", marginTop: "1em" }}
               onClick={salvar}
             >
               Concluir
@@ -229,6 +208,4 @@ const CadastroProfessor = () => {
       </Grid.Column>
     </Grid>
   );
-};
-
-export default CadastroProfessor;
+}

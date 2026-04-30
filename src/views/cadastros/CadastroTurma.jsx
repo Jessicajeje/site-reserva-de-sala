@@ -5,19 +5,20 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import "../logins/estilo.css";
 
-const CadastroTurma = () => {
-  const {state} = useLocation();
+export default function CadastroTurma() {
+  const { state } = useLocation();
+  const [idTurma, setIdTurma] = useState();
+  const [curso, setCurso] = useState();
+  const [periodo, setPeriodo] = useState();
+
   const opcoesCurso = [
     { key: "IPI", text: "Informática para Internet", value: "ipi" },
     { key: "QUAL", text: "Qualidade", value: "qual" },
     { key: "ADM", text: "Administração", value: "adm" },
     { key: "ADS", text: "Análise e desenvolvimento de sistemas", value: "ads" },
   ];
-  const [idTurma, setIdTurma] = useState();
-  const [curso, setCurso] = useState();
-  const [periodo, setPeriodo] = useState();
 
-    useEffect(() => {
+  useEffect(() => {
     if (state != null && state.id != null) {
       axios
         .get("http://localhost:8080/api/turma/" + state.id)
@@ -27,7 +28,6 @@ const CadastroTurma = () => {
           setPeriodo(response.data.periodo);
         });
     }
-  
   }, [state]);
 
   function salvar() {
@@ -37,78 +37,52 @@ const CadastroTurma = () => {
     };
 
     if (idTurma != null) {
-      //Alteração:
       axios
         .put("http://localhost:8080/api/turma/" + idTurma, turmaRequest)
-        .then((response) => {
+        .then(() => {
           notifySuccess("Turma alterada com sucesso.");
         })
-        .catch((error) => {
+        .catch(() => {
           notifyError("Erro ao alterar uma turma.");
         });
     } else {
-      //Cadastro:
       axios
         .post("http://localhost:8080/api/turma", turmaRequest)
-        .then((response) => {
+        .then(() => {
           notifySuccess("Turma cadastrada com sucesso.");
         })
-        .catch((error) => {
+        .catch(() => {
           notifyError("Erro ao incluir a turma.");
         });
     }
   }
 
   return (
-    <Grid
-      textAlign="center"
-      style={{ height: "100vh", backgroundColor: "#f4f4f4" }}
-      verticalAlign="middle"
-    >
+    <Grid textAlign="center" style={{ height: "100vh", backgroundColor: "#f4f4f4" }} verticalAlign="middle">
       <Grid.Column style={{ maxWidth: 500 }}>
         <Segment raised style={{ padding: "3em" }}>
-          <Header
-            as="h1"
-            textAlign="center"
-            style={{ marginBottom: "1.5em", fontSize: "2em" }}
-          >
-            {idTurma === undefined && (
+          <Header as="h1" textAlign="center" style={{ marginBottom: "1.5em" }}>
+            {idTurma === undefined ? (
               <h2>
-                {" "}
                 <span style={{ color: "darkgray" }}>
-                  {" "}
-                  Cadastro &nbsp;
-                  <Icon name="angle double right" size="small" />{" "}
-                </span>{" "}
-                Turma
+                  Cadastro <Icon name="angle double right" size="small" />
+                </span> Turma
               </h2>
-            )}
-            {idTurma !== undefined && (
+            ) : (
               <h2>
-                {" "}
                 <span style={{ color: "darkgray" }}>
-                  {" "}
-                  Alteração &nbsp;
-                  <Icon name="angle double right" size="small" />{" "}
-                </span>{" "}
-                Turma
+                  Alteração <Icon name="angle double right" size="small" />
+                </span> Turma
               </h2>
             )}
           </Header>
 
           <Form size="large">
-            <Form.Field style={{ marginBottom: "15%", textAlign: "left" }}>
-              <label
-                style={{
-                  fontSize: "16px",
-                  marginBottom: "10px",
-                  textAlign: "left",
-                }}
-              >
-                Curso:*
-              </label>
+            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Curso:*</label>
               <Form.Select
                 fluid
+                placeholder="Selecione o curso"
                 options={opcoesCurso}
                 required
                 value={curso}
@@ -116,20 +90,13 @@ const CadastroTurma = () => {
               />
             </Form.Field>
 
-            <Form.Field style={{ marginBottom: "15%", textAlign: "left" }}>
-              <label
-                style={{
-                  fontSize: "16px",
-                  marginBottom: "10px",
-                  textAlign: "left",
-                }}
-              >
-                Período:*
-              </label>
+            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Período:*</label>
               <Form.Input
                 fluid
                 required
                 type="number"
+                placeholder="Ex: 1"
                 value={periodo}
                 onChange={(e, { value }) => setPeriodo(value)}
               />
@@ -138,11 +105,7 @@ const CadastroTurma = () => {
             <Button
               fluid
               size="huge"
-              style={{
-                backgroundColor: "#21ba45",
-                color: "#fff",
-                padding: "15px",
-              }}
+              style={{ backgroundColor: "#21ba45", color: "#fff", padding: "15px" }}
               onClick={salvar}
             >
               Concluir
@@ -152,6 +115,4 @@ const CadastroTurma = () => {
       </Grid.Column>
     </Grid>
   );
-};
-
-export default CadastroTurma;
+}

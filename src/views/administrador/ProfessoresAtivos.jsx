@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Button, Divider, Header, Icon, Modal, Table } from "semantic-ui-react";
 import "./Interface.css";
 
@@ -14,7 +15,8 @@ export default function ProfessoresAtivos() {
 
   function carregarLista() {
     axios.get("http://localhost:8080/api/professor").then((response) => {
-      setLista(response.data);
+            const ativos = response.data.filter(prof => prof.status === 'APROVADO');
+      setLista(ativos);
     });
   }
 
@@ -28,7 +30,7 @@ export default function ProfessoresAtivos() {
       .delete("http://localhost:8080/api/professor/" + idRemover)
       .then((response) => {
         console.log("Professor removido com sucesso.");
-        carregarLista(); // Atualiza a lista chamando a função novamente
+        carregarLista();
       })
       .catch((error) => {
         console.log("Erro ao remover um professor.");
@@ -69,7 +71,6 @@ export default function ProfessoresAtivos() {
               </Table.Header>
 
               <Table.Body>
-                {/* Mapeamento direto sem o .filter() */}
                 {lista.map((professor) => (
                   <Table.Row key={professor.id}>
                     <Table.Cell>{professor.nome}</Table.Cell>
@@ -87,6 +88,22 @@ export default function ProfessoresAtivos() {
                       >
                         <Icon name="trash" />
                       </Button>
+                       <Button
+                          inverted
+                          circular
+                          color="blue"
+                          title="Clique aqui para editar os dados do professor"
+                          icon
+                        >
+                          <Link
+                            to="/cadastro-professor"
+                            state={{ id: professor.id }}
+                            style={{ color: "blue" }}
+                          >
+                            <Icon name="edit" />
+                          </Link>
+                        </Button>
+                        &nbsp;
                     </Table.Cell>
                   </Table.Row>
                 ))}
