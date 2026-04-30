@@ -1,13 +1,4 @@
-import React from "react";
-import {
-  Container,
-  Grid,
-  Header,
-  Divider,
-  Image,
-  Icon
-} from "semantic-ui-react";
-
+import {Container,Divider,Grid,Header,Icon,Image} from "semantic-ui-react";
 import Navbar from "../../Components/navbar/NavbarProfessor";
 
 export default function Perfil() {
@@ -99,7 +90,7 @@ export default function Perfil() {
                       fontWeight: "600"
                     }}
                   >
-                    Rede de Computadores
+                    Projeto e Pratica 2
                   </h2>
 
                 </Grid.Column>

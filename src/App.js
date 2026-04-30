@@ -14,7 +14,7 @@ import CadastroTurma from './views/cadastros/CadastroTurma';
 function App() {
   return (
     <div className="App">
-    <CadastroDisciplina/>
+    <Rotas/>
 
     </div>
   );

@@ -11,14 +11,20 @@ import LoginProfessor from "./views/logins/LoginProfessor";
 import Home from "./views/home/Home";
 import Perfil from "./views/perfil/Perfil";
 
+import Notificacoes from "./views/perfil/Notificacoes";
+//import
+
 function Rotas() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<LoginProfessor />} />
+        <Route path="/" element={<LoginProfessor/>} />
 
-        <Route path="/home" element={<Home />} />
-        <Route path="/perfil" element={<Perfil />} />
+        <Route path="/home" element={<Home/>} />
+        <Route path="perfil" element={<Perfil/>} />
+
+        <Route path="notificacoes" element={<Notificacoes/>} />
+
 
         <Route path="login-adm" element={ <LoginADM/> } />
         <Route path="cadastro-professor" element={ <CadastroProfessor/> } />
