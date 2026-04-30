@@ -14,7 +14,7 @@ const CadastroTurma = () => {
     { key: "ADS", text: "Análise e desenvolvimento de sistemas", value: "ads" },
   ];
   const [idTurma, setIdTurma] = useState();
-  const [cursoSelecionado, setCursoSelecionado] = useState();
+  const [curso, setCurso] = useState();
   const [periodo, setPeriodo] = useState();
 
     useEffect(() => {
@@ -23,7 +23,7 @@ const CadastroTurma = () => {
         .get("http://localhost:8080/api/turma/" + state.id)
         .then((response) => {
           setIdTurma(response.data.id);
-          setCursoSelecionado(response.data.cursoSelecionado);
+          setCurso(response.data.curso);
           setPeriodo(response.data.periodo);
         });
     }
@@ -32,21 +32,9 @@ const CadastroTurma = () => {
 
   function salvar() {
     let turmaRequest = {
-      opcoesCurso: opcoesCurso,
-      cursoSelecionado: cursoSelecionado,
+      curso: curso,
       periodo: periodo,
     };
-
-    axios
-      .post("http://localhost:8080/api/turma", turmaRequest)
-      .then((response) => {
-        notifySuccess("Turma cadastrada com sucesso!");
-      })
-      .catch((error) => {
-        console.error(error);
-        notifyError("Erro ao cadastrar turma. Verifique os dados.");
-      });
-
 
     if (idTurma != null) {
       //Alteração:
@@ -123,8 +111,8 @@ const CadastroTurma = () => {
                 fluid
                 options={opcoesCurso}
                 required
-                value={cursoSelecionado}
-                onChange={(e, { value }) => setCursoSelecionado(value)}
+                value={curso}
+                onChange={(e, { value }) => setCurso(value)}
               />
             </Form.Field>
 

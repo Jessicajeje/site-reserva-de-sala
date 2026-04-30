@@ -5,7 +5,7 @@ import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
 import '../logins/estilo.css';
 
-const CadastroSala = () => {
+const CadastroSala = ({ lista = [] }) => {
   const{state} = useLocation();
     const opcoesBloco = [
     { key: "b", text: "Bloco B", value: "Bloco_B" },
@@ -19,6 +19,7 @@ const CadastroSala = () => {
     const[numero, setNumero]= useState();
     const [tipo, setTipo] = useState('sala');
     const atualizaTipo = (e, { value }) => setTipo(value);
+
 
        useEffect(() => {
     if (state != null && state.id != null) {
@@ -34,21 +35,24 @@ const CadastroSala = () => {
   }, [state]);
 
     function salvar(){
-      
+
+       const salaDuplicada = lista.find(sala => 
+        String(sala.numero) === String(numero) && 
+        sala.blocoSelecionado === blocoSelecionado && 
+        sala.tipo === tipo &&
+        sala.id !== idSala
+    );
+
+    if (salaDuplicada) {
+        notifyError("Essa sala já existe!");
+        return;
+    }
       let salaRequest = {
         numero: numero,
         blocoSelecionado: blocoSelecionado,
         tipo: tipo
       };
-      
-           axios.post("http://localhost:8080/api/sala", salaRequest)
-            .then((response) => {
-              notifySuccess("Sala cadastrada com sucesso!");
-            })
-            .catch((error) => {
-              console.error(error);
-              notifyError("Erro ao cadastrar sala. Verifique os dados.");
-            });
+    
 
                   if (idSala != null) {
       //Alteração:
@@ -71,37 +75,31 @@ const CadastroSala = () => {
           notifyError("Erro ao incluir a sala.");
         });
     }
-    }
+
+  
 
   return (
     <Grid textAlign="center" style={{ height: '100vh', backgroundColor: '#f4f4f4' }} verticalAlign="middle">
       <Grid.Column style={{ maxWidth: 500 }}>
 
         <Segment raised style={{ padding: '3em' }}>
-          <Header as="h1" textAlign="center" style={{ marginBottom: '1.5em', fontSize: '2em' }}>
-                        {idSala === undefined && (
-            <h2>
-              {" "}
-              <span style={{ color: "darkgray" }}>
-                {" "}
-                Cadastro &nbsp;
-                <Icon name="angle double right" size="small" />{" "}
-              </span>{" "}
-              Sala
-            </h2>
-          )}
-          {idSala !== undefined && (
-            <h2>
-              {" "}
-              <span style={{ color: "darkgray" }}>
-                {" "}
-                Alteração &nbsp;
-                <Icon name="angle double right" size="small" />{" "}
-              </span>{" "}
-              Sala
-            </h2>
-          )}
-          </Header>
+         <Header as="h2" textAlign="center" style={{ marginBottom: '1.5em' }}>
+  {idSala === undefined ? (
+    <>
+      <span style={{ color: "darkgray" }}>
+        Cadastro <Icon name="angle double right" size="small" />
+      </span>{" "}
+      Sala
+    </>
+  ) : (
+    <>
+      <span style={{ color: "darkgray" }}>
+        Alteração <Icon name="angle double right" size="small" />
+      </span>{" "}
+      Sala
+    </>
+  )}
+</Header>
 
           <Form size="large">
             
@@ -160,5 +158,5 @@ const CadastroSala = () => {
     </Grid>
   )
 }
-
+}
 export default CadastroSala

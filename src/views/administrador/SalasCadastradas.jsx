@@ -1,24 +1,26 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Divider, Header, Icon, Modal, Table } from "semantic-ui-react";
+import { Button, Divider, Header, Icon, Modal, Card } from "semantic-ui-react";
 import "./Interface.css";
-import FiltroSala from "../../Components/filtros/FiltroSala";
 
 export default function SalasCadastradas() {
   const [lista, setLista] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [idRemover, setIdRemover] = useState();
-  const [buscaTipo, setBuscaTipo] = useState("");
 
   useEffect(() => {
     carregarLista();
   }, []);
 
   function carregarLista() {
-    axios.get("http://localhost:8080/api/sala").then((response) => {
-      setLista(response.data);
-    });
+    axios.get("http://localhost:8080/api/sala")
+      .then((response) => {
+        setLista(response.data);
+      })
+      .catch((error) => {
+        console.error("Erro na requisição:", error);
+      });
   }
 
   function confirmaRemover(id) {
@@ -29,22 +31,20 @@ export default function SalasCadastradas() {
   async function remover() {
     await axios
       .delete("http://localhost:8080/api/sala/" + idRemover)
-      .then((response) => {
+      .then(() => {
         console.log("Sala removida com sucesso.");
-
-        axios.get("http://localhost:8080/api/sala").then((response) => {
-          setLista(response.data);
-        });
+        carregarLista();
       })
       .catch((error) => {
         console.log("Erro ao remover uma sala.");
       });
     setOpenModal(false);
   }
+
   return (
     <div>
       <div style={{ marginTop: "3%" }}>
-        <section textAlign="justified">
+        <section>
           <Header
             as="h2"
             style={{ textAlign: "left", marginLeft: "2%", marginTop: "5%" }}
@@ -52,7 +52,7 @@ export default function SalasCadastradas() {
             Salas cadastradas
           </Header>
           <Divider />
-          <FiltroSala setBuscaTipo={setBuscaTipo} />
+
           <div style={{ marginTop: "3%", padding: "2%" }}>
             <Button
               label="Nova sala"
@@ -62,9 +62,8 @@ export default function SalasCadastradas() {
               as={Link}
               to="/cadastro-sala"
             />
-            <br />
-            <br />
-            <br />
+            <br /><br /><br />
+
             {lista.length === 0 ? (
               <div style={{ textAlign: "center", marginTop: "5%" }}>
                 <h3 style={{ opacity: 0.5, color: "grey" }}>
@@ -72,63 +71,51 @@ export default function SalasCadastradas() {
                 </h3>
               </div>
             ) : (
-              <Table color="green" sortable celled>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.HeaderCell>Curso</Table.HeaderCell>
-                    <Table.HeaderCell>Período</Table.HeaderCell>
+              <Card.Group itemsPerRow={3} stackable style={{ padding: "1%" }}>
+                {lista.map((sala) => (
+                  <Card key={sala.id} raised color="green">
+                    <Card.Content>
+                      <Icon 
+                        name={sala.tipo === 'laboratorio' ? 'lab' : 'university'} 
+                        size="large" 
+                        floated="right" 
+                      />
+                      <Card.Header>
+                        {sala.tipo === 'laboratorio' ? 'Laboratório' : 'Sala'} {sala.numero}
+                      </Card.Header>
+                      <Card.Meta>
+                        {sala.blocoSelecionado ? sala.blocoSelecionado.replace('_', ' ') : 'Bloco não informado'}
+                      </Card.Meta>
+                    </Card.Content>
 
-                    <Table.HeaderCell textAlign="center">
-                      Ações
-                    </Table.HeaderCell>
-                  </Table.Row>
-                </Table.Header>
-
-                <Table.Body>
-                  {lista
-                    .filter((sala) => sala.tipo.includes(buscaTipo))
-
-                    .map((sala) => (
-                      <Table.Row key={sala.id}>
-                        <Table.Cell>{sala.curso}</Table.Cell>
-                        <Table.Cell>{sala.periodo}</Table.Cell>
-
-                        <Table.Cell textAlign="center">
-                          <Button
-                            inverted
-                            circular
-                            color="blue"
-                            title="Clique aqui para editar os dados da sala"
-                            icon
-                          >
-                            <Link
-                              to="/cadastro-sala"
-                              state={{ id: sala.id }}
-                              style={{ color: "blue" }}
-                            >
-                              <Icon name="edit" />
-                            </Link>
-                          </Button>
-                          &nbsp;
-                          <Button
-                            inverted
-                            circular
-                            color="red"
-                            title="Clique aqui para remover a sala"
-                            icon
-                            onClick={(e) => confirmaRemover(sala.id)}
-                          >
-                            <Icon name="trash" />
-                          </Button>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                </Table.Body>
-              </Table>
+                    <Card.Content extra>
+                      <div className='ui two buttons'>
+                        <Button 
+                          basic 
+                          color='blue' 
+                          as={Link} 
+                          to="/cadastro-sala" 
+                          state={{ id: sala.id }}
+                        >
+                          <Icon name="edit" /> Editar
+                        </Button>
+                        <Button 
+                          basic 
+                          color='red' 
+                          onClick={() => confirmaRemover(sala.id)}
+                        >
+                          <Icon name="trash" /> Remover
+                        </Button>
+                      </div>
+                    </Card.Content>
+                  </Card>
+                ))}
+              </Card.Group>
             )}
           </div>
         </section>
       </div>
+
       <Modal
         basic
         onClose={() => setOpenModal(false)}
@@ -137,18 +124,12 @@ export default function SalasCadastradas() {
       >
         <Header icon>
           <Icon name="trash" />
-          <div style={{ marginTop: "5%" }}>
-            {" "}
-            Tem certeza que deseja remover esse registro?{" "}
+          <div style={{ marginTop: "5%" }}> 
+            Tem certeza que deseja remover esse registro? 
           </div>
         </Header>
         <Modal.Actions>
-          <Button
-            basic
-            color="red"
-            inverted
-            onClick={() => setOpenModal(false)}
-          >
+          <Button basic color="red" inverted onClick={() => setOpenModal(false)}>
             <Icon name="remove" /> Não
           </Button>
           <Button color="green" inverted onClick={() => remover()}>

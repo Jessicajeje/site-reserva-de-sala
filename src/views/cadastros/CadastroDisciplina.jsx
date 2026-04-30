@@ -60,7 +60,7 @@ const CadastroDisciplina = () => {
       text: "Processos Gerenciais",
       value: "processos_gerenciais",
     },
-    { key: "log", text: "Logística", vaLue: "logistica" },
+   { key: "log", text: "Logística", value: "logistica" },
   ];
   const opcoesDias = [
     { key: "seg", text: "Segunda-feira", value: "SEGUNDA" },
@@ -71,19 +71,19 @@ const CadastroDisciplina = () => {
     { key: "sab", text: "Sábado", value: "SABADO" },
   ];
 
-  useEffect(() => {
-    if (state != null && state.id != null) {
-      axios
-        .get("http://localhost:8080/api/disciplina/" + state.id)
-        .then((response) => {
-          setIdDisciplina(response.data.id);
-          setTurno(response.data.turno);
-          setNome(response.data.nome);
-          setHorarios(response.data.horarios);
-          setAreaSelecionada(response.data.area);
-        });
-    }
-  }, [state]);
+useEffect(() => {
+  if (state != null && state.id != null) {
+    axios
+      .get("http://localhost:8080/api/disciplina/" + state.id)
+      .then((response) => {
+        setIdDisciplina(response.data.id);
+        setTurno(response.data.turno);
+        setNome(response.data.nome);
+        setAreaSelecionada(response.data.area);
+        setHorarios(response.data.horarios || []); 
+      });
+  }
+}, [state]);
 
   const adicionarHorario = () => {
     setHorarios([...horarios, { dia: "", inicio: "", fim: "" }]);

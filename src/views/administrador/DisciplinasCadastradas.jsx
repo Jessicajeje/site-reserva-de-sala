@@ -2,16 +2,12 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Divider, Grid, Header, Icon, Modal } from "semantic-ui-react";
-import FiltroDisciplina from "../../Components/filtros/FiltroDisciplina";
 import './Interface.css';
 
 export default function DisciplinasCadastradas() {
   const [lista, setLista] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [idRemover, setIdRemover] = useState();
-  const [buscaNome, setBuscaNome] = useState("");
-  const [buscaArea, setBuscaArea] = useState("");
-  const [buscaTurno, setBuscaTurno] = useState("");
 
   useEffect(() => { carregarLista(); }, []);
 
@@ -41,16 +37,9 @@ export default function DisciplinasCadastradas() {
         Disciplinas cadastradas
       </Header>
       <Divider style={{ marginVertical: '2%' }} />
-      
-      <div style={{ marginBottom: '2%' }}>
-        <FiltroDisciplina 
-          setBuscaNome={setBuscaNome} 
-          setBuscaArea={setBuscaArea} 
-          setBuscaTurno={setBuscaTurno} 
-        />
-      </div>
 
       <Grid columns={4} stackable>
+        {/* Card de Atalho para Novo Cadastro */}
         <Grid.Column>
           <Card as={Link} to="/cadastro-disciplina" style={{ textAlign: 'center', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Card.Content>
@@ -62,16 +51,17 @@ export default function DisciplinasCadastradas() {
           </Card>
         </Grid.Column>
 
-        {lista.filter(item => 
-          item.nome?.toLowerCase().includes(buscaNome.toLowerCase())
-          && item.area?.toLowerCase().includes(buscaArea.toLowerCase())
-          && item.turno?.toLowerCase().includes(buscaTurno.toLowerCase())
-        ).map((item) => (
+        {/* Mapeamento direto da lista sem filtros */}
+        {lista.map((item) => (
           <Grid.Column key={item.id}>
             <Card fluid>
               <Card.Content>
                 <Card.Header>{item.nome}</Card.Header>
-                <Card.Meta>Código: {item.codigo}</Card.Meta>
+                {/* Lembre-se: Verifique se o seu backend envia 'area' em vez de 'codigo' */}
+                <Card.Meta>{item.area || "Sem área definida"}</Card.Meta>
+                <Card.Description>
+                   <Icon name="clock outline" /> {item.horarioInicio} - {item.horarioFim}
+                </Card.Description>
               </Card.Content>
 
               <Card.Content extra>

@@ -1,7 +1,7 @@
 import axios from "axios";
-import { useLocation} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { IMaskInput } from "react-imask";
+import { useLocation } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
 import '../logins/estilo.css';
@@ -53,7 +53,7 @@ const CadastroProfessor = () => {
 
 
   function salvar() {
-    
+
 
   if (!nome || !email || !siape || !cpf || disciplinas.length === 0) {
     alert("Por favor, preencha todos os campos obrigatórios e selecione ao menos uma disciplina.");
@@ -74,16 +74,7 @@ const CadastroProfessor = () => {
     disciplinas:disciplinas
    }
 
-     axios.post("http://localhost:8080/api/professor", professorRequest)
-      .then((response) => {
-        notifySuccess("Professor cadastrado com sucesso!");
-      })
-      .catch((error) => {
-        console.error(error);
-        notifyError("Erro ao cadastrar professor. Verifique os dados.");
-      });
-
-            if (idProfessor != null) {
+          if (idProfessor != null) {
       //Alteração:
       axios
         .put("http://localhost:8080/api/professor/" + idProfessor, professorRequest)
