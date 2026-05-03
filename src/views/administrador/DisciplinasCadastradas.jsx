@@ -2,7 +2,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Divider, Grid, Header, Icon, Modal } from "semantic-ui-react";
-import Navbar from "../../Components/navbar/NavbarADM";
 import './Interface.css';
 
 export default function DisciplinasCadastradas() {
@@ -33,65 +32,61 @@ export default function DisciplinasCadastradas() {
   }
 
   return (
-      <section style={{ display: 'flex', minHeight: '100vh' }}>
-    {/* Navbar fixa na esquerda */}
-    <aside style={{ width: '250px', flexShrink: 0 }}>
-      <Navbar />
-    </aside>
-    
-      <Header as='h2'>
+    <section style={{ display: 'flex', flexDirection: 'column', padding: '2%', minHeight: '100vh' }}>
+      <Header as='h2' style={{ margin: 0 , textAlign: 'left'}}>
         Disciplinas cadastradas
       </Header>
-      <Divider style={{ marginBottom: '5%' }}/><br />
+      <Divider style={{ marginVertical: '2%' }} />
 
-      <Grid columns={4} stackable style={{ marginTop: "3%" , padding:'2%'}}>
-    
+      <Grid columns={4} stackable>
+        {/* Card de Atalho para Novo Cadastro */}
+        <Grid.Column>
+          <Card as={Link} to="/cadastro-disciplina" style={{ textAlign: 'center', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Card.Content>
+              <Icon name="plus" size="large" style={{ color: '#aaaaaa', fontWeight: 'lighter' }} />
+              <div style={{ marginTop: '15px', color: '#a3a3a3', fontWeight: 'bold' }}>
+                cadastrar nova Disciplina
+              </div>
+            </Card.Content>
+          </Card>
+        </Grid.Column>
 
-<Grid.Column>
-  <Card as={Link} to="/cadastro-disciplina" className="card-add-new" style={{ textAlign: 'center'}}>
-    <Card.Content >
-      <Icon name="plus" size="large" style={{ color: '#aaaaaa', fontWeight: 'lighter', marginTop:'40%' }} />
-      <div style={{ marginTop: '15px', color: '#a3a3a3', fontWeight: 'bold' }}>
-        cadastrar nova Disciplina
-      </div>
-    </Card.Content>
-  </Card>
-</Grid.Column>
+        {/* Mapeamento direto da lista sem filtros */}
+        {lista.map((item) => (
+          <Grid.Column key={item.id}>
+            <Card fluid>
+              <Card.Content>
+                <Card.Header>{item.nome}</Card.Header>
+                {/* Lembre-se: Verifique se o seu backend envia 'area' em vez de 'codigo' */}
+                <Card.Meta>{item.area || "Sem área definida"}</Card.Meta>
+                <Card.Description>
+                   <Icon name="clock outline" /> {item.horarioInicio} - {item.horarioFim}
+                </Card.Description>
+              </Card.Content>
 
-{lista.map((item) => (
-  <Grid.Column key={item.id}>
-    <Card fluid className="card-list-item">
-      <Card.Content>
-        <Card.Header>{item.nome}</Card.Header>
-        <Card.Meta>Código: {item.codigo}</Card.Meta>
-      </Card.Content>
-
-      <Card.Content extra>
-        <div className='ui two buttons'>
-          {/* Botão Alterar: Redireciona para a tela de cadastro passando o ID */}
-          <Button 
-            as={Link} 
-            to={`/cadastro-disciplina/${item.id}`} 
-            icon="edit" 
-            color="blue" 
-            basic 
-          />
-
-          {/* Botão Excluir: Aciona o modal de confirmação */}
-          <Button 
-            icon="trash" 
-            color="red" 
-            basic 
-            onClick={() => confirmaRemover(item.id)} 
-          />
-        </div>
-      </Card.Content>
-    </Card>
-  </Grid.Column>
-))}
+              <Card.Content extra>
+                <div className='ui two buttons'>
+                  <Button 
+                    as={Link} 
+                    to="/cadastro-disciplina"
+                    state={{ id: item.id }}
+                    icon="edit" 
+                    color="blue" 
+                    basic 
+                  />
+                  <Button 
+                    icon="trash" 
+                    color="red" 
+                    basic 
+                    onClick={() => confirmaRemover(item.id)} 
+                  />
+                </div>
+              </Card.Content>
+            </Card>
+          </Grid.Column>
+        ))}
       </Grid>
 
-      
       <Modal basic onClose={() => setOpenModal(false)} open={openModal} size="small">
         <Header icon><Icon name='trash' /> Tem certeza que deseja remover?</Header>
         <Modal.Actions>
