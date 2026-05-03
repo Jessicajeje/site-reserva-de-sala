@@ -12,6 +12,8 @@ import CadastroTurma from "./views/cadastros/CadastroTurma";
 import LoginADM from "./views/logins/LoginADM";
 import LoginProfessor from "./views/logins/LoginProfessor";
 import ProfessoresAtivos from "./views/administrador/ProfessoresAtivos";
+import Home from "./views/home/Home";
+import Perfil from "./views/perfil/Perfil";
 
 function Rotas() {
   return (
