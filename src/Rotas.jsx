@@ -12,35 +12,35 @@ import CadastroTurma from "./views/cadastros/CadastroTurma";
 import LoginADM from "./views/logins/LoginADM";
 import LoginProfessor from "./views/logins/LoginProfessor";
 import ProfessoresAtivos from "./views/administrador/ProfessoresAtivos";
-import Home from "./views/home/Home";
-import Perfil from "./views/perfil/Perfil";
+import Home from "./views/professor/Home";
+import Perfil from "./views/professor/Perfil";
 
 function Rotas() {
   return (
-      <Routes>
-  {/* ROTAS PÚBLICAS (Sem Navbar) */}
-  <Route path="/" element={<LoginProfessor />} />
-  <Route path="login-adm" element={<LoginADM />} />
+    <Routes>
+      {/* ROTAS PÚBLICAS (Sem Navbar) */}
+      <Route path="/" element={<LoginProfessor />} />
+      <Route path="login-adm" element={<LoginADM />} />
+      <Route path="cadastro-professor" element={<CadastroProfessor />} />
 
-  {/* ROTAS DO ADM (Com Navbar de ADM) */}
-  <Route element={<LayoutADM />}> 
-    <Route path="cadastro-professor" element={<CadastroProfessor />} />
-    <Route path="cadastro-sala" element={<CadastroSala />} />
-    <Route path="cadastro-turma" element={<CadastroTurma />} />
-    <Route path="cadastro-disciplina" element={<CadastroDisciplina />} />
-    
-    <Route path="turmas" element={<TurmasCadastradas />} />
-    <Route path="disciplinas" element={<DisciplinasCadastradas />} />
-    <Route path="salas" element={<SalasCadastradas />} />
-    <Route path="validar-prof" element={<ValidarProfessor />} />
-    <Route path="professores-ativos" element={<ProfessoresAtivos />} />
-  </Route>
+      {/* ROTAS DO ADM (Com Navbar de ADM) */}
+      <Route element={<LayoutADM />}>
+        <Route path="cadastro-sala" element={<CadastroSala />} />
+        <Route path="cadastro-turma" element={<CadastroTurma />} />
+        <Route path="cadastro-disciplina" element={<CadastroDisciplina />} />
 
-  {/* ROTAS DO PROFESSOR (Com Navbar de Professor) */}
-  <Route element={<LayoutProfessor />}>
-    {/* Coloque aqui as rotas que o professor acessa após logar */}
-    
-  </Route>
+        <Route path="turmas" element={<TurmasCadastradas />} />
+        <Route path="disciplinas" element={<DisciplinasCadastradas />} />
+        <Route path="salas" element={<SalasCadastradas />} />
+        <Route path="validar-prof" element={<ValidarProfessor />} />
+        <Route path="professores-ativos" element={<ProfessoresAtivos />} />
+      </Route>
+
+      {/* ROTAS DO PROFESSOR (Com Navbar de Professor) */}
+      <Route element={<LayoutProfessor />}>
+        <Route path="home" element={<Home />} />
+        <Route path="perfil" element={<Perfil />} />
+      </Route>
     </Routes>
   );
 }

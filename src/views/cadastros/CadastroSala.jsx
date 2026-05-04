@@ -12,6 +12,8 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
   const [numero, setNumero] = useState();
   const [tipo, setTipo] = useState('sala');
 
+ 
+
   const opcoesBloco = [
     { key: "b", text: "Bloco B", value: "Bloco_B" },
     { key: "c", text: "Bloco C", value: "Bloco_C" },
@@ -35,17 +37,6 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
   }, [state]);
 
   function salvar() {
-    const salaDuplicada = lista.find(sala =>
-      String(sala.numero) === String(numero) &&
-      sala.blocoSelecionado === blocoSelecionado &&
-      sala.tipo === tipo &&
-      sala.id !== idSala
-    );
-
-    if (salaDuplicada) {
-      notifyError("Essa sala já existe!");
-      return;
-    }
 
     let salaRequest = {
       numero: numero,
@@ -67,6 +58,7 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
         .post("http://localhost:8080/api/sala", salaRequest)
         .then((response) => {
           notifySuccess("Sala cadastrada com sucesso.");
+          
         })
         .catch((error) => {
           notifyError("Erro ao incluir a sala.");

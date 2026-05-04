@@ -9,7 +9,7 @@ export default function Navbar() {
  const [hovered, setHovered] = useState(null);
 
  const menuItems = [
- { path: "/", icon: <FaHome />, label: "Início" },
+ { path: "/home", icon: <FaHome />, label: "Início" },
  { path: "/reposicao", icon: <FaChalkboardTeacher />, label: "Reposição de aulas" },
  { path: "/notificacoes", icon: <FaBell />, label: "Notificações" },
  { path: "/autenticacao", icon: <FaUser />, label: "Autenticação de professores" },

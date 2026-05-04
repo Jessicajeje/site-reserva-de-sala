@@ -15,8 +15,8 @@ export default function ProfessoresAtivos() {
 
   function carregarLista() {
     axios.get("http://localhost:8080/api/professor").then((response) => {
-            const ativos = response.data.filter(prof => prof.status === 'APROVADO');
-      setLista(ativos);
+      //const ativos = response.data.filter(prof => prof.status === 'APROVADO');
+      setLista(response.data);
     });
   }
 
@@ -50,7 +50,7 @@ export default function ProfessoresAtivos() {
         <Divider />
 
         <div style={{ marginTop: "3%", padding: "2%" }}>
-          {lista.length === 0 ? (
+          {(!lista || lista.length === 0) ? (
             <div style={{ textAlign: "center", marginTop: "5%" }}>
               <h3 style={{ opacity: 0.5, color: "grey" }}>
                 Nenhum professor cadastrado ainda.
@@ -64,14 +64,12 @@ export default function ProfessoresAtivos() {
                   <Table.HeaderCell>CPF</Table.HeaderCell>
                   <Table.HeaderCell>E-mail</Table.HeaderCell>
                   <Table.HeaderCell>SIAPE</Table.HeaderCell>
-                  <Table.HeaderCell textAlign="center">
-                    Ações
-                  </Table.HeaderCell>
+                  <Table.HeaderCell textAlign="center">Ações</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
 
               <Table.Body>
-                {lista.map((professor) => (
+                {lista?.map((professor) => (
                   <Table.Row key={professor.id}>
                     <Table.Cell>{professor.nome}</Table.Cell>
                     <Table.Cell>{professor.cpf}</Table.Cell>
@@ -88,22 +86,19 @@ export default function ProfessoresAtivos() {
                       >
                         <Icon name="trash" />
                       </Button>
-                       <Button
-                          inverted
-                          circular
-                          color="blue"
-                          title="Clique aqui para editar os dados do professor"
-                          icon
-                        >
-                          <Link
-                            to="/cadastro-professor"
-                            state={{ id: professor.id }}
-                            style={{ color: "blue" }}
-                          >
-                            <Icon name="edit" />
-                          </Link>
-                        </Button>
-                        &nbsp;
+                      <Button
+                        inverted
+                        circular
+                        color="blue"
+                        title="Clique aqui para editar"
+                        icon
+                        as={Link}
+                        to="/cadastro-professor"
+                        state={{ id: professor.id }}
+                      >
+                        <Icon name="edit" />
+                      </Button>
+                      &nbsp;
                     </Table.Cell>
                   </Table.Row>
                 ))}
@@ -126,7 +121,12 @@ export default function ProfessoresAtivos() {
           </div>
         </Header>
         <Modal.Actions>
-          <Button basic color="red" inverted onClick={() => setOpenModal(false)}>
+          <Button
+            basic
+            color="red"
+            inverted
+            onClick={() => setOpenModal(false)}
+          >
             <Icon name="remove" /> Não
           </Button>
           <Button color="green" inverted onClick={() => remover()}>

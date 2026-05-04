@@ -1,13 +1,18 @@
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { IMaskInput } from "react-imask";
 import { useLocation } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
-import { notifyError, notifySuccess } from '../../views/util/Util';
-import '../logins/estilo.css';
+import { notifyError, notifySuccess } from "../../views/util/Util";
+import "../logins/estilo.css";
 
 export default function CadastroProfessor() {
   const { state } = useLocation();
+
+  const perfilUsuario = "ADM";
+  const isAdmin = perfilUsuario === "PROF";
+
   const [idProfessor, setIdProfessor] = useState();
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
@@ -18,8 +23,11 @@ export default function CadastroProfessor() {
   const [disciplinas, setDisciplinas] = useState([]);
   const [opcoesDisciplinas, setOpcoesDisciplinas] = useState([]);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    axios.get("http://localhost:8080/api/disciplina")
+    axios
+      .get("http://localhost:8080/api/disciplina")
       .then((response) => {
         const formatadas = response.data.map((d) => ({
           key: d.id,
@@ -34,66 +42,82 @@ export default function CadastroProfessor() {
   }, []);
 
   useEffect(() => {
-    if (state != null && state.id != null) {
-      axios
-        .get("http://localhost:8080/api/professor/" + state.id)
-        .then((response) => {
-          setIdProfessor(response.data.id);
-          setCpf(response.data.cpf);
-          setNome(response.data.nome);
-          setSiape(response.data.siape);
-          setEmail(response.data.email);
-          setDisciplinas(response.data.disciplinas.map(d => d.id));
-          setSenha(response.data.senha);
-          // Importante: se estiver editando, talvez queira preencher o confirmarSenha também
-          setConfirmarSenha(response.data.senha); 
-        });
-    }
-  }, [state]);
+  if (state != null && state.id != null) {
+    axios
+      .get("http://localhost:8080/api/professor/" + state.id)
+      .then((response) => {
+        setIdProfessor(response.data.id);
+        setCpf(response.data.cpf);
+        setNome(response.data.nome);
+        setSiape(response.data.siape);
+        setEmail(response.data.email);
+
+        const listaSemeada = response.data.disciplinas || [];
+        setDisciplinas(listaSemeada.map((d) => d.id));
+
+        setSenha(response.data.senha);
+        setConfirmarSenha(response.data.senha);
+      });
+  }
+}, [state]);
 
   function salvar() {
-    if (!nome || !email || !siape || !cpf || disciplinas.length === 0) {
-      alert("Por favor, preencha todos os campos obrigatórios e selecione ao menos uma disciplina.");
+    if (!nome || !email || !siape || !cpf) {
+      alert("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
-    if (senha !== confirmarSenha) {
+    if (!idProfessor) {
+      if (!senha || !confirmarSenha) {
+        alert("A senha é obrigatória para novos cadastros.");
+        return;
+      }
+    }
+
+    if (senha && senha !== confirmarSenha) {
       alert("As senhas não coincidem!");
       return;
     }
 
-    let professorRequest = {
+    const professorRequest = {
       nome: nome,
       cpf: cpf,
       email: email,
       siape: siape,
-      senha: senha,
-      disciplinas: disciplinas
+      senha: senha ? senha : null,
+      disciplinas: disciplinas,
     };
 
     if (idProfessor != null) {
       axios
-        .put("http://localhost:8080/api/professor/" + idProfessor, professorRequest)
+        .put(
+          "http://localhost:8080/api/professor/" + idProfessor,
+          professorRequest,
+        )
         .then(() => {
           notifySuccess("Professor alterado com sucesso.");
+          setTimeout(() => navigate("/professores-ativos"), 1000);
         })
-        .catch(() => {
-          notifyError("Erro ao alterar um professor.");
-        });
+        .catch(() => notifyError("Erro ao alterar o professor."));
     } else {
       axios
         .post("http://localhost:8080/api/professor", professorRequest)
         .then(() => {
-          notifySuccess("Professor cadastrado com sucesso.");
+          notifySuccess(
+            "Cadastrado com sucesso! Aguarde a validação da secretaria.",
+          );
+          setTimeout(() => navigate("/"), 1000);
         })
-        .catch(() => {
-          notifyError("Erro ao incluir o professor.");
-        });
+        .catch(() => notifyError("Erro ao incluir o professor."));
     }
   }
 
   return (
-    <Grid textAlign="center" style={{ height: "100vh", backgroundColor: "#f4f4f4" }} verticalAlign="middle">
+    <Grid
+      textAlign="center"
+      style={{ height: "100vh", backgroundColor: "#f4f4f4" }}
+      verticalAlign="middle"
+    >
       <Grid.Column style={{ maxWidth: 600 }}>
         <Segment raised style={{ padding: "3em" }}>
           <Header as="h1" textAlign="center" style={{ marginBottom: "1.5em" }}>
@@ -101,13 +125,15 @@ export default function CadastroProfessor() {
               <h2>
                 <span style={{ color: "darkgray" }}>
                   Cadastro <Icon name="angle double right" size="small" />
-                </span> Docente
+                </span>{" "}
+                Docente
               </h2>
             ) : (
               <h2>
                 <span style={{ color: "darkgray" }}>
                   Alteração <Icon name="angle double right" size="small" />
-                </span> Docente
+                </span>{" "}
+                Docente
               </h2>
             )}
           </Header>
@@ -162,6 +188,7 @@ export default function CadastroProfessor() {
               type="password"
               placeholder="Digite uma senha"
               value={senha}
+              disabled={!!idProfessor}
               onChange={(e) => setSenha(e.target.value)}
             />
 
@@ -171,6 +198,7 @@ export default function CadastroProfessor() {
               type="password"
               placeholder="Repita a senha"
               value={confirmarSenha}
+              disabled={!!idProfessor}
               onChange={(e) => setConfirmarSenha(e.target.value)}
               error={
                 confirmarSenha !== "" && senha !== confirmarSenha
@@ -189,8 +217,9 @@ export default function CadastroProfessor() {
                 options={opcoesDisciplinas}
                 placeholder="Selecione as disciplinas"
                 value={disciplinas}
-                onChange={(e, { value }) => setDisciplinas(value)}
                 noResultsMessage="Nenhuma disciplina encontrada."
+                disabled={!isAdmin} // Se NÃO for admin, o campo fica cinza e travado
+                onChange={(e, { value }) => setDisciplinas(value)}
               />
             </Form.Field>
 
@@ -198,7 +227,11 @@ export default function CadastroProfessor() {
               fluid
               size="huge"
               type="button"
-              style={{ backgroundColor: "#21ba45", color: "#fff", marginTop: "1em" }}
+              style={{
+                backgroundColor: "#21ba45",
+                color: "#fff",
+                marginTop: "1em",
+              }}
               onClick={salvar}
             >
               Concluir
