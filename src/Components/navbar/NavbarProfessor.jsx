@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { FaHome, FaChalkboardTeacher, FaBell, FaUser } from "react-icons/fa";
+import { useState } from "react";
+import { FaBell, FaChalkboardTeacher, FaHome, FaUser } from "react-icons/fa";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
  const navigate = useNavigate();
@@ -9,7 +9,7 @@ export default function Navbar() {
  const [hovered, setHovered] = useState(null);
 
  const menuItems = [
- { path: "/", icon: <FaHome />, label: "Início" },
+ { path: "/home", icon: <FaHome />, label: "Início" },
  { path: "/reposicao", icon: <FaChalkboardTeacher />, label: "Reposição de aulas" },
  { path: "/notificacoes", icon: <FaBell />, label: "Notificações" },
  { path: "/autenticacao", icon: <FaUser />, label: "Autenticação de professores" },
