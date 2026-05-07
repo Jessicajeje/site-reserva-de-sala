@@ -8,13 +8,12 @@ import {
   Icon
 } from "semantic-ui-react";
 
-import Navbar from "../../Components/navbar/NavbarProfessor";
+
 
 export default function Perfil() {
+
   return (
     <div style={{ backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-      
-      <Navbar tela={"perfil"} />
 
       <div style={{ display: "flex" }}>
         

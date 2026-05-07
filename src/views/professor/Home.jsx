@@ -12,15 +12,13 @@ import {
   Form
 } from "semantic-ui-react";
 
-import Navbar from "../../Components/navbar/NavbarProfessor";
+
 
 export default function Home() {
   const [open, setOpen] = useState(false);
 
   return (
     <div style={{ backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-      
-      <Navbar tela={"home"} />
 
       <div style={{ display: "flex" }}>
         
@@ -33,9 +31,6 @@ export default function Home() {
             padding: "20px"
           }}
         >
-          <Header as="h4" color="grey">
-            Navegação
-          </Header>
 
           <p style={{ color: "#999999c2" }}>
           </p>

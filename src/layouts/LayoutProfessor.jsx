@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import NavbarProfessor from '../Components/navbar/NavbarADM';
+import NavbarProfessor from '../Components/navbar/NavbarProfessor';
 
 const LayoutProfessor = () => {
   return (

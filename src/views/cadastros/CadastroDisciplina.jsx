@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
@@ -34,13 +35,16 @@ const opcoesHorarios = gerarOpcoesHorarios();
 
 export default function CadastroDisciplina() {
   const { state } = useLocation();
+  const navigate = useNavigate();
   const [idDisciplina, setIdDisciplina] = useState();
   const [nome, setNome] = useState("");
-  const [areaSelecionada, setAreaSelecionada] = useState("");
+  const [area, setArea] = useState("");
   const [turno, setTurno] = useState();
-  const [horarios, setHorarios] = useState([
-    { dia: "", horaInicio: "", horaFim: "" },
-  ]);
+  const [turma, setTurma] = useState(null);
+  const [opcoesTurma, setOpcoesTurma] = useState([]);  
+  const [opcoesprofessor, setOpcoesprofessor] = useState([]);  
+  const [professor, setProfessor] = useState(null);  
+  const [horarios, setHorarios] = useState([{ dia: "", horaInicio: "", horaFim: "" }]);
 
   const opcoesTurno = [
     { key: "manha", text: "Manhã", value: "manha" },
@@ -64,17 +68,33 @@ export default function CadastroDisciplina() {
     { key: "sex", text: "Sexta-feira", value: "SEXTA" },
     { key: "sab", text: "Sábado", value: "SABADO" },
   ];
-
   useEffect(() => {
-    if (state != null && state.id != null) {
-      axios
-        .get("http://localhost:8080/api/disciplina/" + state.id)
-        .then((response) => {
-          setIdDisciplina(response.data.id);
-          setTurno(response.data.turno);
-          setNome(response.data.nome);
-          setAreaSelecionada(response.data.area);
-          setHorarios(response.data.horarios || []);
+    axios.get("http://localhost:8080/api/professor")
+      .then((res) => {
+        setOpcoesprofessor(res.data.map(p => ({ key: p.id, text: p.nome, value: p.id })));
+      });
+
+    axios.get("http://localhost:8080/api/turma")
+      .then((res) => {
+        setOpcoesTurma(res.data.map(t => ({ 
+          key: t.id, 
+          text: `${t.curso} - ${t.periodo}º Período`, 
+          value: t.id 
+        })));
+      });
+
+    if (state?.id) {
+      axios.get("http://localhost:8080/api/disciplina/" + state.id)
+        .then((res) => {
+          setIdDisciplina(res.data.id);
+          setTurno(res.data.turno);
+          setNome(res.data.nome);
+          setArea(res.data.area);
+          setHorarios(res.data.horarios || []);
+          
+        
+          if (res.data.professor) setProfessor(res.data.professor.id);
+          if (res.data.turma) setTurma(res.data.turma.id);
         });
     }
   }, [state]);
@@ -95,38 +115,37 @@ export default function CadastroDisciplina() {
   };
 
   function salvar() {
-    const algumHorarioIncompleto = horarios.some(
-      (h) => !h.dia || !h.horaInicio || !h.horaFim
-    );
+    const algumHorarioIncompleto = horarios.some(h => !h.dia || !h.horaInicio || !h.horaFim);
 
-    if (!nome || !areaSelecionada || !turno || algumHorarioIncompleto) {
+    if (!nome || !area || !turno || !professor || !turma || algumHorarioIncompleto) {
       notifyWarn("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
-    if (horarios.some((h) => h.horaInicio >= h.horaFim)) {
+    if (horarios.some(h => h.horaInicio >= h.horaFim)) {
       notifyError("Horário de início deve ser anterior ao horário de fim.");
       return;
     }
 
     const disciplinaRequest = {
-      area: areaSelecionada,
+      area: area,
       nome: nome,
       turno: turno,
       horarios: horarios,
+      idProfessor: professor,
+      idTurma: turma,
     };
 
-    if (idDisciplina != null) {
-      axios
-        .put(`http://localhost:8080/api/disciplina/${idDisciplina}`, disciplinaRequest)
-        .then(() => notifySuccess("Disciplina alterada com sucesso."))
-        .catch(() => notifyError("Erro ao alterar a disciplina."));
-    } else {
-      axios
-        .post("http://localhost:8080/api/disciplina", disciplinaRequest)
-        .then(() => notifySuccess("Disciplina cadastrada com sucesso."))
-        .catch(() => notifyError("Erro ao incluir a disciplina."));
-    }
+    const request = idDisciplina 
+      ? axios.put(`http://localhost:8080/api/disciplina/${idDisciplina}`, disciplinaRequest)
+      : axios.post("http://localhost:8080/api/disciplina", disciplinaRequest);
+
+    request
+      .then(() => {
+        notifySuccess(idDisciplina ? "Alterada com sucesso!" : "Cadastrada com sucesso!");
+        setTimeout(() => navigate("/lista-disciplinas"), 1000); // Redireciona após salvar
+      })
+      .catch(() => notifyError("Erro ao processar a operação."));
   }
 
   return (
@@ -148,8 +167,8 @@ export default function CadastroDisciplina() {
                 fluid
                 placeholder="Selecione a área"
                 options={opcoesArea}
-                value={areaSelecionada}
-                onChange={(e, { value }) => setAreaSelecionada(value)}
+                value={area}
+                onChange={(e, { value }) => setArea(value)}
               />
             </Form.Field>
 
@@ -169,6 +188,29 @@ export default function CadastroDisciplina() {
                 options={opcoesTurno}
                 value={turno}
                 onChange={(e, { value }) => setTurno(value)}
+              />
+            </Form.Field>
+            
+                        <Form.Field>
+              <label>Professor:*</label>
+              <Form.Select
+                fluid
+                placeholder="Selecione o professor"
+                options={opcoesprofessor}
+                value={professor}
+                onChange={(e, { value }) => setProfessor(value)}
+                noResultsMessage="Nenhum professor encontrado."
+              />
+            </Form.Field>
+                        <Form.Field>
+              <label>Turma:*</label>
+              <Form.Select
+                fluid
+                placeholder="Selecione a turma"
+                options={opcoesTurma}
+                value={turma}
+                onChange={(e, { value }) => setTurma(value)}
+                noResultsMessage="Nenhuma turma encontrada."
               />
             </Form.Field>
 
