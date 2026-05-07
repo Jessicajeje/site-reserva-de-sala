@@ -7,16 +7,17 @@ import "../logins/estilo.css";
 
 export default function CadastroTurma() {
   const { state } = useLocation();
+  const [idCurso, setIdCurso] = useState();
   const [idTurma, setIdTurma] = useState();
-  const [curso, setCurso] = useState();
-  const [periodo, setPeriodo] = useState();
-
-  const opcoesCurso = [
-    { key: "IPI", text: "Informática para Internet", value: "ipi" },
-    { key: "QUAL", text: "Qualidade", value: "qual" },
-    { key: "ADM", text: "Administração", value: "adm" },
-    { key: "ADS", text: "Análise e desenvolvimento de sistemas", value: "ads" },
+  const [semestreEntrada, setSemestreEntrada] = useState();
+  const [anoEntrada, setAnoEntrada] = useState();
+  const [alunosMatriculados, setAlunosMatriculados] = useState();
+  const [qntMaxAlunos, setQntMaxAlunos] = useState();
+  const semestres = [
+    { key: "1", text: "1", value: "1" },
+    { key: "2", text: "2", value: "2" },
   ];
+  const [opcoesCurso, setOpcoesCurso] = useState([]);
 
   useEffect(() => {
     if (state != null && state.id != null) {
@@ -24,16 +25,31 @@ export default function CadastroTurma() {
         .get("http://localhost:8080/api/turma/" + state.id)
         .then((response) => {
           setIdTurma(response.data.id);
-          setCurso(response.data.curso);
-          setPeriodo(response.data.periodo);
+          setSemestreEntrada(response.data.semestreEntrada);
+          setAnoEntrada(response.data.anoEntrada);
+          setAlunosMatriculados(response.data.alunosMatriculados);
+          setQntMaxAlunos(response.data.qntMaxAlunos);
         });
+
+      axios.get("http://localhost:8080/api/curso").then((response) => {
+        setIdCurso(response.data.id);
+        const cursosFormatados = response.data.map((curso) => ({
+          key: curso.id,
+          text: curso.nome,
+          value: curso.id,
+        }));
+        setOpcoesCurso(cursosFormatados);
+      });
     }
   }, [state]);
 
   function salvar() {
     let turmaRequest = {
-      curso: curso,
-      periodo: periodo,
+      curso: idCurso,
+      semestreEntrada: semestreEntrada,
+      anoEntrada: anoEntrada,
+      alunosMatriculados: alunosMatriculados,
+      qntMaxAlunos: qntMaxAlunos,
     };
 
     if (idTurma != null) {
@@ -42,8 +58,14 @@ export default function CadastroTurma() {
         .then(() => {
           notifySuccess("Turma alterada com sucesso.");
         })
-        .catch(() => {
-          notifyError("Erro ao alterar uma turma.");
+        .catch((error) => {
+          if (error.response.data.errors !== undefined) {
+            for (let i = 0; i < error.response.data.errors.length; i++) {
+              notifyError(error.response.data.errors[i].defaultMessage);
+            }
+          } else {
+            notifyError(error.response.data.message);
+          }
         });
     } else {
       axios
@@ -51,14 +73,24 @@ export default function CadastroTurma() {
         .then(() => {
           notifySuccess("Turma cadastrada com sucesso.");
         })
-        .catch(() => {
-          notifyError("Erro ao incluir a turma.");
+        .catch((error) => {
+          if (error.response.data.errors !== undefined) {
+            for (let i = 0; i < error.response.data.errors.length; i++) {
+              notifyError(error.response.data.errors[i].defaultMessage);
+            }
+          } else {
+            notifyError(error.response.data.message);
+          }
         });
     }
   }
 
   return (
-    <Grid textAlign="center" style={{ height: "100vh", backgroundColor: "#f4f4f4" }} verticalAlign="middle">
+    <Grid
+      textAlign="center"
+      style={{ height: "100vh", backgroundColor: "#f4f4f4" }}
+      verticalAlign="middle"
+    >
       <Grid.Column style={{ maxWidth: 500 }}>
         <Segment raised style={{ padding: "3em" }}>
           <Header as="h1" textAlign="center" style={{ marginBottom: "1.5em" }}>
@@ -66,46 +98,96 @@ export default function CadastroTurma() {
               <h2>
                 <span style={{ color: "darkgray" }}>
                   Cadastro <Icon name="angle double right" size="small" />
-                </span> Turma
+                </span>{" "}
+                Turma
               </h2>
             ) : (
               <h2>
                 <span style={{ color: "darkgray" }}>
                   Alteração <Icon name="angle double right" size="small" />
-                </span> Turma
+                </span>{" "}
+                Turma
               </h2>
             )}
           </Header>
 
           <Form size="large">
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Curso:*</label>
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>
+                Curso:*
+              </label>
               <Form.Select
                 fluid
                 placeholder="Selecione o curso"
                 options={opcoesCurso}
                 required
-                value={curso}
-                onChange={(e, { value }) => setCurso(value)}
+                value={idCurso}
+                onChange={(e, { value }) => setIdCurso(value)}
               />
             </Form.Field>
+            <Form.Group widths="equal">
+              <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+                <label style={{ fontSize: "16px", marginBottom: "10px" }}>
+                  Ano de Entrada:*
+                </label>
+                <Form.Input
+                  fluid
+                  required
+                  type="number"
+                  placeholder="Ex: 2020"
+                  value={anoEntrada}
+                  onChange={(e, { value }) => setAnoEntrada(value)}
+                />
+              </Form.Field>
+              <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+                <label style={{ fontSize: "16px", marginBottom: "10px" }}>
+                  Semestre de Entrada:*
+                </label>
+                <Form.Select
+                  fluid
+                  required
+                  options={semestres}
+                  value={semestreEntrada}
+                  onChange={(e, { value }) => setSemestreEntrada(value)}
+                />
+              </Form.Field>
+            </Form.Group>
 
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Período:*</label>
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>
+                Quantidade Máxima de Alunos:*
+              </label>
               <Form.Input
                 fluid
                 required
                 type="number"
-                placeholder="Ex: 1"
-                value={periodo}
-                onChange={(e, { value }) => setPeriodo(value)}
+                placeholder="Ex: 30"
+                value={qntMaxAlunos}
+                onChange={(e, { value }) => setQntMaxAlunos(value)}
+              />
+            </Form.Field>
+            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>
+                Quantidade de Alunos Matriculados:*
+              </label>
+              <Form.Input
+                fluid
+                required
+                type="number"
+                placeholder="Ex: 25"
+                value={alunosMatriculados}
+                onChange={(e, { value }) => setAlunosMatriculados(value)}
               />
             </Form.Field>
 
             <Button
               fluid
               size="huge"
-              style={{ backgroundColor: "#21ba45", color: "#fff", padding: "15px" }}
+              style={{
+                backgroundColor: "#21ba45",
+                color: "#fff",
+                padding: "15px",
+              }}
               onClick={salvar}
             >
               Concluir

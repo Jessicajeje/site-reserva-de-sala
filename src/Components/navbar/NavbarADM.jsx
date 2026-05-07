@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {  FaHome, FaChalkboardTeacher, FaSchool, FaBook, FaUserCircle } from "react-icons/fa";
+import { FaPaperPlane } from "react-icons/fa6";
 
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -15,7 +16,8 @@ const menuItems = [
   { path: "/turmas", icon: <FaChalkboardTeacher />, label: "Turmas" },
   { path: "/salas", icon: <FaSchool />, label: "Salas / Laboratórios" },
   { path: "/disciplinas", icon: <FaBook />, label: "Disciplinas" },
-  { path: "/professores-ativos", icon: <FaUserCircle />, label: "Professores Ativos" }
+  { path: "/professores-ativos", icon: <FaUserCircle />, label: "Professores Ativos" },
+  { path: "/cursos", icon: <FaPaperPlane />, label: "Cursos" }
 ];
 
  const styles = {

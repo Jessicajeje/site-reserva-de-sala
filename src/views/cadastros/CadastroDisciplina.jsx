@@ -35,15 +35,15 @@ const opcoesHorarios = gerarOpcoesHorarios();
 
 export default function CadastroDisciplina() {
   const { state } = useLocation();
+
   const navigate = useNavigate();
+
   const [idDisciplina, setIdDisciplina] = useState();
   const [nome, setNome] = useState("");
   const [area, setArea] = useState("");
-  const [turno, setTurno] = useState();
-  const [turma, setTurma] = useState(null);
-  const [opcoesTurma, setOpcoesTurma] = useState([]);  
-  const [opcoesprofessor, setOpcoesprofessor] = useState([]);  
-  const [professor, setProfessor] = useState(null);  
+  const [turno, setTurno] = useState();  
+  const[opcoesCurso, setOpcoesCurso] = useState([]);
+  const[curso, setCurso] = useState(null);
   const [horarios, setHorarios] = useState([{ dia: "", horaInicio: "", horaFim: "" }]);
 
   const opcoesTurno = [
@@ -56,7 +56,6 @@ export default function CadastroDisciplina() {
     { key: "adm", text: "Administração", value: "administracao" },
     { key: "qual", text: "Gestão da Qualidade", value: "gestao_qualidade" },
     { key: "tech", text: "Tecnologia da Informação", value: "tecnologia_informacao" },
-    { key: "proc", text: "Processos Gerenciais", value: "processos_gerenciais" },
     { key: "log", text: "Logística", value: "logistica" },
   ];
 
@@ -69,20 +68,15 @@ export default function CadastroDisciplina() {
     { key: "sab", text: "Sábado", value: "SABADO" },
   ];
   useEffect(() => {
-    axios.get("http://localhost:8080/api/professor")
-      .then((res) => {
-        setOpcoesprofessor(res.data.map(p => ({ key: p.id, text: p.nome, value: p.id })));
-      });
 
-    axios.get("http://localhost:8080/api/turma")
+    axios.get("http://localhost:8080/api/curso")
       .then((res) => {
-        setOpcoesTurma(res.data.map(t => ({ 
-          key: t.id, 
-          text: `${t.curso} - ${t.periodo}º Período`, 
-          value: t.id 
+        setOpcoesCurso(res.data.map(c => ({ 
+          key: c.id, 
+          text: `${c.nome} - período:${c.periodo}`, 
+          value: c.id 
         })));
       });
-
     if (state?.id) {
       axios.get("http://localhost:8080/api/disciplina/" + state.id)
         .then((res) => {
@@ -91,10 +85,7 @@ export default function CadastroDisciplina() {
           setNome(res.data.nome);
           setArea(res.data.area);
           setHorarios(res.data.horarios || []);
-          
-        
-          if (res.data.professor) setProfessor(res.data.professor.id);
-          if (res.data.turma) setTurma(res.data.turma.id);
+          setCurso(res.data.curso);
         });
     }
   }, [state]);
@@ -117,7 +108,7 @@ export default function CadastroDisciplina() {
   function salvar() {
     const algumHorarioIncompleto = horarios.some(h => !h.dia || !h.horaInicio || !h.horaFim);
 
-    if (!nome || !area || !turno || !professor || !turma || algumHorarioIncompleto) {
+    if (!nome || !area || !turno || algumHorarioIncompleto) {
       notifyWarn("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
@@ -132,8 +123,7 @@ export default function CadastroDisciplina() {
       nome: nome,
       turno: turno,
       horarios: horarios,
-      idProfessor: professor,
-      idTurma: turma,
+      curso: curso
     };
 
     const request = idDisciplina 
@@ -145,7 +135,16 @@ export default function CadastroDisciplina() {
         notifySuccess(idDisciplina ? "Alterada com sucesso!" : "Cadastrada com sucesso!");
         setTimeout(() => navigate("/lista-disciplinas"), 1000); // Redireciona após salvar
       })
-      .catch(() => notifyError("Erro ao processar a operação."));
+      .catch((error) => {
+        console.error(error);
+        if (error.response.data.errors !== undefined) {
+          for (let i = 0; i < error.response.data.errors.length; i++) {
+            notifyError(error.response.data.errors[i].defaultMessage);
+          }
+        } else {
+          notifyError(error.response.data.message);
+        }
+      });
   }
 
   return (
@@ -192,24 +191,13 @@ export default function CadastroDisciplina() {
             </Form.Field>
             
                         <Form.Field>
-              <label>Professor:*</label>
+              <label>Curso:*</label>
               <Form.Select
                 fluid
-                placeholder="Selecione o professor"
-                options={opcoesprofessor}
-                value={professor}
-                onChange={(e, { value }) => setProfessor(value)}
-                noResultsMessage="Nenhum professor encontrado."
-              />
-            </Form.Field>
-                        <Form.Field>
-              <label>Turma:*</label>
-              <Form.Select
-                fluid
-                placeholder="Selecione a turma"
-                options={opcoesTurma}
-                value={turma}
-                onChange={(e, { value }) => setTurma(value)}
+                placeholder="Selecione o curso"
+                options={opcoesCurso}
+                value={curso}
+                onChange={(e, { value }) => setCurso(value)}
                 noResultsMessage="Nenhuma turma encontrada."
               />
             </Form.Field>

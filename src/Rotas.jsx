@@ -14,6 +14,9 @@ import LoginProfessor from "./views/logins/LoginProfessor";
 import ProfessoresAtivos from "./views/administrador/ProfessoresAtivos";
 import Home from "./views/professor/Home";
 import Perfil from "./views/professor/Perfil";
+import CadastroCurso from "./views/cadastros/CadastroCurso";
+import Cursos from "./views/administrador/Cursos";
+import Reposicao from "./views/professor/Reposicao";
 
 function Rotas() {
   return (
@@ -26,6 +29,8 @@ function Rotas() {
       {/* ROTAS DO ADM (Com Navbar de ADM) */}
       <Route element={<LayoutADM />}>
         <Route path="cadastro-sala" element={<CadastroSala />} />
+        <Route path="cadastro-curso" element={<CadastroCurso />} />
+        <Route path="cursos" element={<Cursos />} />
         <Route path="cadastro-turma" element={<CadastroTurma />} />
         <Route path="cadastro-disciplina" element={<CadastroDisciplina />} />
 
@@ -40,6 +45,7 @@ function Rotas() {
       <Route element={<LayoutProfessor />}>
         <Route path="home" element={<Home />} />
         <Route path="perfil" element={<Perfil />} />
+         <Route path="reposicao" element={<Reposicao />} />
       </Route>
     </Routes>
   );

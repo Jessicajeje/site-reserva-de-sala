@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Table, Button, Header, Icon } from "semantic-ui-react";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import { Button, Header, Icon, Table } from "semantic-ui-react";
+import { notifyError, notifySuccess } from "../util/Util";
 
 export default function ValidarProfessor() {
   const [professores, setProfessores] = useState([]);
@@ -10,7 +11,8 @@ export default function ValidarProfessor() {
   }, []);
 
   function carregarPendentes() {
-    axios.get("http://localhost:8080/api/professor/pendentes")//rota simbólica apenas
+    axios
+      .get("http://localhost:8080/api/professor")
       .then((response) => {
         setProfessores(response.data);
       })
@@ -19,22 +21,24 @@ export default function ValidarProfessor() {
       });
   }
 
-  async function validar(id, status) {
+  async function validar(id) {
     try {
-      await axios.post(`http://localhost:8080/api/professor/validar/${id}`, { status });//rota simbólica apenas
+      await axios.put(`http://localhost:8080/api/professor/validar/${id}`, {
+        ativo: true,
+      });
+
+      notifySuccess("Professor aprovado com sucesso!");
       carregarPendentes();
     } catch (error) {
-      console.log("Erro ao validar professor.");
+      notifyError("Erro ao validar professor.");
     }
   }
 
   return (
-    <div style={{ padding: '2%' }}>
-      <Header as='h2'>
-        <Icon name='user check'/>
-        <Header.Content>
-          Professores aguardando validação
-        </Header.Content>
+    <div style={{ padding: "2%" }}>
+      <Header as="h2">
+        <Icon name="user check" />
+        <Header.Content>Professores aguardando validação</Header.Content>
       </Header>
 
       <Table celled color="green">
@@ -50,7 +54,11 @@ export default function ValidarProfessor() {
         <Table.Body>
           {professores.length === 0 ? (
             <Table.Row>
-              <Table.Cell colSpan='4' textAlign="center" style={{ opacity: 0.5, color: 'grey' }}>
+              <Table.Cell
+                colSpan="4"
+                textAlign="center"
+                style={{ opacity: 0.5, color: "grey" }}
+              >
                 Nenhum professor pendente.
               </Table.Cell>
             </Table.Row>
@@ -61,17 +69,11 @@ export default function ValidarProfessor() {
                 <Table.Cell>{prof.email}</Table.Cell>
                 <Table.Cell>{prof.siape}</Table.Cell>
                 <Table.Cell textAlign="center">
-                  <Button 
-                    color="green" 
-                    icon="check" 
-                    content="Aprovar" 
-                    onClick={() => validar(prof.id, 'APROVADO')} 
-                  />
-                  <Button 
-                    color="red" 
-                    icon="close" 
-                    content="Recusar" 
-                    onClick={() => validar(prof.id, 'RECUSADO')} 
+                  <Button
+                    color="green"
+                    icon="check"
+                    content="Aprovar"
+                    onClick={() => validar(prof.id)}//ativo == true
                   />
                 </Table.Cell>
               </Table.Row>

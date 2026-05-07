@@ -15,13 +15,14 @@ export default function CadastroProfessor() {
 
   const [idProfessor, setIdProfessor] = useState();
   const [nome, setNome] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [siape, setSiape] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [cpf, setCpf] = useState();
+  const [siape, setSiape] = useState();
+  const [email, setEmail] = useState();
+  const [senha, setSenha] = useState();
+  const [confirmarSenha, setConfirmarSenha] = useState();
   const [disciplinas, setDisciplinas] = useState([]);
   const [opcoesDisciplinas, setOpcoesDisciplinas] = useState([]);
+  const [ativo, setAtivo] = useState(false);
 
   const navigate = useNavigate();
 
@@ -86,6 +87,7 @@ export default function CadastroProfessor() {
       siape: siape,
       senha: senha ? senha : null,
       disciplinas: disciplinas,
+      ativo: false
     };
 
     if (idProfessor != null) {
@@ -98,7 +100,16 @@ export default function CadastroProfessor() {
           notifySuccess("Professor alterado com sucesso.");
           setTimeout(() => navigate("/professores-ativos"), 1000);
         })
-        .catch(() => notifyError("Erro ao alterar o professor."));
+        .catch((error) => {
+          console.error(error);
+          if (error.response.data.errors !== undefined) {
+            for (let i = 0; i < error.response.data.errors.length; i++) {
+              notifyError(error.response.data.errors[i].defaultMessage);
+            }
+          } else {
+            notifyError(error.response.data.message);
+          }
+        });
     } else {
       axios
         .post("http://localhost:8080/api/professor", professorRequest)
@@ -108,7 +119,16 @@ export default function CadastroProfessor() {
           );
           setTimeout(() => navigate("/"), 1000);
         })
-        .catch(() => notifyError("Erro ao incluir o professor."));
+        .catch((error) => {
+          console.error(error);
+          if (error.response.data.errors !== undefined) {
+            for (let i = 0; i < error.response.data.errors.length; i++) {
+              notifyError(error.response.data.errors[i].defaultMessage);
+            }
+          } else {
+            notifyError(error.response.data.message);
+          }
+        });
     }
   }
 

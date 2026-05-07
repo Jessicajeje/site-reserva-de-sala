@@ -51,17 +51,31 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
           notifySuccess("Sala alterada com sucesso.");
         })
         .catch((error) => {
-          notifyError("Erro ao alterar uma sala.");
+          console.error(error);
+          if (error.response.data.errors !== undefined) {
+            for (let i = 0; i < error.response.data.errors.length; i++) {
+              notifyError(error.response.data.errors[i].defaultMessage);
+            }
+          } else {
+            notifyError(error.response.data.message);
+          }
         });
     } else {
       axios
         .post("http://localhost:8080/api/sala", salaRequest)
         .then((response) => {
           notifySuccess("Sala cadastrada com sucesso.");
-          
+          setTimeout(() => window.location.reload(), 1000);
         })
         .catch((error) => {
-          notifyError("Erro ao incluir a sala.");
+          console.error(error);
+          if (error.response.data.errors !== undefined) {
+            for (let i = 0; i < error.response.data.errors.length; i++) {
+              notifyError(error.response.data.errors[i].defaultMessage);
+            }
+          } else {
+            notifyError(error.response.data.message);
+          }
         });
     }
   }
