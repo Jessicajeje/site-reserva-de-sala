@@ -29,7 +29,7 @@ export default function CadastroCurso() {
   useEffect(() => {
     if (state != null && state.id != null) {
       axios
-        .get("http://localhost:8080/api/turma/" + state.id)
+        .get("http://localhost:8080/api/curso/" + state.id)
         .then((response) => {
           setIdCurso(response.data.id);
           setNome(response.data.nome);
@@ -63,14 +63,7 @@ export default function CadastroCurso() {
           notifySuccess("Curso cadastrado com sucesso.");
         })
         .catch((error) => {
-          console.error(error);
-           if (error.response.data.errors !== undefined) {
-            for (let i = 0; i < error.response.data.errors.length; i++) {
-              notifyError(error.response.data.errors[i].defaultMessage);
-            }
-          } else {
-            notifyError(error.response.data.message);
-          }
+          notifyError("Erro ao cadastrar um curso.");
         });
     }
   }
