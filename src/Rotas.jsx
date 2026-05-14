@@ -17,6 +17,9 @@ import Perfil from "./views/professor/Perfil";
 import CadastroCurso from "./views/cadastros/CadastroCurso";
 import Cursos from "./views/administrador/Cursos";
 import Reposicao from "./views/professor/Reposicao";
+import CadastroAlocacaoAula from "./views/cadastros/CadastroAlocacaoAula";
+import ListAlocacaoAula from "./views/administrador/ListAlocacaoAula";
+import AlocacaoAula from "./views/administrador/AlocacaoAula";
 
 function Rotas() {
   return (
@@ -33,19 +36,28 @@ function Rotas() {
         <Route path="cursos" element={<Cursos />} />
         <Route path="cadastro-turma" element={<CadastroTurma />} />
         <Route path="cadastro-disciplina" element={<CadastroDisciplina />} />
+        <Route path="cadastro-alocacao-aula" element={<CadastroAlocacaoAula />} />
 
         <Route path="turmas" element={<TurmasCadastradas />} />
         <Route path="disciplinas" element={<DisciplinasCadastradas />} />
         <Route path="salas" element={<SalasCadastradas />} />
         <Route path="validar-prof" element={<ValidarProfessor />} />
         <Route path="professores-ativos" element={<ProfessoresAtivos />} />
+        <Route
+          path="/list-alocacao-aula"
+          element={<ListAlocacaoAula />}
+        />
+        <Route
+          path="/alocacao-aula"
+          element={<AlocacaoAula />}
+        />
       </Route>
 
       {/* ROTAS DO PROFESSOR (Com Navbar de Professor) */}
       <Route element={<LayoutProfessor />}>
         <Route path="home" element={<Home />} />
         <Route path="perfil" element={<Perfil />} />
-         <Route path="reposicao" element={<Reposicao />} />
+        <Route path="reposicao" element={<Reposicao />} />
       </Route>
     </Routes>
   );
