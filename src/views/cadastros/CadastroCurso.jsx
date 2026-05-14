@@ -10,6 +10,7 @@ export default function CadastroCurso() {
   const [idCurso, setIdCurso] = useState();
   const [nome, setNome] = useState();
   const [area, setArea] = useState();
+  const [qtdPeriodos, setQtdPeriodos] = useState();
   const [cargaHoraria, setCargaHoraria] = useState();
     const opcoesArea = [
     { key: "adm", text: "Administração", value: "administracao" },
@@ -43,7 +44,8 @@ export default function CadastroCurso() {
     let cursoRequest = {
       nome: nome,
       cargaHoraria: cargaHoraria,
-      area: area
+      area: area,
+      qtdPeriodos: qtdPeriodos
     };
 
     if (idCurso != null) {

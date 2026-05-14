@@ -47,7 +47,7 @@ const getSemanasDoMes = () => {
     fim.setDate(dataCursor.getDate() + 5);
     const item = {
       key: i,
-     text: `Semana ${i + 1}`,
+      text: `Semana ${i + 1}`,
       value: inicio.getTime(),
     };
     dataCursor.setDate(dataCursor.getDate() + 7);
@@ -103,6 +103,7 @@ export default function Reposicao() {
     horaFim: null,
   });
   const [idReposicao, setIdReposicao] = useState(null);
+  const[lista, setLista] = useState([]);
   const [turnoAtivo, setTurnoAtivo] = useState("Manhã");
   const [dataSelecionada, setDataSelecionada] = useState("");
   const [horaInicio, setHoraInicio] = useState("");
@@ -115,16 +116,18 @@ export default function Reposicao() {
   // REQUISIÇÕES E INICIALIZAÇÃO
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/turma")
-      .then((res) =>
-        setOpcoesTurma(
-          res.data.map((t) => ({ key: t.id, text: t.nome, value: t.id })),
-        ),
-      )
-      .catch((err) =>
-        notifyError("Erro ao carregar turmas. Verifique a conexão."),
+
+     axios.get("http://localhost:8080/api/turma")
+    .then((response) => {
+      setLista(response.data);
+      setOpcoesTurma(
+        response.data.map((t) => ({ key: t.id, text: t.nome, value: t.id }))
       );
+    })
+    .catch((err) => {
+      console.error("Erro ao buscar turmas:", err);
+      notifyError("Erro ao carregar turmas. Verifique a conexão.");
+    });
 
     if (state?.id) {
       axios
@@ -142,7 +145,7 @@ export default function Reposicao() {
   const selecionarHorario = (dia, hora) => {
     const diaStr = dia.toString();
 
-    // 1. Desmarcar: se clicar exatamente no início que já existe
+    //Desmarcar: se clicar exatamente no início que já existe
     if (preview.dia === diaStr && preview.horaInicio === hora) {
       setPreview({ dia: null, horaInicio: null, horaFim: null });
       setDataSelecionada("");
@@ -151,7 +154,7 @@ export default function Reposicao() {
       return;
     }
 
-    // 2. Novo: se mudar de dia ou não houver nada selecionado
+    //Novo: se mudar de dia ou não houver nada selecionado
     if (preview.dia !== diaStr || !preview.horaInicio) {
       const dataLocal = new Date(
         dia.getTime() - dia.getTimezoneOffset() * 60000,
@@ -161,7 +164,7 @@ export default function Reposicao() {
       setHoraInicio(hora);
       setHoraFim(hora);
     }
-    // 3. Esticar: se for no mesmo dia
+    //Esticar: se for no mesmo dia
     else {
       if (hora > preview.horaInicio) {
         setPreview({ ...preview, horaFim: hora });
@@ -260,40 +263,40 @@ export default function Reposicao() {
 
                     const isStart = isSelected && hora === preview.horaInicio;
                     const isEnd = isSelected && hora === preview.horaFim;
-                     return (
-        <Table.Cell
-          key={dia.toString()}
-          selectable
-          onClick={() => selecionarHorario(dia, hora)}
-          style={{
-            height: "60px",
-            position: "relative",
-            cursor: "pointer",
-           
-            backgroundColor: isSelected ? "#e2efda" : (hoje ? "#f8faf8" : "transparent"),
-            borderRadius: isStart ? "8px 8px 0 0" : (isEnd ? "0 0 8px 8px" : "0"),
-            zIndex: isSelected ? 1 : 0
-          }}
-        >
-        
-          {isStart && (
-            <div style={{
-              position: 'absolute',
-              top: 0, left: 0, right: 0, bottom: isEnd ? 0 : -10,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              fontSize: '11px', zIndex: 2
-            }}>
-              <b>Professor</b>
-              <Icon name="user circle" style={{ margin: '2px 0' }} />
-              <span>{horaInicio} - {horaFim}</span>
-            </div>
-          )}
-        </Table.Cell>
-      );
-    })}
-  </Table.Row>
-))}
+                    return (
+                      <Table.Cell
+                        key={dia.toString()}
+                        selectable
+                        onClick={() => selecionarHorario(dia, hora)}
+                        style={{
+                          height: "60px",
+                          position: "relative",
+                          cursor: "pointer",
+
+                          backgroundColor: isSelected ? "#e2efda" : (hoje ? "#f8faf8" : "transparent"),
+                          borderRadius: isStart ? "8px 8px 0 0" : (isEnd ? "0 0 8px 8px" : "0"),
+                          zIndex: isSelected ? 1 : 0
+                        }}
+                      >
+
+                        {isStart && (
+                          <div style={{
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0, bottom: isEnd ? 0 : -10,
+                            display: 'flex', flexDirection: 'column',
+                            alignItems: 'center', justifyContent: 'center',
+                            fontSize: '11px', zIndex: 2
+                          }}>
+                            <b>Professor</b>
+                            <Icon name="user circle" style={{ margin: '2px 0' }} />
+                            <span>{horaInicio} - {horaFim}</span>
+                          </div>
+                        )}
+                      </Table.Cell>
+                    );
+                  })}
+                </Table.Row>
+              ))}
             </Table.Body>
           </Table>
         </Grid.Column>
