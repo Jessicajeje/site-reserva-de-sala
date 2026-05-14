@@ -10,9 +10,6 @@ import "../logins/estilo.css";
 export default function CadastroProfessor() {
   const { state } = useLocation();
 
-  const perfilUsuario = "ADM";
-  const isAdmin = perfilUsuario === "PROF";
-
   const [idProfessor, setIdProfessor] = useState();
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState();
@@ -20,47 +17,24 @@ export default function CadastroProfessor() {
   const [email, setEmail] = useState();
   const [senha, setSenha] = useState();
   const [confirmarSenha, setConfirmarSenha] = useState();
-  const [disciplinas, setDisciplinas] = useState([]);
-  const [opcoesDisciplinas, setOpcoesDisciplinas] = useState([]);
-  const [ativo, setAtivo] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/disciplina")
-      .then((response) => {
-        const formatadas = response.data.map((d) => ({
-          key: d.id,
-          text: d.nome,
-          value: d.id,
-        }));
-        setOpcoesDisciplinas(formatadas);
-      })
-      .catch(() => {
-        notifyError("Erro ao carregar lista de disciplinas.");
-      });
-  }, []);
-
-  useEffect(() => {
-  if (state != null && state.id != null) {
-    axios
-      .get("http://localhost:8080/api/professor/" + state.id)
-      .then((response) => {
-        setIdProfessor(response.data.id);
-        setCpf(response.data.cpf);
-        setNome(response.data.nome);
-        setSiape(response.data.siape);
-        setEmail(response.data.email);
-
-        const listaSemeada = response.data.disciplinas || [];
-        setDisciplinas(listaSemeada.map((d) => d.id));
-
-        setSenha(response.data.senha);
-        setConfirmarSenha(response.data.senha);
-      });
-  }
-}, [state]);
+    if (state != null && state.id != null) {
+      axios
+        .get("http://localhost:8080/api/professor/" + state.id)
+        .then((response) => {
+          setIdProfessor(response.data.id);
+          setCpf(response.data.cpf);
+          setNome(response.data.nome);
+          setSiape(response.data.siape);
+          setEmail(response.data.email);
+          setSenha(response.data.senha);
+          setConfirmarSenha(response.data.senha);
+        });
+    }
+  }, [state]);
 
   function salvar() {
     if (!nome || !email || !siape || !cpf) {
@@ -86,15 +60,14 @@ export default function CadastroProfessor() {
       email: email,
       siape: siape,
       senha: senha ? senha : null,
-      disciplinas: disciplinas,
-      ativo: false
+      ativo: false,
     };
 
     if (idProfessor != null) {
       axios
         .put(
           "http://localhost:8080/api/professor/" + idProfessor,
-          professorRequest,
+          professorRequest
         )
         .then(() => {
           notifySuccess("Professor alterado com sucesso.");
@@ -102,6 +75,7 @@ export default function CadastroProfessor() {
         })
         .catch((error) => {
           console.error(error);
+
           if (error.response.data.errors !== undefined) {
             for (let i = 0; i < error.response.data.errors.length; i++) {
               notifyError(error.response.data.errors[i].defaultMessage);
@@ -115,12 +89,14 @@ export default function CadastroProfessor() {
         .post("http://localhost:8080/api/professor", professorRequest)
         .then(() => {
           notifySuccess(
-            "Cadastrado com sucesso! Aguarde a validação da secretaria.",
+            "Cadastrado com sucesso! Aguarde a validação da secretaria."
           );
+
           setTimeout(() => navigate("/"), 1000);
         })
         .catch((error) => {
           console.error(error);
+
           if (error.response.data.errors !== undefined) {
             for (let i = 0; i < error.response.data.errors.length; i++) {
               notifyError(error.response.data.errors[i].defaultMessage);
@@ -170,6 +146,7 @@ export default function CadastroProfessor() {
 
               <Form.Field>
                 <label>CPF</label>
+
                 <IMaskInput
                   mask="000.000.000-00"
                   value={cpf}
@@ -193,6 +170,7 @@ export default function CadastroProfessor() {
                 value={siape}
                 onChange={(e) => setSiape(e.target.value)}
               />
+
               <Form.Input
                 fluid
                 label="Email"
@@ -226,22 +204,6 @@ export default function CadastroProfessor() {
                   : false
               }
             />
-
-            <Form.Field style={{ marginBottom: "2em" }}>
-              <label>Disciplinas que leciona</label>
-              <Form.Select
-                fluid
-                multiple
-                search
-                selection
-                options={opcoesDisciplinas}
-                placeholder="Selecione as disciplinas"
-                value={disciplinas}
-                noResultsMessage="Nenhuma disciplina encontrada."
-                disabled={!isAdmin} // Se NÃO for admin, o campo fica cinza e travado
-                onChange={(e, { value }) => setDisciplinas(value)}
-              />
-            </Form.Field>
 
             <Button
               fluid

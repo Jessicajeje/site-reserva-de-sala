@@ -7,24 +7,53 @@ import "../logins/estilo.css";
 
 export default function CadastroCurso() {
   const { state } = useLocation();
+
   const [idCurso, setIdCurso] = useState();
   const [nome, setNome] = useState();
   const [area, setArea] = useState();
   const [cargaHoraria, setCargaHoraria] = useState();
-    const opcoesArea = [
+
+  const [disciplinas, setDisciplinas] = useState([]);
+  const [opcoesDisciplinas, setOpcoesDisciplinas] = useState([]);
+
+  const opcoesArea = [
     { key: "adm", text: "Administração", value: "administracao" },
     { key: "qual", text: "Gestão da Qualidade", value: "gestao_qualidade" },
-    { key: "tech", text: "Tecnologia da Informação", value: "tecnologia_informacao" },
+    {
+      key: "tech",
+      text: "Tecnologia da Informação",
+      value: "tecnologia_informacao",
+    },
     { key: "log", text: "Logística", value: "logistica" },
   ];
-
 
   const opcoesCurso = [
     { key: "IPI", text: "Informática para Internet", value: "ipi" },
     { key: "QUAL", text: "Qualidade", value: "qual" },
     { key: "ADM", text: "Administração", value: "adm" },
-    { key: "ADS", text: "Análise e desenvolvimento de sistemas", value: "ads" },
+    {
+      key: "ADS",
+      text: "Análise e desenvolvimento de sistemas",
+      value: "ads",
+    },
   ];
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/disciplina")
+      .then((response) => {
+        const formatadas = response.data.map((d) => ({
+          key: d.id,
+          text: d.nome,
+          value: d.id,
+        }));
+
+        setOpcoesDisciplinas(formatadas);
+      })
+      .catch(() => {
+        notifyError("Erro ao carregar disciplinas.");
+      });
+  }, []);
 
   useEffect(() => {
     if (state != null && state.id != null) {
@@ -35,6 +64,10 @@ export default function CadastroCurso() {
           setNome(response.data.nome);
           setCargaHoraria(response.data.cargaHoraria);
           setArea(response.data.area);
+
+          const listaDisciplinas = response.data.disciplinas || [];
+
+          setDisciplinas(listaDisciplinas.map((d) => d.id));
         });
     }
   }, [state]);
@@ -43,7 +76,8 @@ export default function CadastroCurso() {
     let cursoRequest = {
       nome: nome,
       cargaHoraria: cargaHoraria,
-      area: area
+      area: area,
+      disciplinas: disciplinas,
     };
 
     if (idCurso != null) {
@@ -69,7 +103,11 @@ export default function CadastroCurso() {
   }
 
   return (
-    <Grid textAlign="center" style={{ height: "100vh", backgroundColor: "#f4f4f4" }} verticalAlign="middle">
+    <Grid
+      textAlign="center"
+      style={{ height: "100vh", backgroundColor: "#f4f4f4" }}
+      verticalAlign="middle"
+    >
       <Grid.Column style={{ maxWidth: 500 }}>
         <Segment raised style={{ padding: "3em" }}>
           <Header as="h1" textAlign="center" style={{ marginBottom: "1.5em" }}>
@@ -77,20 +115,27 @@ export default function CadastroCurso() {
               <h2>
                 <span style={{ color: "darkgray" }}>
                   Cadastro <Icon name="angle double right" size="small" />
-                </span> Curso
+                </span>{" "}
+                Curso
               </h2>
             ) : (
               <h2>
                 <span style={{ color: "darkgray" }}>
                   Alteração <Icon name="angle double right" size="small" />
-                </span> Curso
+                </span>{" "}
+                Curso
               </h2>
             )}
           </Header>
 
           <Form size="large">
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Curso:*</label>
+            <Form.Field
+              style={{ marginBottom: "2em", textAlign: "left" }}
+            >
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>
+                Curso:*
+              </label>
+
               <Form.Select
                 fluid
                 placeholder="Selecione o curso"
@@ -101,8 +146,13 @@ export default function CadastroCurso() {
               />
             </Form.Field>
 
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Área:*</label>
+            <Form.Field
+              style={{ marginBottom: "2em", textAlign: "left" }}
+            >
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>
+                Área:*
+              </label>
+
               <Form.Select
                 fluid
                 placeholder="Selecione a área"
@@ -113,22 +163,34 @@ export default function CadastroCurso() {
               />
             </Form.Field>
 
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Carga Horária:*</label>
-              <Form.Input
+            <Form.Field
+              style={{ marginBottom: "2em", textAlign: "left" }}
+            >
+              <label style={{ fontSize: "16px", marginBottom: "10px" }}>
+                Disciplinas
+              </label>
+
+              <Form.Select
                 fluid
-                required
-                type="number"
-                placeholder="Ex: 1"
-                value={cargaHoraria}
-                onChange={(e, { value }) => setCargaHoraria(value)}
+                multiple
+                search
+                selection
+                options={opcoesDisciplinas}
+                placeholder="Selecione as disciplinas"
+                value={disciplinas}
+                noResultsMessage="Nenhuma disciplina encontrada."
+                onChange={(e, { value }) => setDisciplinas(value)}
               />
             </Form.Field>
 
             <Button
               fluid
               size="huge"
-              style={{ backgroundColor: "#21ba45", color: "#fff", padding: "15px" }}
+              style={{
+                backgroundColor: "#21ba45",
+                color: "#fff",
+                padding: "15px",
+              }}
               onClick={salvar}
             >
               Concluir
