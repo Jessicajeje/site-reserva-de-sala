@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
@@ -8,7 +8,7 @@ import '../logins/estilo.css';
 export default function CadastroSala({ lista = [] }) { // Definido como function e exportado diretamente
   const { state } = useLocation();
   const [idSala, setIdSala] = useState();
-  const [blocoSelecionado, setBlocoSelecionado] = useState();
+  const [bloco, setBloco] = useState();
   const [numero, setNumero] = useState();
   const [tipo, setTipo] = useState('sala');
 
@@ -29,7 +29,7 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
         .get("http://localhost:8080/api/sala/" + state.id)
         .then((response) => {
           setIdSala(response.data.id);
-          setBlocoSelecionado(response.data.blocoSelecionado);
+          setBloco(response.data.bloco);
           setNumero(response.data.numero);
           setTipo(response.data.tipo || 'sala');
         });
@@ -40,7 +40,7 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
 
     let salaRequest = {
       numero: numero,
-      blocoSelecionado: blocoSelecionado,
+      bloco: bloco,
       tipo: tipo
     };
 
@@ -103,8 +103,8 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
                 fluid
                 placeholder="Selecione o bloco"
                 options={opcoesBloco}
-                value={blocoSelecionado}
-                onChange={(e, { value }) => setBlocoSelecionado(value)}
+                value={bloco}
+                onChange={(e, { value }) => setBloco(value)}
               />
             </Form.Field>
 
