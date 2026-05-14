@@ -9,15 +9,8 @@ export default function CadastroCurso() {
   const { state } = useLocation();
   const [idCurso, setIdCurso] = useState();
   const [nome, setNome] = useState();
-  const [area, setArea] = useState();
   const [qtdPeriodos, setQtdPeriodos] = useState();
   const [cargaHoraria, setCargaHoraria] = useState();
-    const opcoesArea = [
-    { key: "adm", text: "Administração", value: "administracao" },
-    { key: "qual", text: "Gestão da Qualidade", value: "gestao_qualidade" },
-    { key: "tech", text: "Tecnologia da Informação", value: "tecnologia_informacao" },
-    { key: "log", text: "Logística", value: "logistica" },
-  ];
 
 
   const opcoesCurso = [
@@ -35,7 +28,6 @@ export default function CadastroCurso() {
           setIdCurso(response.data.id);
           setNome(response.data.nome);
           setCargaHoraria(response.data.cargaHoraria);
-          setArea(response.data.area);
         });
     }
   }, [state]);
@@ -44,7 +36,6 @@ export default function CadastroCurso() {
     let cursoRequest = {
       nome: nome,
       cargaHoraria: cargaHoraria,
-      area: area,
       qtdPeriodos: qtdPeriodos
     };
 
@@ -92,9 +83,9 @@ export default function CadastroCurso() {
 
           <Form size="large">
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Curso:*</label>
               <Form.Select
                 fluid
+                label="nome do curso:"
                 placeholder="Selecione o curso"
                 options={opcoesCurso}
                 required
@@ -103,29 +94,19 @@ export default function CadastroCurso() {
               />
             </Form.Field>
 
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Área:*</label>
-              <Form.Select
+              <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+              <Form.Input
                 fluid
-                placeholder="Selecione a área"
-                options={opcoesArea}
+                label = "Quantidade de períodos:"
                 required
-                value={area}
-                onChange={(e, { value }) => setArea(value)}
+                type="number"
+                placeholder="Ex: 6"
+                value={qtdPeriodos}
+                onChange={(e, { value }) => setQtdPeriodos(value)}
               />
             </Form.Field>
 
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Carga Horária:*</label>
-              <Form.Input
-                fluid
-                required
-                type="number"
-                placeholder="Ex: 1"
-                value={cargaHoraria}
-                onChange={(e, { value }) => setCargaHoraria(value)}
-              />
-            </Form.Field>
+
 
             <Button
               fluid

@@ -57,10 +57,10 @@ export default function DisciplinasCadastradas() {
             <Card fluid>
               <Card.Content>
                 <Card.Header>{item.nome}</Card.Header>
-                {/* Lembre-se: Verifique se o seu backend envia 'area' em vez de 'codigo' */}
-                <Card.Meta>{item.area || "Sem área definida"}</Card.Meta>
+                <Card.Meta>Carga Horária: {item.chTotal}h</Card.Meta>
+                <Card.Meta>Período Ofertado: {item.periodoOfertado}</Card.Meta>
                 <Card.Description>
-                   <Icon name="clock outline" /> {item.horarioInicio} - {item.horarioFim}
+                  Curso: {item.curso ? item.curso.nome : 'N/A'}
                 </Card.Description>
               </Card.Content>
 
