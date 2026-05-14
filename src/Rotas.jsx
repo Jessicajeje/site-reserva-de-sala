@@ -16,8 +16,8 @@ import Home from "./views/professor/Home";
 import Perfil from "./views/professor/Perfil";
 import CadastroCurso from "./views/cadastros/CadastroCurso";
 import Cursos from "./views/administrador/Cursos";
-import Reposicao from "./views/professor/Reposicao";
-import CadastroAlocacaoAula from "./views/cadastros/CadastroAlocacaoAula";
+import Reposicao from "./views/professor/Reposicao.jsx";
+import Notificacoes from "./views/professor/Notificacoes";import CadastroAlocacaoAula from "./views/cadastros/CadastroAlocacaoAula";
 import ListAlocacaoAula from "./views/administrador/ListAlocacaoAula";
 import AlocacaoAula from "./views/administrador/AlocacaoAula";
 
@@ -57,6 +57,7 @@ function Rotas() {
       <Route element={<LayoutProfessor />}>
         <Route path="home" element={<Home />} />
         <Route path="perfil" element={<Perfil />} />
+        <Route path="notificacoes" element={<Notificacoes/>} />
         <Route path="reposicao" element={<Reposicao />} />
       </Route>
     </Routes>
