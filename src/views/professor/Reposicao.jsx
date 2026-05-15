@@ -103,11 +103,12 @@ export default function Reposicao() {
     horaFim: null,
   });
   const [idReposicao, setIdReposicao] = useState(null);
-  const[lista, setLista] = useState([]);
+  const [lista, setLista] = useState([]);
   const [turnoAtivo, setTurnoAtivo] = useState("Manhã");
   const [dataSelecionada, setDataSelecionada] = useState("");
   const [horaInicio, setHoraInicio] = useState("");
   const [horaFim, setHoraFim] = useState("");
+  const [sala, setSala] = useState("");
   const [turma, setTurma] = useState("");
   const [opcoesTurma, setOpcoesTurma] = useState([]);
 
@@ -116,18 +117,28 @@ export default function Reposicao() {
   // REQUISIÇÕES E INICIALIZAÇÃO
 
   useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/turma")
+      .then((response) => {
+        setLista(response.data);
+        setOpcoesTurma(
+          response.data.map((t) => ({ key: t.id, text: t.nome, value: t.id })),
+        );
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar turmas:", err);
+        notifyError("Erro ao carregar turmas. Verifique a conexão.");
+      });
 
-     axios.get("http://localhost:8080/api/turma")
-    .then((response) => {
-      setLista(response.data);
-      setOpcoesTurma(
-        response.data.map((t) => ({ key: t.id, text: t.nome, value: t.id }))
-      );
-    })
-    .catch((err) => {
-      console.error("Erro ao buscar turmas:", err);
-      notifyError("Erro ao carregar turmas. Verifique a conexão.");
-    });
+    axios
+      .get("http://localhost:8080/api/sala")
+      .then((response) => {
+        setSala(response.data);
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar salas:", err);
+        notifyError("Erro ao carregar salas. Verifique a conexão.");
+      });
 
     if (state?.id) {
       axios
@@ -138,6 +149,7 @@ export default function Reposicao() {
           setHoraInicio(res.data.horaInicio || "");
           setHoraFim(res.data.horaFim || "");
           setTurma(res.data.turma || "");
+          setSala(res.data.sala || "");
         });
     }
   }, [state]);
@@ -193,18 +205,37 @@ export default function Reposicao() {
       );
   };
   return (
-    <div style={{ padding: "2% 5%" }}>
+    <div style={{ padding: "2% 4%", fontFamily: "sans-serif" }}>
       <Header as="h2" dividing>
         <Icon name="calendar alternate outline" /> Reposição de Aulas
       </Header>
 
-      <Grid stackable columns={2}>
-        <Grid.Column width={11}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          gap: "40px",
+          alignItems: "flex-start",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* PAINEL ESQUERDO: Calendário e Seletores */}
+        <div
+          style={{
+            flex: "1",
+            minWidth: "0",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Topo do calendário */}
           <div
             style={{
               marginBottom: "1.5em",
               display: "flex",
               justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
             <Select
@@ -213,7 +244,7 @@ export default function Reposicao() {
               value={semanaSelecionada}
               onChange={(e, { value }) => setSemanaSelecionada(value)}
             />
-            <Button.Group>
+            <Button.Group size="small">
               {Object.keys(horariosTurno).map((t) => (
                 <Button
                   key={t}
@@ -227,83 +258,157 @@ export default function Reposicao() {
             </Button.Group>
           </div>
 
-          <Table celled definition textAlign="center" color="green">
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell />
-                {diasExibidos.map((dia) => {
-                  const info = formatarDia(dia);
-                  const hoje = eHoje(dia);
-                  return (
-                    <Table.HeaderCell
-                      key={dia.toString()}
-                      style={{ backgroundColor: hoje ? "#e8f0e3" : "#f9fafb" }}
-                    >
-                      {info.nome} <br /> {info.data}
-                    </Table.HeaderCell>
-                  );
-                })}
-              </Table.Row>
-            </Table.Header>
-
-            <Table.Body>
-              {horariosTurno[turnoAtivo].map((hora) => (
-                <Table.Row key={hora}>
-                  <Table.Cell collapsing>
-                    <b>{hora}</b>
-                  </Table.Cell>
+          <div
+            style={{
+              width: "100%",
+              overflowX: "auto",
+            }}
+          >
+            <Table
+              celled
+              definition
+              textAlign="center"
+              color="green"
+              style={{ minWidth: "700px", margin: 0 }}
+            >
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell style={{ width: "80px" }} />
                   {diasExibidos.map((dia) => {
-                    const diaStr = dia.toString();
+                    const info = formatarDia(dia);
                     const hoje = eHoje(dia);
-
-                    const isSelected =
-                      preview.dia === diaStr &&
-                      hora >= preview.horaInicio &&
-                      hora <= preview.horaFim;
-
-                    const isStart = isSelected && hora === preview.horaInicio;
-                    const isEnd = isSelected && hora === preview.horaFim;
                     return (
-                      <Table.Cell
+                      <Table.HeaderCell
                         key={dia.toString()}
-                        selectable
-                        onClick={() => selecionarHorario(dia, hora)}
                         style={{
-                          height: "60px",
-                          position: "relative",
-                          cursor: "pointer",
-
-                          backgroundColor: isSelected ? "#e2efda" : (hoje ? "#f8faf8" : "transparent"),
-                          borderRadius: isStart ? "8px 8px 0 0" : (isEnd ? "0 0 8px 8px" : "0"),
-                          zIndex: isSelected ? 1 : 0
+                          backgroundColor: hoje ? "#e8f0e3" : "#f9fafb",
                         }}
                       >
-
-                        {isStart && (
-                          <div style={{
-                            position: 'absolute',
-                            top: 0, left: 0, right: 0, bottom: isEnd ? 0 : -10,
-                            display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', justifyContent: 'center',
-                            fontSize: '11px', zIndex: 2
-                          }}>
-                            <b>Professor</b>
-                            <Icon name="user circle" style={{ margin: '2px 0' }} />
-                            <span>{horaInicio} - {horaFim}</span>
-                          </div>
-                        )}
-                      </Table.Cell>
+                        {info.nome} <br /> {info.data}
+                      </Table.HeaderCell>
                     );
                   })}
                 </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
-        </Grid.Column>
+              </Table.Header>
 
-        <Grid.Column width={5}>
-          <Segment raised>
-            <Header as="h3" textAlign="center">
+              <Table.Body>
+                {horariosTurno[turnoAtivo].map((hora) => (
+                  <Table.Row key={hora}>
+                    <Table.Cell collapsing>
+                      <b>{hora}</b>
+                    </Table.Cell>
+                    {diasExibidos.map((dia) => {
+                      const diaStr = dia.toString();
+                      const hoje = eHoje(dia);
+
+                      const isSelected =
+                        preview.dia === diaStr &&
+                        hora >= preview.horaInicio &&
+                        hora <= preview.horaFim;
+
+                      const isStart = isSelected && hora === preview.horaInicio;
+                      const isEnd = isSelected && hora === preview.horaFim;
+                      return (
+                        <Table.Cell
+                          key={dia.toString()}
+                          selectable
+                          onClick={() => selecionarHorario(dia, hora)}
+                          style={{
+                            height: "60px",
+                            position: "relative",
+                            cursor: "pointer",
+                            backgroundColor: isSelected
+                              ? "#e2efda"
+                              : hoje
+                                ? "#f8faf8"
+                                : "transparent",
+                            borderRadius: isStart
+                              ? "8px 8px 0 0"
+                              : isEnd
+                                ? "0 0 8px 8px"
+                                : "0",
+                            zIndex: isSelected ? 1 : 0,
+                          }}
+                        >
+                          {isStart && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: isEnd ? 0 : -10,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "11px",
+                                zIndex: 2,
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <b>Professor</b>
+                              <Icon
+                                name="user circle"
+                                style={{ margin: "1px 0" }}
+                              />
+                              <span>
+                                {horaInicio} - {horaFim}
+                              </span>
+                            </div>
+                          )}
+                        </Table.Cell>
+                      );
+                    })}
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </div>  
+
+        {/* NOVA SEÇÃO: LISTAGEM DE SALAS ABAIXO DO CALENDÁRIO */}
+        <div style={{ marginTop: "1em" }}>
+          <Header as="h3" style={{ marginBottom: "1em" }}>
+            <Icon name="building outline" /> Salas Disponíveis
+          </Header>
+          
+          {sala.length === 0 ? (
+            <Segment textAlign="center" secondary style={{ color: "grey" }}>
+              Nenhuma sala encontrada ou carregando...
+            </Segment>
+          ) : (
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+              gap: "16px",
+              width: "100%"
+            }}>
+              {sala.map((sala) => (
+                <Segment key={sala.id} raised style={{ margin: 0, borderRadius: "8px" }}>
+                  <Header as="h4" color="green" style={{ margin: 0 }}>
+                    {sala.nome || `Sala ${sala.numero}`}
+                  </Header>
+                  <div style={{ marginTop: "8px", fontSize: "12px", color: "dimgrey" }}>
+                    <p style={{ margin: "2px 0" }}><b>Bloco:</b> {sala.bloco || "N/A"}</p>
+                    <p style={{ margin: "2px 0" }}><b>Capacidade:</b> {sala.capacidade || "0"} Alunos</p>
+                  </div>
+                </Segment>
+              ))}
+            </div>
+          )}
+        </div>
+        </div>
+       
+
+        <div
+          style={{
+            width: "320px",
+            marginTop: "3.3em",
+          }}
+        >
+          <Segment raised style={{ width: "100%", boxSizing: "border-box" }}>
+            <Header as="h3" textAlign="center" style={{ marginBottom: "1em" }}>
               Agendar Reposição
             </Header>
             <Form>
@@ -313,10 +418,28 @@ export default function Reposicao() {
                 value={dataSelecionada}
                 onChange={(e) => setDataSelecionada(e.target.value)}
               />
-              <Form.Group widths="equal">
-                <Form.Input label="Início" value={horaInicio} readOnly />
-                <Form.Input label="Fim" value={horaFim} readOnly />
-              </Form.Group>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  marginBottom: "1em",
+                  width: "100%",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <Form.Input
+                    label="Início"
+                    value={horaInicio}
+                    readOnly
+                    fluid
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <Form.Input label="Fim" value={horaFim} readOnly fluid />
+                </div>
+              </div>
+              <Form.Input label="Sala" value={sala} readOnly fluid />
               <Form.Select
                 label="Turma"
                 placeholder="Selecione"
@@ -324,18 +447,20 @@ export default function Reposicao() {
                 value={turma}
                 onChange={(e, { value }) => setTurma(value)}
               />
+
               <Button
                 fluid
                 size="large"
                 color="green"
                 onClick={salvarAgendamento}
+                style={{ marginTop: "1.2em" }}
               >
                 {idReposicao ? "Salvar Alteração" : "Confirmar Reposição"}
               </Button>
             </Form>
           </Segment>
-        </Grid.Column>
-      </Grid>
+        </div>
+      </div>
     </div>
   );
 }

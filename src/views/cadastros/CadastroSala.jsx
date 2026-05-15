@@ -100,9 +100,9 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
 
           <Form size="large">
             <Form.Field style={{ marginBottom: "1.5em" }}>
-              <label>A qual bloco a sala pertence?:*</label>
               <Form.Select
                 fluid
+                label="Bloco:"
                 placeholder="Selecione o bloco"
                 options={opcoesBloco}
                 value={bloco}
@@ -111,8 +111,8 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
             </Form.Field>
 
             <Form.Field style={{ marginBottom: '15px' }}>
-              <label>Número da sala:*</label>
               <Form.Input
+              label="Número da sala:"
                 fluid
                 type="number"
                 value={numero}
