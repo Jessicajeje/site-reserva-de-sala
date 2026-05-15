@@ -66,7 +66,8 @@ export default function Cursos() {
                 <Table.Header>
                   <Table.Row>
                     <Table.HeaderCell>Curso</Table.HeaderCell>
-                    <Table.HeaderCell>Período</Table.HeaderCell>
+                    <Table.HeaderCell>Área</Table.HeaderCell>
+                    <Table.HeaderCell>Total de períodos</Table.HeaderCell>
                     <Table.HeaderCell textAlign="center">Ações</Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -74,8 +75,9 @@ export default function Cursos() {
                 <Table.Body>
                   {lista.map((curso) => (
                     <Table.Row key={curso.id}>
-                      <Table.Cell>{curso.curso}</Table.Cell>
-                      <Table.Cell>{curso.periodo}</Table.Cell>
+                      <Table.Cell>{curso.nome}</Table.Cell>
+                      <Table.Cell>{curso.area}</Table.Cell>
+                      <Table.Cell>{curso.qtdPeriodos}</Table.Cell>
 
                       <Table.Cell textAlign="center">
                         <Button

@@ -15,8 +15,10 @@ export default function ProfessoresAtivos() {
 
   function carregarLista() {
     axios.get("http://localhost:8080/api/professor").then((response) => {
-      //const ativos = response.data.filter(prof => prof.status === 'APROVADO');
-      setLista(response.data);
+      const professoresAtivos = response.data.filter(
+        (professor) => professor.ativo === true,
+      );
+      setLista(professoresAtivos);
     });
   }
 
@@ -50,7 +52,7 @@ export default function ProfessoresAtivos() {
         <Divider />
 
         <div style={{ marginTop: "3%", padding: "2%" }}>
-          {(!lista || lista.length === 0) ? (
+          {!lista || lista.length === 0 ? (
             <div style={{ textAlign: "center", marginTop: "5%" }}>
               <h3 style={{ opacity: 0.5, color: "grey" }}>
                 Nenhum professor cadastrado ainda.

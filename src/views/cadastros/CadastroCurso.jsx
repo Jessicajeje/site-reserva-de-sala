@@ -2,21 +2,24 @@ import { Button, Form, Grid, Segment, Header, Icon } from "semantic-ui-react";
 import axios from "axios";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../logins/estilo.css";
 
 export default function CadastroCurso() {
   const { state } = useLocation();
   const [idCurso, setIdCurso] = useState();
   const [nome, setNome] = useState();
+  const [qtdPeriodos, setQtdPeriodos] = useState();
   const [area, setArea] = useState();
-  const [cargaHoraria, setCargaHoraria] = useState();
-    const opcoesArea = [
-    { key: "adm", text: "Administração", value: "administracao" },
-    { key: "qual", text: "Gestão da Qualidade", value: "gestao_qualidade" },
-    { key: "tech", text: "Tecnologia da Informação", value: "tecnologia_informacao" },
-    { key: "log", text: "Logística", value: "logistica" },
+  const navigate = useNavigate();
+  const opcoesArea = [
+    { key: "TI", text: "Tecnologia da Informação", value: "ti" },
+    { key: "ADM", text: "Administração", value: "adm" },
+    { key: "LOGS", text: "Logística", value: "logs" },
+    { key: "COM", text: "Comércio", value: "com" },
+    { key: "QUA", text: "Qualidade", value: "qual" },
   ];
+  
 
 
   const opcoesCurso = [
@@ -29,12 +32,12 @@ export default function CadastroCurso() {
   useEffect(() => {
     if (state != null && state.id != null) {
       axios
-        .get("http://localhost:8080/api/turma/" + state.id)
+        .get("http://localhost:8080/api/curso/" + state.id)
         .then((response) => {
           setIdCurso(response.data.id);
           setNome(response.data.nome);
-          setCargaHoraria(response.data.cargaHoraria);
           setArea(response.data.area);
+          setQtdPeriodos(response.data.qtdPeriodos);
         });
     }
   }, [state]);
@@ -42,8 +45,8 @@ export default function CadastroCurso() {
   function salvar() {
     let cursoRequest = {
       nome: nome,
-      cargaHoraria: cargaHoraria,
-      area: area
+      area: area,
+      qtdPeriodos: qtdPeriodos
     };
 
     if (idCurso != null) {
@@ -51,6 +54,7 @@ export default function CadastroCurso() {
         .put("http://localhost:8080/api/curso/" + idCurso, cursoRequest)
         .then(() => {
           notifySuccess("Curso alterado com sucesso.");
+          navigate("/cursos");
         })
         .catch((error) => {
           console.error(error);
@@ -61,16 +65,10 @@ export default function CadastroCurso() {
         .post("http://localhost:8080/api/curso", cursoRequest)
         .then(() => {
           notifySuccess("Curso cadastrado com sucesso.");
+          navigate("/cursos");
         })
         .catch((error) => {
-          console.error(error);
-           if (error.response.data.errors !== undefined) {
-            for (let i = 0; i < error.response.data.errors.length; i++) {
-              notifyError(error.response.data.errors[i].defaultMessage);
-            }
-          } else {
-            notifyError(error.response.data.message);
-          }
+          notifyError("Erro ao cadastrar um curso.");
         });
     }
   }
@@ -97,9 +95,9 @@ export default function CadastroCurso() {
 
           <Form size="large">
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Curso:*</label>
               <Form.Select
                 fluid
+                label="nome do curso:"
                 placeholder="Selecione o curso"
                 options={opcoesCurso}
                 required
@@ -107,30 +105,31 @@ export default function CadastroCurso() {
                 onChange={(e, { value }) => setNome(value)}
               />
             </Form.Field>
-
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Área:*</label>
+              <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
               <Form.Select
                 fluid
-                placeholder="Selecione a área"
-                options={opcoesArea}
+                label = "Área:"
                 required
+                options={opcoesArea}
+                placeholder="Selecione a área"
                 value={area}
                 onChange={(e, { value }) => setArea(value)}
               />
             </Form.Field>
 
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>Carga Horária:*</label>
+              <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
               <Form.Input
                 fluid
+                label = "Quantidade de períodos:"
                 required
                 type="number"
-                placeholder="Ex: 1"
-                value={cargaHoraria}
-                onChange={(e, { value }) => setCargaHoraria(value)}
+                placeholder="Ex: 6"
+                value={qtdPeriodos}
+                onChange={(e, { value }) => setQtdPeriodos(value)}
               />
             </Form.Field>
+
+
 
             <Button
               fluid

@@ -1,12 +1,13 @@
 import axios from "axios";
-import { useEffect, useState } from 'react';
-import { useLocation } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
 import '../logins/estilo.css';
 
 export default function CadastroSala({ lista = [] }) { // Definido como function e exportado diretamente
   const { state } = useLocation();
+  const navigate = useNavigate();
   const [idSala, setIdSala] = useState();
   const [bloco, setBloco] = useState();
   const [numero, setNumero] = useState();
@@ -49,6 +50,7 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
         .put("http://localhost:8080/api/sala/" + idSala, salaRequest)
         .then((response) => {
           notifySuccess("Sala alterada com sucesso.");
+          setTimeout(() => navigate("/salas"), 1000);
         })
         .catch((error) => {
           console.error(error);
@@ -65,7 +67,7 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
         .post("http://localhost:8080/api/sala", salaRequest)
         .then((response) => {
           notifySuccess("Sala cadastrada com sucesso.");
-          setTimeout(() => window.location.reload(), 1000);
+          setTimeout(() => navigate("/salas"), 1000);
         })
         .catch((error) => {
           console.error(error);
@@ -98,9 +100,9 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
 
           <Form size="large">
             <Form.Field style={{ marginBottom: "1.5em" }}>
-              <label>A qual bloco a sala pertence?:*</label>
               <Form.Select
                 fluid
+                label="Bloco:"
                 placeholder="Selecione o bloco"
                 options={opcoesBloco}
                 value={bloco}
@@ -109,8 +111,8 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
             </Form.Field>
 
             <Form.Field style={{ marginBottom: '15px' }}>
-              <label>Número da sala:*</label>
               <Form.Input
+              label="Número da sala:"
                 fluid
                 type="number"
                 value={numero}

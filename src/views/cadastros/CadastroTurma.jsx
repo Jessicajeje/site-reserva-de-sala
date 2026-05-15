@@ -9,6 +9,7 @@ export default function CadastroTurma() {
   const { state } = useLocation();
   const [idCurso, setIdCurso] = useState();
   const [idTurma, setIdTurma] = useState();
+  const [nome, setNome] = useState();
   const [semestreEntrada, setSemestreEntrada] = useState();
   const [anoEntrada, setAnoEntrada] = useState();
   const [alunosMatriculados, setAlunosMatriculados] = useState();
@@ -25,6 +26,7 @@ export default function CadastroTurma() {
         .get("http://localhost:8080/api/turma/" + state.id)
         .then((response) => {
           setIdTurma(response.data.id);
+          setNome(response.data.nome);
           setSemestreEntrada(response.data.semestreEntrada);
           setAnoEntrada(response.data.anoEntrada);
           setAlunosMatriculados(response.data.alunosMatriculados);
@@ -45,6 +47,7 @@ export default function CadastroTurma() {
 
   function salvar() {
     let turmaRequest = {
+      nome: nome,
       curso: idCurso,
       semestreEntrada: semestreEntrada,
       anoEntrada: anoEntrada,
@@ -113,11 +116,17 @@ export default function CadastroTurma() {
 
           <Form size="large">
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>
-                Curso:*
-              </label>
+              <Form.Input
+                fluid
+                label="Nome da turma:"
+                placeholder="ex: ads-2020.2"
+
+                value={nome}
+                onChange={(e, { value }) => setNome(value)}
+              />
               <Form.Select
                 fluid
+                label="Curso:"
                 placeholder="Selecione o curso"
                 options={opcoesCurso}
                 required
@@ -127,11 +136,9 @@ export default function CadastroTurma() {
             </Form.Field>
             <Form.Group widths="equal">
               <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-                <label style={{ fontSize: "16px", marginBottom: "10px" }}>
-                  Ano de Entrada:*
-                </label>
                 <Form.Input
                   fluid
+                  label="Ano de Entrada:"
                   required
                   type="number"
                   placeholder="Ex: 2020"
@@ -140,11 +147,9 @@ export default function CadastroTurma() {
                 />
               </Form.Field>
               <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-                <label style={{ fontSize: "16px", marginBottom: "10px" }}>
-                  Semestre de Entrada:*
-                </label>
                 <Form.Select
                   fluid
+                  label="Semestre de Entrada:"
                   required
                   options={semestres}
                   value={semestreEntrada}
@@ -154,11 +159,9 @@ export default function CadastroTurma() {
             </Form.Group>
 
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>
-                Quantidade Máxima de Alunos:*
-              </label>
               <Form.Input
                 fluid
+                label="Quantidade Máxima de Alunos:"
                 required
                 type="number"
                 placeholder="Ex: 30"
@@ -167,10 +170,8 @@ export default function CadastroTurma() {
               />
             </Form.Field>
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <label style={{ fontSize: "16px", marginBottom: "10px" }}>
-                Quantidade de Alunos Matriculados:*
-              </label>
               <Form.Input
+                label="Quantidade de Alunos Matriculados:"
                 fluid
                 required
                 type="number"
