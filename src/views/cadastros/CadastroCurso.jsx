@@ -2,7 +2,7 @@ import { Button, Form, Grid, Segment, Header, Icon } from "semantic-ui-react";
 import axios from "axios";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../logins/estilo.css";
 
 export default function CadastroCurso() {
@@ -10,7 +10,16 @@ export default function CadastroCurso() {
   const [idCurso, setIdCurso] = useState();
   const [nome, setNome] = useState();
   const [qtdPeriodos, setQtdPeriodos] = useState();
-  const [cargaHoraria, setCargaHoraria] = useState();
+  const [area, setArea] = useState();
+  const navigate = useNavigate();
+  const opcoesArea = [
+    { key: "TI", text: "Tecnologia da Informação", value: "ti" },
+    { key: "ADM", text: "Administração", value: "adm" },
+    { key: "LOGS", text: "Logística", value: "logs" },
+    { key: "COM", text: "Comércio", value: "com" },
+    { key: "QUA", text: "Qualidade", value: "qual" },
+  ];
+  
 
 
   const opcoesCurso = [
@@ -27,7 +36,8 @@ export default function CadastroCurso() {
         .then((response) => {
           setIdCurso(response.data.id);
           setNome(response.data.nome);
-          setCargaHoraria(response.data.cargaHoraria);
+          setArea(response.data.area);
+          setQtdPeriodos(response.data.qtdPeriodos);
         });
     }
   }, [state]);
@@ -35,7 +45,7 @@ export default function CadastroCurso() {
   function salvar() {
     let cursoRequest = {
       nome: nome,
-      cargaHoraria: cargaHoraria,
+      area: area,
       qtdPeriodos: qtdPeriodos
     };
 
@@ -44,6 +54,7 @@ export default function CadastroCurso() {
         .put("http://localhost:8080/api/curso/" + idCurso, cursoRequest)
         .then(() => {
           notifySuccess("Curso alterado com sucesso.");
+          navigate("/cursos");
         })
         .catch((error) => {
           console.error(error);
@@ -54,6 +65,7 @@ export default function CadastroCurso() {
         .post("http://localhost:8080/api/curso", cursoRequest)
         .then(() => {
           notifySuccess("Curso cadastrado com sucesso.");
+          navigate("/cursos");
         })
         .catch((error) => {
           notifyError("Erro ao cadastrar um curso.");
@@ -91,6 +103,17 @@ export default function CadastroCurso() {
                 required
                 value={nome}
                 onChange={(e, { value }) => setNome(value)}
+              />
+            </Form.Field>
+              <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+              <Form.Select
+                fluid
+                label = "Área:"
+                required
+                options={opcoesArea}
+                placeholder="Selecione a área"
+                value={area}
+                onChange={(e, { value }) => setArea(value)}
               />
             </Form.Field>
 

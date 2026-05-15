@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation} from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess, notifyWarn } from "../../views/util/Util";
 import "../logins/estilo.css";
@@ -14,7 +14,6 @@ export default function CadastroDisciplina() {
 
   const [idDisciplina, setIdDisciplina] = useState();
   const [nome, setNome] = useState("");
-  const [turno, setTurno] = useState();
   const [opcoesCurso, setOpcoesCurso] = useState([]);
   const [idCurso, setIdCurso] = useState(null);
   const [periodoOfertado, setPeriodoOfertado] = useState();
