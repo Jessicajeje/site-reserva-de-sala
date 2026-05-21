@@ -1,37 +1,11 @@
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation} from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess, notifyWarn } from "../../views/util/Util";
 import "../logins/estilo.css";
-
-//sistema de horários de 45 em 45 minutos
-const gerarOpcoesHorarios = () => {
-  const horarios = [];
-  let data = new Date();
-  data.setHours(7, 0, 0, 0); // Inicia às 07:00
-  while (
-    data.getHours() < 22 ||
-    (data.getHours() === 22 && data.getMinutes() === 0)
-  ) {
-    const horarioFormatado = data.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    horarios.push({
-      key: horarioFormatado,
-      text: horarioFormatado,
-      value: horarioFormatado,
-    });
-
-    data.setMinutes(data.getMinutes() + 45); // Pula 45 minutos
-  }
-  return horarios;
-};
-
-const opcoesHorarios = gerarOpcoesHorarios();
+import { set } from "date-fns";
 
 export default function CadastroDisciplina() {
   const { state } = useLocation();
@@ -40,24 +14,10 @@ export default function CadastroDisciplina() {
 
   const [idDisciplina, setIdDisciplina] = useState();
   const [nome, setNome] = useState("");
-  const [area, setArea] = useState("");
-  const [turno, setTurno] = useState();  
-  const[opcoesCurso, setOpcoesCurso] = useState([]);
-  const[curso, setCurso] = useState(null);
-  const [horarios, setHorarios] = useState([{ dia: "", horaInicio: "", horaFim: "" }]);
-
-  const opcoesTurno = [
-    { key: "manha", text: "Manhã", value: "manha" },
-    { key: "tarde", text: "Tarde", value: "tarde" },
-    { key: "noite", text: "Noite", value: "noite" },
-  ];
-
-  const opcoesArea = [
-    { key: "adm", text: "Administração", value: "administracao" },
-    { key: "qual", text: "Gestão da Qualidade", value: "gestao_qualidade" },
-    { key: "tech", text: "Tecnologia da Informação", value: "tecnologia_informacao" },
-    { key: "log", text: "Logística", value: "logistica" },
-  ];
+  const [opcoesCurso, setOpcoesCurso] = useState([]);
+  const [idCurso, setIdCurso] = useState(null);
+  const [periodoOfertado, setPeriodoOfertado] = useState();
+  const [chTotal, setChTotal] = useState();
 
   const opcoesDias = [
     { key: "seg", text: "Segunda-feira", value: "SEGUNDA" },
@@ -71,69 +31,46 @@ export default function CadastroDisciplina() {
 
     axios.get("http://localhost:8080/api/curso")
       .then((res) => {
-        setOpcoesCurso(res.data.map(c => ({ 
-          key: c.id, 
-          text: `${c.nome} - período:${c.periodo}`, 
-          value: c.id 
+        setOpcoesCurso(res.data.map(c => ({
+          key: c.id,
+          text: `${c.nome} - períodos: ${ c.qtdPeriodos}`,
+          value: c.id
         })));
       });
     if (state?.id) {
       axios.get("http://localhost:8080/api/disciplina/" + state.id)
         .then((res) => {
           setIdDisciplina(res.data.id);
-          setTurno(res.data.turno);
+          setChTotal(res.data.chTotal);
+          setPeriodoOfertado(res.data.periodoOfertado);
           setNome(res.data.nome);
-          setArea(res.data.area);
-          setHorarios(res.data.horarios || []);
-          setCurso(res.data.curso);
+          setIdCurso(res.data.idCurso);
         });
     }
   }, [state]);
-//crud horarios
-  const adicionarHorario = () => {
-    setHorarios([...horarios, { dia: "", horaInicio: "", horaFim: "" }]);
-  };
-
-  const removerHorario = (index) => {
-    const novosHorarios = horarios.filter((_, i) => i !== index);
-    setHorarios(novosHorarios);
-  };
-
-  const atualizarHorario = (index, campo, valor) => {
-    const novosHorarios = [...horarios];
-    novosHorarios[index][campo] = valor;
-    setHorarios(novosHorarios);
-  };
 
   function salvar() {
-    const algumHorarioIncompleto = horarios.some(h => !h.dia || !h.horaInicio || !h.horaFim);
 
-    if (!nome || !area || !turno || algumHorarioIncompleto) {
+    if (!nome || !chTotal || !idCurso ) {
       notifyWarn("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
-    if (horarios.some(h => h.horaInicio >= h.horaFim)) {
-      notifyError("Horário de início deve ser anterior ao horário de fim.");
-      return;
-    }
-
     const disciplinaRequest = {
-      area: area,
       nome: nome,
-      turno: turno,
-      horarios: horarios,
-      curso: curso
+      chTotal: chTotal,
+    periodoOfertado: periodoOfertado,
+      idCurso: idCurso
     };
 
-    const request = idDisciplina 
+    const request = idDisciplina
       ? axios.put(`http://localhost:8080/api/disciplina/${idDisciplina}`, disciplinaRequest)
       : axios.post("http://localhost:8080/api/disciplina", disciplinaRequest);
 
     request
       .then(() => {
         notifySuccess(idDisciplina ? "Alterada com sucesso!" : "Cadastrada com sucesso!");
-        setTimeout(() => navigate("/lista-disciplinas"), 1000); // Redireciona após salvar
+        setTimeout(() => navigate("/disciplinas"), 1000); // Redireciona após salvar
       })
       .catch((error) => {
         console.error(error);
@@ -160,90 +97,59 @@ export default function CadastroDisciplina() {
           </Header>
 
           <Form size="large" style={{ textAlign: "left" }}>
-            <Form.Field>
-              <label>Área da disciplina:*</label>
-              <Form.Select
-                fluid
-                placeholder="Selecione a área"
-                options={opcoesArea}
-                value={area}
-                onChange={(e, { value }) => setArea(value)}
-              />
-            </Form.Field>
 
             <Form.Input
               fluid
+              required
               label="Nome da disciplina:*"
               placeholder="Ex: Algoritmos II"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
             />
-
-            <Form.Field>
-              <label>Turno:*</label>
-              <Form.Select
+              <Form.Input
+              fluid
+              label="Período ofertado:"
+              required
+              type="number"
+              value={periodoOfertado}
+              onChange={(e) => setPeriodoOfertado(e.target.value)}
+              />
+            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+              <Form.Input
                 fluid
-                placeholder="Selecione o turno"
-                options={opcoesTurno}
-                value={turno}
-                onChange={(e, { value }) => setTurno(value)}
+                label="Carga horária:"
+                required
+                type="number"
+                placeholder="Ex: 1"
+                value={chTotal}
+                onChange={(e, { value }) => setChTotal(value)}
               />
             </Form.Field>
-            
-                        <Form.Field>
-              <label>Curso:*</label>
+
+            <Form.Field>
               <Form.Select
                 fluid
+                required
+                label="Curso:"
                 placeholder="Selecione o curso"
                 options={opcoesCurso}
-                value={curso}
-                onChange={(e, { value }) => setCurso(value)}
+                value={idCurso}
+                onChange={(e, { value }) => setIdCurso(value)}
                 noResultsMessage="Nenhuma turma encontrada."
               />
             </Form.Field>
 
-            <Header as="h4">Horários da Disciplina</Header>
-            {horarios.map((bloco, index) => (
-              <Segment key={index} secondary>
-                <Form.Field>
-                  <label>Dia da Semana:*</label>
-                  <Form.Select
-                    fluid
-                    placeholder="Selecione o dia"
-                    options={opcoesDias}
-                    value={bloco.dia}
-                    onChange={(e, { value }) => atualizarHorario(index, "dia", value)}
-                  />
-                </Form.Field>
-                <Form.Group widths="equal">
-                  <Form.Select
-                    fluid
-                    label="Início"
-                    options={opcoesHorarios}
-                    value={bloco.horaInicio}
-                    onChange={(e, { value }) => atualizarHorario(index, "horaInicio", value)}
-                  />
-                  <Form.Select
-                    fluid
-                    label="Fim"
-                    options={opcoesHorarios}
-                    value={bloco.horaFim}
-                    onChange={(e, { value }) => atualizarHorario(index, "horaFim", value)}
-                  />
-                </Form.Group>
-                {horarios.length > 1 && (
-                  <Button type="button" color="red" size="mini" onClick={() => removerHorario(index)}>
-                    Remover Bloco
-                  </Button>
-                )}
-              </Segment>
-            ))}
-
-            <Button type="button" icon labelPosition="left" onClick={adicionarHorario} style={{ marginBottom: '1em' }}>
-              <Icon name="add" /> Adicionar Horário
-            </Button>
-
-            <Button fluid size="huge" style={{ backgroundColor: "#21ba45", color: "#fff" }} onClick={salvar}>
+            <Button
+              fluid
+              size="huge"
+              type="button"
+              style={{
+                backgroundColor: "#21ba45",
+                color: "#fff",
+                marginTop: "1em",
+              }}
+              onClick={salvar}
+            >
               Concluir
             </Button>
           </Form>

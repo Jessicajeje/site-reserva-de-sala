@@ -84,7 +84,7 @@ export default function SalasCadastradas() {
                         {sala.tipo === 'laboratorio' ? 'Laboratório' : 'Sala'} {sala.numero}
                       </Card.Header>
                       <Card.Meta>
-                        {sala.blocoSelecionado ? sala.blocoSelecionado.replace('_', ' ') : 'Bloco não informado'}
+                        {sala.bloco ? sala.bloco.replace('_', ' ') : 'Bloco não informado'}
                       </Card.Meta>
                     </Card.Content>
 

@@ -28,7 +28,7 @@ export default function TurmasCadastradas() {
     await axios.delete('http://localhost:8080/api/turma/' + idRemover)
       .then((response) => {
         console.log('Turma removida com sucesso.')
-        carregarLista(); // Simplificado para chamar a função existente
+        carregarLista();
       })
       .catch((error) => {
         console.log('Erro ao remover uma turma.')

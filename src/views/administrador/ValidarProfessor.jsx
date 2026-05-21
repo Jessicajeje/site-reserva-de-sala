@@ -14,24 +14,38 @@ export default function ValidarProfessor() {
     axios
       .get("http://localhost:8080/api/professor")
       .then((response) => {
-        setProfessores(response.data);
+        const pendentes = response.data.filter(
+          (professor) => professor.ativo === false,
+        );
+        setProfessores(pendentes);
       })
       .catch(() => {
         console.log("Erro ao carregar professores.");
       });
   }
 
-  async function validar(id) {
-    try {
-      await axios.put(`http://localhost:8080/api/professor/validar/${id}`, {
-        ativo: true,
-      });
-
-      notifySuccess("Professor aprovado com sucesso!");
-      carregarPendentes();
-    } catch (error) {
-      notifyError("Erro ao validar professor.");
+ async function validar(id) {
+  try {
+    //Busca os dados atuais do professor diretamente da lista do estado
+    const professorAtual = professores.find(p => p.id === id);
+    
+    if (!professorAtual) {
+      notifyError("Professor não encontrado localmente.");
+      return;
     }
+
+    //Envia o objeto completo esperado pelo ProfessorRequest do backend
+    await axios.put(`http://localhost:8080/api/professor/${id}`, {
+      ...professorAtual,
+      ativo: true        
+    });
+
+    notifySuccess("Professor aprovado com sucesso!");
+    carregarPendentes();
+  } catch (error) {
+    console.error(error);
+    notifyError("Erro ao validar professor.");
+  }
   }
 
   return (
