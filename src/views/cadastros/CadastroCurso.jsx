@@ -9,6 +9,7 @@ export default function CadastroCurso() {
   const { state } = useLocation();
 
   const [idCurso, setIdCurso] = useState();
+  const [opcoesDisciplinas, setOpcoesDisciplinas] = useState();
   const [nome, setNome] = useState();
   const [qtdPeriodos, setQtdPeriodos] = useState();
   const [area, setArea] = useState();

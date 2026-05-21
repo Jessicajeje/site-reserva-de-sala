@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Divider, Header, Icon, Modal, Table } from "semantic-ui-react";
 import './Interface.css';
+import { notifyError } from "../util/Util";
 
 export default function TurmasCadastradas() {
   const [lista, setLista] = useState([]);
@@ -31,7 +32,13 @@ export default function TurmasCadastradas() {
         carregarLista();
       })
       .catch((error) => {
-        console.log('Erro ao remover uma turma.')
+        if (error.response.data.errors !== undefined) {
+          for (let i = 0; i < error.response.data.errors.length; i++) {
+            notifyError(error.response.data.errors[i].defaultMessage)
+          }
+        } else {
+          notifyError(error.response.data.message)
+        }
       })
     setOpenModal(false)
   }
@@ -65,8 +72,13 @@ export default function TurmasCadastradas() {
               <Table color="green" sortable celled>
                 <Table.Header>
                   <Table.Row>
-                    <Table.HeaderCell>Curso</Table.HeaderCell>
-                    <Table.HeaderCell>Período</Table.HeaderCell>
+                    <Table.HeaderCell>Nome</Table.HeaderCell>
+                    <Table.HeaderCell>Turno</Table.HeaderCell>
+                    <Table.HeaderCell>Ano Entrada</Table.HeaderCell>
+                    <Table.HeaderCell>Semestre Entrada</Table.HeaderCell>
+                    <Table.HeaderCell>Qtd. Máx Alunos</Table.HeaderCell>
+                    <Table.HeaderCell>Alunos Matriculados</Table.HeaderCell>
+                    <Table.HeaderCell>Status</Table.HeaderCell>
                     <Table.HeaderCell textAlign="center">Ações</Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -74,8 +86,13 @@ export default function TurmasCadastradas() {
                 <Table.Body>
                   {lista.map((turma) => (
                     <Table.Row key={turma.id}>
-                      <Table.Cell>{turma.curso}</Table.Cell>
-                      <Table.Cell>{turma.periodo}</Table.Cell>
+                      <Table.Cell>{turma.nome}</Table.Cell>
+                      <Table.Cell>{turma.turno}</Table.Cell>
+                      <Table.Cell>{turma.anoEntrada}</Table.Cell>
+                      <Table.Cell>{turma.semestreEntrada}</Table.Cell>
+                      <Table.Cell>{turma.qtdMaximaAlunos}</Table.Cell>
+                      <Table.Cell>{turma.qtdAlunosMatriculados}</Table.Cell>
+                      <Table.Cell>{turma.statusTurma ? "Ativa" : "Desativada"}</Table.Cell>
 
                       <Table.Cell textAlign="center">
                         <Button

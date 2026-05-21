@@ -15,8 +15,8 @@ export default function CadastroTurma() {
   const [semestreEntrada, setSemestreEntrada] = useState();
   const [anoEntrada, setAnoEntrada] = useState();
 
-  const [alunosMatriculados, setAlunosMatriculados] = useState();
-  const [qntMaxAlunos, setQntMaxAlunos] = useState();
+  const [qtdAlunosMatriculados, setQtdqtdAlunosMatriculados] = useState();
+  const [qtdMaximaAlunos, setQtdMaximaAlunos] = useState();
 
   const [turno, setTurno] = useState();
 
@@ -61,9 +61,9 @@ export default function CadastroTurma() {
 
           setAnoEntrada(response.data.anoEntrada);
 
-          setAlunosMatriculados(response.data.alunosMatriculados);
+          setQtdqtdAlunosMatriculados(response.data.qtdAlunosMatriculados);
 
-          setQntMaxAlunos(response.data.qntMaxAlunos);
+          setQtdMaximaAlunos(response.data.qtdMaximaAlunos);
 
           setTurno(response.data.turno);
 
@@ -79,13 +79,15 @@ export default function CadastroTurma() {
 
     let turmaRequest = {
       nome: nome,
-      curso: idCurso,
+      idCurso: idCurso,
       semestreEntrada: semestreEntrada,
-      anoEntrada: anoEntrada,
-      alunosMatriculados: alunosMatriculados,
-      qntMaxAlunos: qntMaxAlunos,
+      anoEntrada: Number(anoEntrada),
+      qtdAlunosMatriculados: Number(qtdAlunosMatriculados),
+      qtdMaximaAlunos: Number(qtdMaximaAlunos),
       turno: turno,
     };
+
+    console.log(turmaRequest);
 
     if (idTurma != null) {
 
@@ -256,8 +258,8 @@ export default function CadastroTurma() {
                 required
                 type="number"
                 placeholder="Ex: 30"
-                value={qntMaxAlunos}
-                onChange={(e, { value }) => setQntMaxAlunos(value)}
+                value={qtdMaximaAlunos}
+                onChange={(e, { value }) => setQtdMaximaAlunos(value)}
               />
 
             </Form.Field>
@@ -270,9 +272,9 @@ export default function CadastroTurma() {
                 required
                 type="number"
                 placeholder="Ex: 25"
-                value={alunosMatriculados}
+                value={qtdAlunosMatriculados}
                 onChange={(e, { value }) =>
-                  setAlunosMatriculados(value)
+                  setQtdqtdAlunosMatriculados(value)
                 }
               />
 
