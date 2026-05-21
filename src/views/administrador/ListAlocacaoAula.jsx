@@ -1,47 +1,65 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
     Button,
     Container,
     Divider,
     Grid,
     Icon,
-    Table
+    Table,
+    Modal,
+    Header
 } from "semantic-ui-react";
+import { notifyError, notifySuccess } from '../../views/util/Util';
 
 export default function ListAlocacaoAula() {
 
-    const navigate = useNavigate();
-
     const [lista, setLista] = useState([]);
+    const [openModal, setOpenModal] = useState(false);
+    const [idRemover, setIdRemover] = useState();
 
     useEffect(() => {
-
         carregarLista();
-
     }, []);
 
     function carregarLista() {
-
         axios.get("http://localhost:8080/api/alocacao-aula")
             .then((response) => {
-
                 setLista(response.data);
-
             })
             .catch((error) => {
-
                 console.log(error);
-
             });
     }
 
-    function editar(id) {
+    function abrirModal(id) {
+        setIdRemover(id);
+        setOpenModal(true);
+    }
 
-        navigate("/cadastro-alocacao-aula", {
-            state: { id }
-        });
+    async function remover() {
+
+        await axios.delete('http://localhost:8080/api/alocacao-aula/' + idRemover)
+            .then((response) => {
+
+                notifySuccess('Alocação de aula removida com sucesso.')
+
+                axios.get("http://localhost:8080/api/alocacao-aula")
+                    .then((response) => {
+                        setLista(response.data)
+                    })
+            })
+            .catch((error) => {
+                if (error.response.data.errors !== undefined) {
+                    for (let i = 0; i < error.response.data.errors.length; i++) {
+                        notifyError(error.response.data.errors[i].defaultMessage)
+                    }
+                } else {
+                    notifyError(error.response.data.message)
+                }
+            })
+        setOpenModal(false)
     }
 
     return (
@@ -68,10 +86,21 @@ export default function ListAlocacaoAula() {
 
                     <Button
                         color="green"
-                        onClick={() => navigate("/cadastro-alocacao-aula")}
+                        as={Link}
+                        to={"/cadastro-alocacao-aula"}
                     >
                         <Icon name="plus" />
                         Nova Alocação
+                    </Button>
+
+                    <Button
+                        color="blue"
+                        as={Link}
+                        to={"/grade-alocacao-aula"}
+                        style={{ float: 'right' }}
+                    >
+                        <Icon name="eye" />
+                        Ver Grade das Alocações
                     </Button>
 
                     <Table celled striped>
@@ -96,42 +125,49 @@ export default function ListAlocacaoAula() {
 
                         <Table.Body>
 
-                            {lista.map((item) => (
+                            {lista.map((alocacao) => (
 
-                                <Table.Row key={item.id}>
+                                <Table.Row key={alocacao.id}>
 
                                     <Table.Cell>
-                                        {item.id}
+                                        {alocacao.id}
                                     </Table.Cell>
 
                                     <Table.Cell>
-                                        {item.turma?.nome}
+                                        {alocacao.turma?.nome}
                                     </Table.Cell>
 
                                     <Table.Cell>
-                                        {item.disciplina?.nome}
+                                        {alocacao.disciplina?.nome}
                                     </Table.Cell>
 
                                     <Table.Cell>
-                                        {item.sala?.numero}
+                                        {alocacao.sala?.numero}
                                     </Table.Cell>
 
                                     <Table.Cell>
-                                        {item.professor?.nome}
+                                        {alocacao.professor?.nome}
                                     </Table.Cell>
 
                                     <Table.Cell>
-                                        {item.semestreLetivo}
+                                        {alocacao.semestreLetivo}
                                     </Table.Cell>
 
                                     <Table.Cell textAlign="center">
 
                                         <Button
                                             icon
-                                            color="blue"
-                                            onClick={() => editar(item.id)}
+                                            color="green"
                                         >
-                                            <Icon name="edit" />
+                                            <Link to="/cadastro-alocacao-aula" state={{ id: alocacao.id }} style={{ color: 'green' }}> <Icon name='edit' /> </Link>
+                                        </Button>
+
+                                        <Button
+                                            icon
+                                            color="red"
+                                            onClick={() => abrirModal(alocacao.id)}
+                                        >
+                                            <Icon name="trash" />
                                         </Button>
 
                                     </Table.Cell>
@@ -148,6 +184,27 @@ export default function ListAlocacaoAula() {
 
             </Grid.Column>
 
+            <Modal
+                basic
+                onClose={() => setOpenModal(false)}
+                onOpen={() => setOpenModal(true)}
+                open={openModal}
+            >
+                <Header icon>
+                    <Icon name='trash' />
+                    <div style={{ marginTop: '5%' }}> Tem certeza que deseja remover esse registro? </div>
+                </Header>
+                <Modal.Actions>
+                    <Button basic color='red' inverted onClick={() => setOpenModal(false)}>
+                        <Icon name='remove' /> Não
+                    </Button>
+                    <Button color='green' inverted onClick={() => remover()}>
+                        <Icon name='checkmark' /> Sim
+                    </Button>
+                </Modal.Actions>
+            </Modal>
+
         </Grid>
+
     );
 }

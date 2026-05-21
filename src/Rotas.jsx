@@ -17,9 +17,10 @@ import Perfil from "./views/professor/Perfil";
 import CadastroCurso from "./views/cadastros/CadastroCurso";
 import Cursos from "./views/administrador/Cursos";
 import Reposicao from "./views/professor/Reposicao.jsx";
-import Notificacoes from "./views/professor/Notificacoes";import CadastroAlocacaoAula from "./views/cadastros/CadastroAlocacaoAula";
+import Notificacoes from "./views/professor/Notificacoes";
+import CadastroAlocacaoAula from "./views/cadastros/CadastroAlocacaoAula";
 import ListAlocacaoAula from "./views/administrador/ListAlocacaoAula";
-import AlocacaoAula from "./views/administrador/AlocacaoAula";
+import GradeAlocacaoAula from "./views/administrador/GradeAlocacaoAula";
 
 function Rotas() {
   return (
@@ -43,14 +44,8 @@ function Rotas() {
         <Route path="salas" element={<SalasCadastradas />} />
         <Route path="validar-prof" element={<ValidarProfessor />} />
         <Route path="professores-ativos" element={<ProfessoresAtivos />} />
-        <Route
-          path="/list-alocacao-aula"
-          element={<ListAlocacaoAula />}
-        />
-        <Route
-          path="/alocacao-aula"
-          element={<AlocacaoAula />}
-        />
+        <Route path="/list-alocacao-aula" element={<ListAlocacaoAula />} />
+        <Route path="/grade-alocacao-aula" element={<GradeAlocacaoAula />} />
       </Route>
 
       {/* ROTAS DO PROFESSOR (Com Navbar de Professor) */}

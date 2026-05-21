@@ -1,13 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { Button, Container, Divider, Form, Icon, Grid } from "semantic-ui-react";
 import { notifySuccess, notifyError } from "../util/Util";
 
 export default function CadastroAlocacaoAula() {
 
     const { state } = useLocation();
-    const navigate = useNavigate();
 
     const [idAlocacaoAula, setIdAlocacaoAula] = useState(null);
 
@@ -77,7 +76,7 @@ export default function CadastroAlocacaoAula() {
 
     function salvar() {
 
-        const payload = {
+        const alocacaoAulaRequest = {
             id: idAlocacaoAula,
             idTurma,
             idDisciplina,
@@ -86,33 +85,31 @@ export default function CadastroAlocacaoAula() {
             semestreLetivo
         };
 
-        const request = idAlocacaoAula
-            ? axios.put("http://localhost:8080/api/alocacao-aula/" + idAlocacaoAula, payload)
-            : axios.post("http://localhost:8080/api/alocacao-aula", payload);
-
-        request
-            .then((res) => {
-                if (!idAlocacaoAula) {
-                    setIdAlocacaoAula(res.data.id);
-                }
-
-                notifySuccess(
-                    idAlocacaoAula
-                        ? "Alocação alterada com sucesso."
-                        : "Alocação cadastrada com sucesso."
-                );
-            })
-            .catch((error) => {
-                const msg = error.response?.data?.message;
-
-                if (error.response?.data?.errors) {
-                    error.response.data.errors.forEach(e =>
-                        notifyError(e.defaultMessage)
-                    );
-                } else {
-                    notifyError(msg || "Erro ao salvar");
-                }
-            });
+        if (idAlocacaoAula != null) { //Alteração:
+            axios.put("http://localhost:8080/api/alocacao-aula/" + idAlocacaoAula, alocacaoAulaRequest)
+                .then((response) => { notifySuccess('Alocacao de aula alterada com sucesso.') })
+                .catch((error) => {
+                    if (error.response.data.errors !== undefined) {
+                        for (let i = 0; i < error.response.data.errors.length; i++) {
+                            notifyError(error.response.data.errors[i].defaultMessage)
+                        }
+                    } else {
+                        notifyError(error.response.data.message)
+                    }
+                })
+        } else { //Cadastro:
+            axios.post("http://localhost:8080/api/alocacao-aula", alocacaoAulaRequest)
+                .then((response) => { notifySuccess('Alocacao de aula cadastrada com sucesso.') })
+                .catch((error) => {
+                    if (error.response.data.errors !== undefined) {
+                        for (let i = 0; i < error.response.data.errors.length; i++) {
+                            notifyError(error.response.data.errors[i].defaultMessage)
+                        }
+                    } else {
+                        notifyError(error.response.data.message)
+                    }
+                })
+        }
     }
 
     return (
@@ -136,6 +133,7 @@ export default function CadastroAlocacaoAula() {
                             <Form.Select
                                 required
                                 label="Turma"
+                                width={8}
                                 options={listaTurma}
                                 value={idTurma}
                                 onChange={(e, { value }) => setIdTurma(value)}
@@ -144,6 +142,7 @@ export default function CadastroAlocacaoAula() {
                             <Form.Select
                                 required
                                 label="Disciplina"
+                                width={8}
                                 options={listaDisciplina}
                                 value={idDisciplina}
                                 onChange={(e, { value }) => setIdDisciplina(value)}
@@ -154,6 +153,7 @@ export default function CadastroAlocacaoAula() {
                             <Form.Select
                                 required
                                 label="Sala"
+                                width={8}
                                 options={listaSala}
                                 value={idSala}
                                 onChange={(e, { value }) => setIdSala(value)}
@@ -162,6 +162,7 @@ export default function CadastroAlocacaoAula() {
                             <Form.Select
                                 required
                                 label="Professor"
+                                width={8}
                                 options={listaProfessor}
                                 value={idProfessor}
                                 onChange={(e, { value }) => setIdProfessor(value)}
@@ -189,6 +190,20 @@ export default function CadastroAlocacaoAula() {
                     </Button>
 
                 </Container>
+
+                <Link to={'/list-alocacao-aula'}>
+                    <Button
+                        type="button"
+                        icon
+                        labelPosition='left'
+                        color='orange'
+                        style={{ marginTop: "20px" }}
+                    >
+                        <Icon name='reply' />
+                        Voltar
+                    </Button>
+                </Link>
+
             </Grid.Column>
         </Grid>
     );
