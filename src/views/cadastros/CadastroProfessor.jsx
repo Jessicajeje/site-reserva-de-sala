@@ -1,8 +1,7 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { IMaskInput } from "react-imask";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 import "../logins/estilo.css";
@@ -15,7 +14,7 @@ export default function CadastroProfessor() {
   const [cpf, setCpf] = useState();
   const [siape, setSiape] = useState();
   const [email, setEmail] = useState();
-  const [senha, setSenha] = useState();
+  const [password, setPassword] = useState();
   const [confirmarSenha, setConfirmarSenha] = useState();
 
   const navigate = useNavigate();
@@ -30,8 +29,8 @@ export default function CadastroProfessor() {
           setNome(response.data.nome);
           setSiape(response.data.siape);
           setEmail(response.data.email);
-          setSenha(response.data.senha);
-          setConfirmarSenha(response.data.senha);
+          setPassword(response.data.password);
+          setConfirmarSenha(response.data.password);
         });
     }
   }, [state]);
@@ -43,13 +42,13 @@ export default function CadastroProfessor() {
     }
 
     if (!idProfessor) {
-      if (!senha || !confirmarSenha) {
-        alert("A senha é obrigatória para novos cadastros.");
+      if (!password || !confirmarSenha) {
+        alert("A password é obrigatória para novos cadastros.");
         return;
       }
     }
 
-    if (senha && senha !== confirmarSenha) {
+    if (password && password !== confirmarSenha) {
       alert("As senhas não coincidem!");
       return;
     }
@@ -59,7 +58,7 @@ export default function CadastroProfessor() {
       cpf: cpf,
       email: email,
       siape: siape,
-      senha: senha ? senha : null,
+      password: password ? password : null,
       ativo: false,
     };
 
@@ -184,22 +183,22 @@ export default function CadastroProfessor() {
               fluid
               label="Senha"
               type="password"
-              placeholder="Digite uma senha"
-              value={senha}
+              placeholder="Digite uma password"
+              value={password}
               disabled={!!idProfessor}
-              onChange={(e) => setSenha(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
             />
 
             <Form.Input
               fluid
               label="Confirmar Senha"
               type="password"
-              placeholder="Repita a senha"
+              placeholder="Repita a password"
               value={confirmarSenha}
               disabled={!!idProfessor}
               onChange={(e) => setConfirmarSenha(e.target.value)}
               error={
-                confirmarSenha !== "" && senha !== confirmarSenha
+                confirmarSenha !== "" && password !== confirmarSenha
                   ? { content: "As senhas não coincidem", pointing: "below" }
                   : false
               }

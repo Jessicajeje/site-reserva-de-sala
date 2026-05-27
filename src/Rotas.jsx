@@ -1,26 +1,28 @@
 import { Route, Routes } from "react-router-dom";
+import { ProtectedRoute } from './views/util/ProtectedRoute';
+
 import LayoutADM from "./layouts/LayoutADM";
 import LayoutProfessor from "./layouts/LayoutProfessor";
+import Cursos from "./views/administrador/Cursos";
 import DisciplinasCadastradas from "./views/administrador/DisciplinasCadastradas";
+import GradeAlocacaoAula from "./views/administrador/GradeAlocacaoAula";
+import ListAlocacaoAula from "./views/administrador/ListAlocacaoAula";
+import ProfessoresAtivos from "./views/administrador/ProfessoresAtivos";
 import SalasCadastradas from "./views/administrador/SalasCadastradas";
 import TurmasCadastradas from "./views/administrador/TurmasCadastradas";
 import ValidarProfessor from "./views/administrador/ValidarProfessor";
+import CadastroAlocacaoAula from "./views/cadastros/CadastroAlocacaoAula";
+import CadastroCurso from "./views/cadastros/CadastroCurso";
 import CadastroDisciplina from "./views/cadastros/CadastroDisciplina";
 import CadastroProfessor from "./views/cadastros/CadastroProfessor";
 import CadastroSala from "./views/cadastros/CadastroSala";
 import CadastroTurma from "./views/cadastros/CadastroTurma";
 import LoginADM from "./views/logins/LoginADM";
 import LoginProfessor from "./views/logins/LoginProfessor";
-import ProfessoresAtivos from "./views/administrador/ProfessoresAtivos";
 import Home from "./views/professor/Home";
-import Perfil from "./views/professor/Perfil";
-import CadastroCurso from "./views/cadastros/CadastroCurso";
-import Cursos from "./views/administrador/Cursos";
-import Reposicao from "./views/professor/Reposicao.jsx";
 import Notificacoes from "./views/professor/Notificacoes";
-import CadastroAlocacaoAula from "./views/cadastros/CadastroAlocacaoAula";
-import ListAlocacaoAula from "./views/administrador/ListAlocacaoAula";
-import GradeAlocacaoAula from "./views/administrador/GradeAlocacaoAula";
+import Perfil from "./views/professor/Perfil";
+import Reposicao from "./views/professor/Reposicao.jsx";
 
 function Rotas() {
   return (
@@ -32,28 +34,28 @@ function Rotas() {
 
       {/* ROTAS DO ADM (Com Navbar de ADM) */}
       <Route element={<LayoutADM />}>
-        <Route path="cadastro-sala" element={<CadastroSala />} />
-        <Route path="cadastro-curso" element={<CadastroCurso />} />
-        <Route path="cursos" element={<Cursos />} />
-        <Route path="cadastro-turma" element={<CadastroTurma />} />
-        <Route path="cadastro-disciplina" element={<CadastroDisciplina />} />
-        <Route path="cadastro-alocacao-aula" element={<CadastroAlocacaoAula />} />
+        <Route path="cadastro-sala" element={<ProtectedRoute><CadastroSala /></ProtectedRoute>} />
+        <Route path="cadastro-curso" element={<ProtectedRoute><CadastroCurso /></ProtectedRoute>} />
+        <Route path="cursos" element={<ProtectedRoute><Cursos /></ProtectedRoute>} />
+        <Route path="cadastro-turma" element={<ProtectedRoute><CadastroTurma /></ProtectedRoute>} />
+        <Route path="cadastro-disciplina" element={<ProtectedRoute><CadastroDisciplina /></ProtectedRoute>} />
+        <Route path="cadastro-alocacao-aula" element={<ProtectedRoute><CadastroAlocacaoAula /></ProtectedRoute>} />
 
-        <Route path="turmas" element={<TurmasCadastradas />} />
-        <Route path="disciplinas" element={<DisciplinasCadastradas />} />
-        <Route path="salas" element={<SalasCadastradas />} />
-        <Route path="validar-prof" element={<ValidarProfessor />} />
-        <Route path="professores-ativos" element={<ProfessoresAtivos />} />
-        <Route path="/alocacoes-aulas" element={<ListAlocacaoAula />} />
-        <Route path="/grade-alocacao-aula" element={<GradeAlocacaoAula />} />
+        <Route path="turmas" element={<ProtectedRoute><TurmasCadastradas /></ProtectedRoute>} />
+        <Route path="disciplinas" element={<ProtectedRoute><DisciplinasCadastradas /></ProtectedRoute>} />
+        <Route path="salas" element={<ProtectedRoute><SalasCadastradas /></ProtectedRoute>} />
+        <Route path="validar-prof" element={<ProtectedRoute><ValidarProfessor /></ProtectedRoute>} />
+        <Route path="professores-ativos" element={<ProtectedRoute><ProfessoresAtivos /></ProtectedRoute>} />
+        <Route path="/alocacoes-aulas" element={<ProtectedRoute><ListAlocacaoAula /></ProtectedRoute>} />
+        <Route path="/grade-alocacao-aula" element={<ProtectedRoute><GradeAlocacaoAula /></ProtectedRoute>} />
       </Route>
 
       {/* ROTAS DO PROFESSOR (Com Navbar de Professor) */}
       <Route element={<LayoutProfessor />}>
-        <Route path="home" element={<Home />} />
-        <Route path="perfil" element={<Perfil />} />
-        <Route path="notificacoes" element={<Notificacoes/>} />
-        <Route path="reposicao" element={<Reposicao />} />
+        <Route path="home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+        <Route path="notificacoes" element={<ProtectedRoute><Notificacoes/></ProtectedRoute>} />
+        <Route path="reposicao" element={<ProtectedRoute><Reposicao /></ProtectedRoute>} />
       </Route>
     </Routes>
   );
