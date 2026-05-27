@@ -4,20 +4,20 @@ import { Link } from "react-router-dom";
 import {
     Button,
     Container,
+    Divider,
     Dropdown,
     Grid,
     Header,
+    Icon,
     Loader,
     Modal,
     Segment,
-    Table,
-    Divider,
-    Icon,
     Select,
+    Table,
 } from "semantic-ui-react";
 
-import { format, startOfWeek, addDays, isSameDay } from "date-fns";
-import { notifySuccess, notifyError } from "../util/Util";
+import { addDays, format, isSameDay, startOfWeek } from "date-fns";
+import { notifyError, notifySuccess } from "../util/Util";
 
 const DIAS_SEMANA = [
     "Segunda",
@@ -81,7 +81,7 @@ const TURNOS = [
     },
     {
         nome: "Noite",
-        slots: construirIntervalos(18, 30, 4),
+        slots: construirIntervalos(18, 30, 5),
     },
 ];
 
