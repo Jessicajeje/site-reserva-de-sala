@@ -191,7 +191,7 @@ export default function CadastroAlocacaoAula() {
 
                 </Container>
 
-                <Link to={'/list-alocacao-aula'}>
+                <Link to={'/alocacoes-aulas'}>
                     <Button
                         type="button"
                         icon

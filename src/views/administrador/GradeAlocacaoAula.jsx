@@ -451,7 +451,7 @@ export default function GradeAlocacaoAula() {
                         <Button
                             color="blue"
                             as={Link}
-                            to={"/list-alocacao-aula"}
+                            to={"/alocacoes-aulas"}
                             style={{
                                 display: "flex",
                                 alignItems: "center",

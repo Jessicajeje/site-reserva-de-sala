@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {  FaHome, FaChalkboardTeacher, FaSchool, FaBook, FaUserCircle } from "react-icons/fa";
+import {  FaHome, FaChalkboardTeacher, FaSchool, FaBook, FaUserCircle, FaCalendarAlt, FaCalendar } from "react-icons/fa";
 import { FaPaperPlane } from "react-icons/fa6";
 
 import { useLocation, useNavigate } from "react-router-dom";
@@ -13,6 +13,8 @@ export default function Navbar() {
 
 const menuItems = [
   { path: "/validar-prof", icon: <FaHome />, label: "Início" },
+  { path: "/grade-alocacao-aula", icon: <FaCalendarAlt />, label: "Grade de Alocações" },
+  { path: "/alocacoes-aulas", icon: <FaCalendar />, label: "Alocações de Aulas" },
   { path: "/turmas", icon: <FaChalkboardTeacher />, label: "Turmas" },
   { path: "/salas", icon: <FaSchool />, label: "Salas / Laboratórios" },
   { path: "/disciplinas", icon: <FaBook />, label: "Disciplinas" },

@@ -44,7 +44,7 @@ function Rotas() {
         <Route path="salas" element={<SalasCadastradas />} />
         <Route path="validar-prof" element={<ValidarProfessor />} />
         <Route path="professores-ativos" element={<ProfessoresAtivos />} />
-        <Route path="/list-alocacao-aula" element={<ListAlocacaoAula />} />
+        <Route path="/alocacoes-aulas" element={<ListAlocacaoAula />} />
         <Route path="/grade-alocacao-aula" element={<GradeAlocacaoAula />} />
       </Route>
 
