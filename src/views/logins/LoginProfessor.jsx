@@ -63,7 +63,7 @@ const LoginProfessor = () => {
               <Form.Input
                 fluid
                 required
-                type="text"
+                type="password"
                 placeholder="Digite sua senha"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
@@ -73,13 +73,13 @@ const LoginProfessor = () => {
             <Button
               fluid
               size="huge"
-              style={{ backgroundColor: "#21ba45", color: "#fff", padding: '15px', marginBottom: '15%' }}
+              style={{ backgroundColor: "#21ba45", color: "#fff", padding: '15px', marginBottom: '8%' }}
               onClick={entrar}
             >
               Entrar
             </Button>
           </Form>
-          <Link to={'/cadastro-professor'}> <p>Primeiro acesso? Cadastre-se</p></Link>
+          <Link to={'/cadastro-professor'}> <p style={{marginBottom:'3%'}}>Primeiro acesso? Cadastre-se</p></Link>
           <Link to={'/login-adm'}> <p>Login administrador</p></Link>
         </Segment>
 

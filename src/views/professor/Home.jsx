@@ -113,21 +113,6 @@ export default function Home() {
 
       <div style={{ display: "flex" }}>
 
-        {/* MENU LATERAL */}
-        <div
-          style={{
-            width: "220px",
-            backgroundColor: "#fff",
-            minHeight: "100vh",
-            borderRight: "1px solid #ddd",
-            padding: "20px"
-          }}
-        >
-          <Header as="h4" color="grey">
-            Navegação
-          </Header>
-        </div>
-
         {/* CONTEÚDO */}
         <div style={{ flex: 1, padding: "30px" }}>
 

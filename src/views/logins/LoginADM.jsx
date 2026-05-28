@@ -1,4 +1,5 @@
 import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
+import { Link} from "react-router-dom";
 import './estilo.css';
 
 const LoginADM = () => {
@@ -34,11 +35,12 @@ const LoginADM = () => {
             <Button
               fluid
               size="huge"
-              style={{ backgroundColor: "#21ba45", color: "#fff", padding: '15px' }}
+              style={{ backgroundColor: "#21ba45", color: "#fff", padding: '15px', marginBottom: '8%' }}
             >
               Entrar
             </Button>
           </Form>
+          <Link to={'/'}> <p>voltar para log-in docente</p></Link>
         </Segment>
 
       </Grid.Column>

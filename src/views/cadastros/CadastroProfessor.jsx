@@ -4,6 +4,7 @@ import { IMaskInput } from "react-imask";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../../views/util/Util";
+import {Link} from 'react-router-dom';
 import "../logins/estilo.css";
 
 export default function CadastroProfessor() {
@@ -212,12 +213,14 @@ export default function CadastroProfessor() {
                 backgroundColor: "#21ba45",
                 color: "#fff",
                 marginTop: "1em",
+                marginBottom:'8%'
               }}
               onClick={salvar}
             >
               Concluir
             </Button>
           </Form>
+          <Link to={'/'}> <p>voltar para log-in docente</p></Link>
         </Segment>
       </Grid.Column>
     </Grid>

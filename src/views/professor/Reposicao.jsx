@@ -108,7 +108,8 @@ export default function Reposicao() {
   const [dataSelecionada, setDataSelecionada] = useState("");
   const [horaInicio, setHoraInicio] = useState("");
   const [horaFim, setHoraFim] = useState("");
-  const [sala, setSala] = useState("");
+  const [salas, setSalas] = useState([]);
+  const [salaSelecionada, setSalaSelecionada] = useState("");
   const [turma, setTurma] = useState("");
   const [opcoesTurma, setOpcoesTurma] = useState([]);
 
@@ -131,9 +132,9 @@ export default function Reposicao() {
       });
 
     axios
-      .get("http://localhost:8080/api/sala")
+      .get("http://localhost:8080/api/salas")
       .then((response) => {
-        setSala(response.data);
+        setSalas(response.data);
       })
       .catch((err) => {
         console.error("Erro ao buscar salas:", err);
@@ -149,7 +150,7 @@ export default function Reposicao() {
           setHoraInicio(res.data.horaInicio || "");
           setHoraFim(res.data.horaFim || "");
           setTurma(res.data.turma || "");
-          setSala(res.data.sala || "");
+          setSalas(res.data.salas || "");
         });
     }
   }, [state]);
@@ -373,9 +374,9 @@ export default function Reposicao() {
             <Icon name="building outline" /> Salas Disponíveis
           </Header>
           
-          {sala.length === 0 ? (
+          {salas.length === 0 ? (
             <Segment textAlign="center" secondary style={{ color: "grey" }}>
-              Nenhuma sala encontrada ou carregando...
+              Nenhuma salas encontrada ou carregando...
             </Segment>
           ) : (
             <div style={{
@@ -384,14 +385,14 @@ export default function Reposicao() {
               gap: "16px",
               width: "100%"
             }}>
-              {sala.map((sala) => (
-                <Segment key={sala.id} raised style={{ margin: 0, borderRadius: "8px" }}>
+              {salas.map((salas) => (
+                <Segment key={salas.id} raised style={{ margin: 0, borderRadius: "8px" }}    onClick={() => setSalaSelecionada(salas.nome)}>
                   <Header as="h4" color="green" style={{ margin: 0 }}>
-                    {sala.nome || `Sala ${sala.numero}`}
+                    {salas.nome || `Sala ${salas.numero}`}
                   </Header>
                   <div style={{ marginTop: "8px", fontSize: "12px", color: "dimgrey" }}>
-                    <p style={{ margin: "2px 0" }}><b>Bloco:</b> {sala.bloco || "N/A"}</p>
-                    <p style={{ margin: "2px 0" }}><b>Capacidade:</b> {sala.capacidade || "0"} Alunos</p>
+                    <p style={{ margin: "2px 0" }}><b>Bloco:</b> {salas.bloco || "N/A"}</p>
+                    <p style={{ margin: "2px 0" }}><b>Capacidade:</b> {salas.capacidade || "0"} Alunos</p>
                   </div>
                 </Segment>
               ))}
@@ -439,7 +440,11 @@ export default function Reposicao() {
                   <Form.Input label="Fim" value={horaFim} readOnly fluid />
                 </div>
               </div>
-              <Form.Input label="Sala" value={sala} readOnly fluid />
+              <Form.Input 
+              label="Sala" 
+              value={salaSelecionada} 
+              readOnly fluid
+               />
               <Form.Select
                 label="Turma"
                 placeholder="Selecione"
