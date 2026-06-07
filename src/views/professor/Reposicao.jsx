@@ -132,7 +132,7 @@ export default function Reposicao() {
       });
 
     axios
-      .get("http://localhost:8080/api/salas")
+      .get("http://localhost:8080/api/sala")
       .then((response) => {
         setSalas(response.data);
       })
