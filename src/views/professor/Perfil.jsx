@@ -1,121 +1,370 @@
-import {Container,Divider,Grid,Header,Icon,Image} from "semantic-ui-react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+import {
+  Container,
+  Grid,
+  Header,
+  Divider,
+  Image,
+  Icon,
+  Button
+} from "semantic-ui-react";
+
 import Navbar from "../../Components/navbar/NavbarProfessor";
 
 export default function Perfil() {
+
+  const professorId = 1;
+
+  const [professor, setProfessor] = useState({
+    nome: "",
+    email: "",
+    siape: "",
+    cpf: "",
+    senha: ""
+  });
+
+  const [editando, setEditando] = useState({
+    nome: false,
+    email: false,
+    siape: false,
+    cpf: false,
+    senha: false
+  });
+
+  const [fotoPerfil, setFotoPerfil] = useState(
+    "https://react.semantic-ui.com/images/avatar/large/elliot.jpg"
+  );
+
+  useEffect(() => {
+    buscarProfessor();
+  }, []);
+
+  async function buscarProfessor() {
+    try {
+
+      const response = await axios.get(
+        `http://localhost:8080/api/professor/${professorId}`
+      );
+
+      setProfessor(response.data);
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+  }
+
+  function handleChange(event) {
+
+    setProfessor({
+      ...professor,
+      [event.target.name]: event.target.value
+    });
+
+  }
+
+  async function salvarAlteracoes() {
+
+    try {
+
+      await axios.put(
+        `http://localhost:8080/api/professor/${professorId}`,
+        professor
+      );
+
+      alert("Perfil atualizado com sucesso!");
+
+    } catch (error) {
+
+      console.error(error);
+      alert("Erro ao atualizar perfil.");
+
+    }
+  }
+
+  function alterarFoto(event) {
+
+    const arquivo = event.target.files[0];
+
+    if (arquivo) {
+
+      const url = URL.createObjectURL(arquivo);
+      setFotoPerfil(url);
+
+    }
+  }
+
   return (
-    <div style={{ backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-      
+    <div
+      style={{
+        backgroundColor: "#FFFFFF",
+        minHeight: "100vh"
+      }}
+    >
       <Navbar tela={"perfil"} />
 
       <div style={{ display: "flex" }}>
-        
+
         <div
           style={{
-            width: "220px",
-            backgroundColor: "#fff",
-            minHeight: "100vh",
-            borderRight: "1px solid #ddd"
+            width: "220px"
           }}
         />
 
-        <div style={{ flex: 1, padding: "40px 50px" }}>
+        <div
+          style={{
+            flex: 1,
+            padding: "30px 50px"
+          }}
+        >
+
           <Container fluid>
 
             <Header
-              as="h2"
-              style={{ marginBottom: "10px", fontWeight: "600" }}
+              as="h1"
+              style={{
+                fontSize: "32px",
+                fontWeight: "600"
+              }}
             >
               Perfil
             </Header>
 
-            <Divider style={{ marginBottom: "40px" }} />
+            <Divider />
 
- 
             <Grid>
-              <Grid.Row verticalAlign="middle">
 
+              {/* FOTO */}
+              <Grid.Column width={4}>
 
-                <Grid.Column width={4}>
-                  <Image
-                    src="https://pt.quizur.com/_image?href=https%3A%2F%2Fdev-beta.quizur.com%2Fstorage%2Fv1%2Fobject%2Fpublic%2F%2Fimagens%2F%2F20198516%2F08325843-82e4-44f2-a384-543616a37539.png&w=400&h=400&f=webp"
-                    size="small"
-                    circular
-                  />
-                </Grid.Column>
-
-                <Grid.Column width={12}>
-
+                <div
+                  style={{
+                    textAlign: "center"
+                  }}
+                >
 
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center"
+                      position: "relative",
+                      display: "inline-block"
                     }}
                   >
-                    <h1
+
+                    <Image
+                      src={fotoPerfil}
+                      circular
+                      size="small"
                       style={{
-                        margin: 0,
-                        fontSize: "28px",
-                        fontWeight: "700"
+                        border: "3px solid #5DA348"
+                      }}
+                    />
+
+                    <label
+                      htmlFor="foto"
+                      style={{
+                        position: "absolute",
+                        bottom: "5px",
+                        right: "5px",
+                        width: "40px",
+                        height: "40px",
+                        backgroundColor: "#5DA348",
+                        borderRadius: "50%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        cursor: "pointer"
                       }}
                     >
-                      Bruno
-                    </h1>
+                      <Icon
+                        name="camera"
+                        color="black"
+                      />
+                    </label>
 
-                    <Icon
-                      name="edit"
-                      size="large"
-                      style={{ cursor: "pointer" }}
+                    <input
+                      id="foto"
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={alterarFoto}
                     />
+
                   </div>
 
-                  <Divider style={{ margin: "10px 0 15px 0" }} />
-                    <div><br></br></div>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "13px",
-                      color: "#777"
-                    }}
-                  >
-                    Matéria:
-                  </p>
+                </div>
 
-                  <h2
-                    style={{
-                      marginTop: "5px",
-                      fontSize: "20px",
-                      color: "#888",
-                      fontWeight: "600"
-                    }}
-                  >
-                    Projeto e Pratica 2
-                  </h2>
+              </Grid.Column>
 
-                </Grid.Column>
+              {/* DADOS */}
+              <Grid.Column width={12}>
 
-              </Grid.Row>
+                <CampoPerfil
+                  titulo="Nome"
+                  campo="nome"
+                  professor={professor}
+                  editando={editando}
+                  setEditando={setEditando}
+                  handleChange={handleChange}
+                />
+
+                <CampoPerfil
+                  titulo="Email"
+                  campo="email"
+                  professor={professor}
+                  editando={editando}
+                  setEditando={setEditando}
+                  handleChange={handleChange}
+                />
+
+                <CampoPerfil
+                  titulo="SIAPE"
+                  campo="siape"
+                  professor={professor}
+                  editando={editando}
+                  setEditando={setEditando}
+                  handleChange={handleChange}
+                />
+
+                <CampoPerfil
+                  titulo="CPF"
+                  campo="cpf"
+                  professor={professor}
+                  editando={editando}
+                  setEditando={setEditando}
+                  handleChange={handleChange}
+                />
+
+                <CampoPerfil
+                  titulo="Senha"
+                  campo="senha"
+                  professor={professor}
+                  editando={editando}
+                  setEditando={setEditando}
+                  handleChange={handleChange}
+                  password
+                />
+
+                <Button
+                  color="green"
+                  size="large"
+                  icon
+                  labelPosition="left"
+                  onClick={salvarAlteracoes}
+                  style={{
+                    marginTop: "20px"
+                  }}
+                >
+                  <Icon name="save" />
+                  Salvar Alterações
+                </Button>
+
+              </Grid.Column>
+
             </Grid>
-                <div><br></br></div>
-            <div style={{ marginTop: "50px" }}>
-              <Header
-                as="h3"
-                style={{ fontWeight: "600", marginBottom: "10px" }}
-              >
-                Histórico de Aulas
-              </Header>
-
-              <Divider />
-
-              <p style={{ color: "#777", marginTop: "15px" }}>
-                Nenhum histórico disponível no momento.
-              </p>
-            </div>
 
           </Container>
+
         </div>
+
       </div>
+    </div>
+  );
+}
+
+function CampoPerfil({
+  titulo,
+  campo,
+  professor,
+  editando,
+  setEditando,
+  handleChange,
+  password = false
+}) {
+
+  return (
+
+    <div
+      style={{
+        marginBottom: "35px"
+      }}
+    >
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: "1px solid #EAEAEA",
+          paddingBottom: "15px"
+        }}
+      >
+
+        <div style={{ flex: 1 }}>
+
+          <div
+            style={{
+              fontSize: "14px",
+              color: "#777",
+              marginBottom: "8px",
+              fontWeight: "600"
+            }}
+          >
+            {titulo}
+          </div>
+
+          {editando[campo] ? (
+
+            <input
+              type={password ? "password" : "text"}
+              name={campo}
+              value={professor[campo]}
+              onChange={handleChange}
+              style={{
+                width: "100%",
+                maxWidth: "500px",
+                padding: "10px",
+                fontSize: "18px",
+                border: "1px solid #ccc",
+                borderRadius: "5px"
+              }}
+            />
+
+          ) : (
+
+            <div
+              style={{
+                fontSize: "22px",
+                color: "#222",
+                fontWeight: "500"
+              }}
+            >
+              {password
+                ? "********"
+                : professor[campo]}
+            </div>
+
+          )}
+
+        </div>
+
+        <Button
+          basic
+          icon
+          onClick={() =>
+            setEditando({
+              ...editando,
+              [campo]: !editando[campo]
+            })
+          }
+        >
+          <Icon name="edit" />
+        </Button>
+
+      </div>
+
     </div>
   );
 }
