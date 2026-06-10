@@ -145,8 +145,7 @@ export default function CadastroProfessor() {
               />
 
               <Form.Field>
-                <label>CPF</label>
-
+<label>CPF</label>
                 <IMaskInput
                   mask="000.000.000-00"
                   value={cpf}
@@ -163,14 +162,16 @@ export default function CadastroProfessor() {
             </Form.Group>
 
             <Form.Group widths="equal">
-              <Form.Input
+              <Form.Field>
+                  <label>Siape</label>
+              <IMaskInput
+              mask='00000000'
                 fluid
-                label="Siape"
                 placeholder="Nº Siape"
                 value={siape}
                 onChange={(e) => setSiape(e.target.value)}
               />
-
+</Form.Field>
               <Form.Input
                 fluid
                 label="Email"
@@ -178,6 +179,7 @@ export default function CadastroProfessor() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+
             </Form.Group>
 
             <Form.Input

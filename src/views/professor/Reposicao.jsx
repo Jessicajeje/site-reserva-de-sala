@@ -150,7 +150,7 @@ export default function Reposicao() {
           setHoraInicio(res.data.horaInicio || "");
           setHoraFim(res.data.horaFim || "");
           setTurma(res.data.turma || "");
-          setSalas(res.data.salas || "");
+          setSalas(res.data.salas || []);
         });
     }
   }, [state]);
@@ -191,7 +191,13 @@ export default function Reposicao() {
   };
 
   const salvarAgendamento = () => {
-    const payload = { dataSelecionada, horaInicio, horaFim, turma };
+    const payload = {
+      dataSelecionada,
+      horaInicio,
+      horaFim,
+      turma,
+      salaId: salaSelecionada?.id
+    };
     const acao = idReposicao
       ? axios.put(`http://localhost:8080/api/reposicao/${idReposicao}`, payload)
       : axios.post("http://localhost:8080/api/reposicao", payload);
@@ -366,41 +372,69 @@ export default function Reposicao() {
                 ))}
               </Table.Body>
             </Table>
-          </div>  
+          </div>
 
-        {/* NOVA SEÇÃO: LISTAGEM DE SALAS ABAIXO DO CALENDÁRIO */}
-        <div style={{ marginTop: "1em" }}>
-          <Header as="h3" style={{ marginBottom: "1em" }}>
-            <Icon name="building outline" /> Salas Disponíveis
-          </Header>
-          
-          {salas.length === 0 ? (
-            <Segment textAlign="center" secondary style={{ color: "grey" }}>
-              Nenhuma salas encontrada ou carregando...
-            </Segment>
-          ) : (
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-              gap: "16px",
-              width: "100%"
-            }}>
-              {salas.map((salas) => (
-                <Segment key={salas.id} raised style={{ margin: 0, borderRadius: "8px" }}    onClick={() => setSalaSelecionada(salas.nome)}>
-                  <Header as="h4" color="green" style={{ margin: 0 }}>
-                    {salas.nome || `Sala ${salas.numero}`}
-                  </Header>
-                  <div style={{ marginTop: "8px", fontSize: "12px", color: "dimgrey" }}>
-                    <p style={{ margin: "2px 0" }}><b>Bloco:</b> {salas.bloco || "N/A"}</p>
-                    <p style={{ margin: "2px 0" }}><b>Capacidade:</b> {salas.capacidade || "0"} Alunos</p>
-                  </div>
-                </Segment>
-              ))}
-            </div>
-          )}
+          {/* NOVA SEÇÃO: LISTAGEM DE SALAS ABAIXO DO CALENDÁRIO */}
+          <div style={{ marginTop: "1em" }}>
+            <Header as="h3" style={{ marginBottom: "1em" }}>
+              <Icon name="building outline" /> Salas Disponíveis
+            </Header>
+
+            {salas.length === 0 ? (
+              <Segment textAlign="center" secondary style={{ color: "grey" }}>
+                Nenhuma salas encontrada ou carregando...
+              </Segment>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                  gap: "16px",
+                  width: "100%",
+                }}
+              >
+                {salas.map((sala) => (
+                  <Segment
+                    key={sala.id}
+                    raised
+                    onClick={() => setSalaSelecionada(sala)}
+                    style={{
+                      margin: 0,
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      border:
+                        salaSelecionada?.id === sala.id
+                          ? "3px solid #21ba45"
+                          : "1px solid #ddd",
+                      backgroundColor:
+                        salaSelecionada?.id === sala.id ? "#f0fff4" : "white",
+                    }}
+                  >
+                    <Header as="h4" color="green" style={{ margin: 0 }}>
+                      {sala.nome || `Sala ${sala.numero}`}
+                    </Header>
+
+                    <div
+                      style={{
+                        marginTop: "8px",
+                        fontSize: "12px",
+                        color: "dimgrey",
+                      }}
+                    >
+                      <p>
+                        <b>Bloco:</b> {sala.bloco || "N/A"}
+                      </p>
+
+                      <p>
+                        <b>Capacidade:</b> {sala.capacidade || "0"} Alunos
+                      </p>
+                    </div>
+                  </Segment>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        </div>
-       
 
         <div
           style={{
@@ -440,11 +474,16 @@ export default function Reposicao() {
                   <Form.Input label="Fim" value={horaFim} readOnly fluid />
                 </div>
               </div>
-              <Form.Input 
-              label="Sala" 
-              value={salaSelecionada} 
-              readOnly fluid
-               />
+              <Form.Input
+                label="Sala"
+                value={
+                  salaSelecionada
+                    ? `${salaSelecionada.tipo}  ${salaSelecionada.numero}`
+                    : ""
+                }
+                readOnly
+                fluid
+              />
               <Form.Select
                 label="Turma"
                 placeholder="Selecione"
