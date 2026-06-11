@@ -112,12 +112,14 @@ export default function Reposicao() {
   const [salaSelecionada, setSalaSelecionada] = useState("");
   const [turma, setTurma] = useState("");
   const [opcoesTurma, setOpcoesTurma] = useState([]);
+  const [professor, setProfessor] = useState("");
 
   const diasExibidos = gerarDiasDaSemana(semanaSelecionada);
 
   // REQUISIÇÕES E INICIALIZAÇÃO
 
   useEffect(() => {
+    setProfessor(localStorage.getItem("username") || "");
     axios
       .get("http://localhost:8080/api/turma")
       .then((response) => {
@@ -196,7 +198,8 @@ export default function Reposicao() {
       horaInicio,
       horaFim,
       turma,
-      salaId: salaSelecionada?.id
+      salaId: salaSelecionada?.id,
+      professor: professor
     };
     const acao = idReposicao
       ? axios.put(`http://localhost:8080/api/reposicao/${idReposicao}`, payload)
@@ -208,7 +211,7 @@ export default function Reposicao() {
         setTimeout(() => window.location.reload(), 1000);
       })
       .catch((err) =>
-        notifyError(err.response?.data?.message || "Erro ao salvar."),
+        notifyError(err.response?.data?.message),
       );
   };
   return (
@@ -355,7 +358,7 @@ export default function Reposicao() {
                                 whiteSpace: "nowrap",
                               }}
                             >
-                              <b>Professor</b>
+                              <b>{professor}</b>
                               <Icon
                                 name="user circle"
                                 style={{ margin: "1px 0" }}
@@ -491,6 +494,10 @@ export default function Reposicao() {
                 value={turma}
                 onChange={(e, { value }) => setTurma(value)}
               />
+              <Form.Input
+               label="Professor"
+                value={professor}
+                 readOnly fluid />
 
               <Button
                 fluid

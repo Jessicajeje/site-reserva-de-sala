@@ -139,7 +139,7 @@ export default function CadastroProfessor() {
               <Form.Input
                 fluid
                 label="Nome"
-                placeholder="Nome completo"
+                placeholder="Nome"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
               />
