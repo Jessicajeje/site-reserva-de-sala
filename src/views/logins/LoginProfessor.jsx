@@ -19,8 +19,6 @@ const LoginProfessor = () => {
         password: senha,
       };
 
-      console.log(authenticationRequest);
-
       axios
         .post("http://localhost:8080/api/auth", authenticationRequest)
         .then((response) => {
@@ -28,6 +26,7 @@ const LoginProfessor = () => {
             response.data.token,
             response.data.tokenExpiresIn,
           );
+          localStorage.setItem("idProfessor", response.data.id);
           localStorage.setItem("username", response.data.username);
 
           navigate("/home");

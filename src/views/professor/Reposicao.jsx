@@ -8,7 +8,7 @@ import {
   Icon,
   Segment,
   Select,
-  Table
+  Table,
 } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 
@@ -93,47 +93,36 @@ export default function Reposicao() {
     })?.value || opcoesSemanas[0].value;
 
   // Estados
-  const [semana, setSemana] = useState(
+  const [semanaSelecionada, setSemanaSelecionada] = useState(
     semanaAtualOuPrimeira,
   );
   const [preview, setPreview] = useState({
     dia: null,
-    horaInicio: null,
-    horaFim: null,
+    horarioInicio: null,
+    horarioFim: null,
   });
   const [idReposicao, setIdReposicao] = useState(null);
   const [lista, setLista] = useState([]);
   const [turnoAtivo, setTurnoAtivo] = useState("Manhã");
-  const [data, setData] = useState("");
-  const [horaInicio, setHoraInicio] = useState("");
-  const [horaFim, setHoraFim] = useState("");
+  const [dataSelecionada, setDataSelecionada] = useState("");
+  const [dataAulaOriginal, setDataAulaOriginal] = useState("");
+  const [horarioInicio, setHorarioInicio] = useState("");
+  const [horarioFim, setHorarioFim] = useState("");
   const [salas, setSalas] = useState([]);
-  const [sala, setSala] = useState("");
-  const [turma, setTurma] = useState("");
+  const [salaSelecionada, setSalaSelecionada] = useState("");
+  const [idTurma, setIdTurma] = useState("");
   const [opcoesTurma, setOpcoesTurma] = useState([]);
-  const [professor, setProfessor] = useState("");
-  const [disciplina, setDisciplina] = useState("");
-  const [opcoesDisciplina, setOpcoesDisciplina] = useState();
-
-  const diasExibidos = gerarDiasDaSemana(semana);
+  const [idDisciplina, setIdDisciplina] = useState("");
+  const [opcoesDisciplina, setOpcoesDisciplina] = useState([]);
+  const [idProfessor, setIdProfessor] = useState("");
+  const [emailProfessor, setEmailProfessor] = useState("");
+  const diasExibidos = gerarDiasDaSemana(semanaSelecionada);
 
   // REQUISIÇÕES E INICIALIZAÇÃO
 
   useEffect(() => {
-    setProfessor(localStorage.getItem("username") || "");
-        axios
-      .get("http://localhost:8080/api/disciplina")
-      .then((response) => {
-        setLista(response.data);
-        setOpcoesDisciplina(
-          response.data.map((t) => ({ key: t.id, text: t.nome, value: t.id })),
-        );
-      })
-      .catch((err) => {
-        console.error("Erro ao buscar turmas:", err);
-        notifyError("Erro ao carregar turmas. Verifique a conexão.");
-      });
-
+    setIdProfessor(Number(localStorage.getItem("idProfessor")));
+    setEmailProfessor(localStorage.getItem("username") || "");
     axios
       .get("http://localhost:8080/api/turma")
       .then((response) => {
@@ -157,15 +146,29 @@ export default function Reposicao() {
         notifyError("Erro ao carregar salas. Verifique a conexão.");
       });
 
+    axios
+      .get("http://localhost:8080/api/disciplina")
+      .then((response) => {
+        setOpcoesDisciplina(
+          response.data.map((t) => ({ key: t.id, text: t.nome, value: t.id })),
+        );
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar disciplinas:", err);
+        notifyError("Erro ao carregar disciplinas. Verifique a conexão.");
+      });
+
     if (state?.id) {
       axios
         .get(`http://localhost:8080/api/reposicao/${state.id}`)
         .then((res) => {
           setIdReposicao(res.data.id);
-          setData(res.data.data || "");
-          setHoraInicio(res.data.horaInicio || "");
-          setHoraFim(res.data.horaFim || "");
-          setTurma(res.data.turma || "");
+          setDataSelecionada(res.data.dataSelecionada || "");
+          setDataAulaOriginal(res.data.dataAulaOriginal || "");
+          setHorarioInicio(res.data.horarioInicio || "");
+          setHorarioFim(res.data.horarioFim || "");
+          setIdDisciplina(res.data.idDisciplina || "");
+          setIdTurma(res.data.idTurma || "");
           setSalas(res.data.salas || []);
         });
     }
@@ -175,46 +178,55 @@ export default function Reposicao() {
     const diaStr = dia.toString();
 
     //Desmarcar: se clicar exatamente no início que já existe
-    if (preview.dia === diaStr && preview.horaInicio === hora) {
-      setPreview({ dia: null, horaInicio: null, horaFim: null });
-      setData("");
-      setHoraInicio("");
-      setHoraFim("");
+    if (preview.dia === diaStr && preview.horarioInicio === hora) {
+      setPreview({ dia: null, horarioInicio: null, horarioFim: null });
+      setDataSelecionada("");
+      setHorarioInicio("");
+      setHorarioFim("");
       return;
     }
 
     //Novo: se mudar de dia ou não houver nada selecionado
-    if (preview.dia !== diaStr || !preview.horaInicio) {
+    if (preview.dia !== diaStr || !preview.horarioInicio) {
       const dataLocal = new Date(
         dia.getTime() - dia.getTimezoneOffset() * 60000,
       );
-      setData(dataLocal.toISOString().split("T")[0]);
-      setPreview({ dia: diaStr, horaInicio: hora, horaFim: hora });
-      setHoraInicio(hora);
-      setHoraFim(hora);
+      setDataSelecionada(dataLocal.toISOString().split("T")[0]);
+      setPreview({ dia: diaStr, horarioInicio: hora, horarioFim: hora });
+      setHorarioInicio(hora);
+      setHorarioFim(hora);
     }
     //Esticar: se for no mesmo dia
     else {
-      if (hora > preview.horaInicio) {
-        setPreview({ ...preview, horaFim: hora });
-        setHoraFim(hora);
+      if (hora > preview.horarioInicio) {
+        setPreview({ ...preview, horarioFim: hora });
+        setHorarioFim(hora);
       } else {
-        setPreview({ dia: diaStr, horaInicio: hora, horaFim: hora });
-        setHoraInicio(hora);
-        setHoraFim(hora);
+        setPreview({ dia: diaStr, horarioInicio: hora, horarioFim: hora });
+        setHorarioInicio(hora);
+        setHorarioFim(hora);
       }
     }
   };
 
+  const formatarData = (data) => {
+    if (!data) return "";
+
+    const [ano, mes, dia] = data.split("-");
+    return `${dia}/${mes}/${ano}`;
+  };
+
   const salvarAgendamento = () => {
     const payload = {
-      data,
-      horaInicio,
-      horaFim,
-      disciplina,
-      turma,
-      salaId: sala?.id,
-      professor: professor
+      idTurma,
+      idDisciplina,
+      idSala: salaSelecionada?.id,
+      idProfessor,
+      dataReposicao: formatarData(dataSelecionada),
+      dataAulaOriginal: formatarData(dataAulaOriginal),
+      horarioInicio,
+      horarioFim,
+      statusReposicao: "PENDENTE"
     };
     const acao = idReposicao
       ? axios.put(`http://localhost:8080/api/reposicao/${idReposicao}`, payload)
@@ -266,8 +278,8 @@ export default function Reposicao() {
             <Select
               compact
               options={opcoesSemanas}
-              value={semana}
-              onChange={(e, { value }) => setSemana(value)}
+              value={semanaSelecionada}
+              onChange={(e, { value }) => setSemanaSelecionada(value)}
             />
             <Button.Group size="small">
               {Object.keys(horariosTurno).map((t) => (
@@ -328,11 +340,11 @@ export default function Reposicao() {
 
                       const isSelected =
                         preview.dia === diaStr &&
-                        hora >= preview.horaInicio &&
-                        hora <= preview.horaFim;
+                        hora >= preview.horarioInicio &&
+                        hora <= preview.horarioFim;
 
-                      const isStart = isSelected && hora === preview.horaInicio;
-                      const isEnd = isSelected && hora === preview.horaFim;
+                      const isStart = isSelected && hora === preview.horarioInicio;
+                      const isEnd = isSelected && hora === preview.horarioFim;
                       return (
                         <Table.Cell
                           key={dia.toString()}
@@ -373,13 +385,13 @@ export default function Reposicao() {
                                 whiteSpace: "nowrap",
                               }}
                             >
-                              <b>{professor}</b>
+                              <b>{emailProfessor}</b>
                               <Icon
                                 name="user circle"
                                 style={{ margin: "1px 0" }}
                               />
                               <span>
-                                {horaInicio} - {horaFim}
+                                {horarioInicio} - {horarioFim}
                               </span>
                             </div>
                           )}
@@ -415,17 +427,17 @@ export default function Reposicao() {
                   <Segment
                     key={sala.id}
                     raised
-                    onClick={() => setSala(sala)}
+                    onClick={() => setSalaSelecionada(sala)}
                     style={{
                       margin: 0,
                       borderRadius: "8px",
                       cursor: "pointer",
                       border:
-                        sala?.id === sala.id
+                        salaSelecionada?.id === sala.id
                           ? "3px solid #21ba45"
                           : "1px solid #ddd",
                       backgroundColor:
-                        sala?.id === sala.id ? "#f0fff4" : "white",
+                        salaSelecionada?.id === sala.id ? "#f0fff4" : "white",
                     }}
                   >
                     <Header as="h4" color="green" style={{ margin: 0 }}>
@@ -441,6 +453,10 @@ export default function Reposicao() {
                     >
                       <p>
                         <b>Bloco:</b> {sala.bloco || "N/A"}
+                      </p>
+
+                      <p>
+                        <b>Capacidade:</b> {sala.capacidade || "0"} Alunos
                       </p>
                     </div>
                   </Segment>
@@ -464,8 +480,8 @@ export default function Reposicao() {
               <Form.Input
                 label="Dia:"
                 type="date"
-                value={data}
-                onChange={(e) => setData(e.target.value)}
+                value={dataSelecionada}
+                onChange={(e) => setDataSelecionada(e.target.value)}
               />
 
               <div
@@ -479,43 +495,50 @@ export default function Reposicao() {
                 <div style={{ flex: 1 }}>
                   <Form.Input
                     label="Início"
-                    value={horaInicio}
+                    value={horarioInicio}
                     readOnly
                     fluid
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <Form.Input label="Fim" value={horaFim} readOnly fluid />
+                  <Form.Input label="Fim" value={horarioFim} readOnly fluid />
                 </div>
               </div>
               <Form.Input
                 label="Sala"
                 value={
-                  sala
-                    ? `${sala.tipo}  ${sala.numero}`
+                  salaSelecionada
+                    ? `${salaSelecionada.tipo}  ${salaSelecionada.numero}`
                     : ""
                 }
                 readOnly
                 fluid
               />
-              <Form.Select
-                label="Disciplina"
-                placeholder="Selecione"
-                options={opcoesDisciplina}
-                value={disciplina}
-                onChange={(e, { value }) => setDisciplina(value)}
+              <Form.Input
+                fluid
+                type="date"
+                label="Data Aula Original"
+                value={dataAulaOriginal}
+                onChange={(e) => setDataAulaOriginal(e.target.value)}
               />
               <Form.Select
                 label="Turma"
                 placeholder="Selecione"
                 options={opcoesTurma}
-                value={turma}
-                onChange={(e, { value }) => setTurma(value)}
+                value={idTurma}
+                onChange={(e, { value }) => setIdTurma(value)}
+              />
+              <Form.Select
+                label="Disciplina"
+                placeholder="Selecione"
+                options={opcoesDisciplina}
+                value={idDisciplina}
+                onChange={(e, { value }) => setIdDisciplina(value)}
               />
               <Form.Input
-               label="Professor"
-                value={professor}
-                 readOnly fluid />
+                label="Professor"
+                value={emailProfessor}
+                readOnly fluid />
 
               <Button
                 fluid
@@ -530,6 +553,6 @@ export default function Reposicao() {
           </Segment>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
