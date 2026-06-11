@@ -1,147 +1,299 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
 import {
   Container,
   Divider,
   Header,
   Icon,
-  Segment
+  Segment,
+  Label,
+  Loader,
 } from "semantic-ui-react";
 
 import Navbar from "../../Components/navbar/NavbarProfessor";
 
 export default function Notificacoes() {
 
-  // Controle do sino
-  const [notificacoesAtivas, setNotificacoesAtivas] = useState(true);
+  const [notificacoesAtivas, setNotificacoesAtivas] =
+    useState(true);
 
-  // Histórico de notificações
-  const [notificacoes, setNotificacoes] = useState([
-    {
-      id: 1,
-      titulo: "Reserva confirmada",
-      descricao: "Sua reserva no Lab 07 foi aprovada.",
-      favorita: false
-    },
-    {
-      id: 2,
-      titulo: "Reposição de aula",
-      descricao: "Nova solicitação de reposição cadastrada.",
-      favorita: true
-    }
-  ]);
+  const [loading, setLoading] = useState(true);
 
-  // Favoritar
-  function toggleFavorita(id) {
-    const novaLista = notificacoes.map((item) => {
-      if (item.id === id) {
-        return {
-          ...item,
-          favorita: !item.favorita
-        };
-      }
+  const [notificacoes, setNotificacoes] =
+    useState([]);
 
-      return item;
-    });
+  const professorId =
+    localStorage.getItem("professorId") || 1;
 
-    setNotificacoes(novaLista);
+  useEffect(() => {
+    carregarNotificacoes();
+  }, []);
+
+  function carregarNotificacoes() {
+
+    axios
+      .get(
+        `http://localhost:8080/api/notificacao/professor/${professorId}`
+      )
+      .then((response) => {
+
+        setNotificacoes(response.data);
+
+      })
+      .catch((error) => {
+
+        console.error(
+          "Erro ao carregar notificações",
+          error
+        );
+
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
-  // Excluir
-  function excluirNotificacao(id) {
-    const novaLista = notificacoes.filter(
-      (item) => item.id !== id
-    );
+  async function favoritar(id) {
 
-    setNotificacoes(novaLista);
+    try {
+
+      await axios.put(
+        `http://localhost:8080/api/notificacao/${id}/favoritar`
+      );
+
+      carregarNotificacoes();
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+  }
+
+  async function excluir(id) {
+
+    try {
+
+      await axios.delete(
+        `http://localhost:8080/api/notificacao/${id}`
+      );
+
+      carregarNotificacoes();
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+  }
+
+  async function marcarComoLida(id) {
+
+    try {
+
+      await axios.put(
+        `http://localhost:8080/api/notificacao/${id}/lida`
+      );
+
+      carregarNotificacoes();
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
   }
 
   return (
-    <div style={{ backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-
+    <div
+      style={{
+        backgroundColor: "#fff",
+        minHeight: "100vh",
+      }}
+    >
       <Navbar tela={"notificacoes"} />
 
       <div style={{ display: "flex" }}>
 
-        {/* Espaço lateral */}
         <div
           style={{
             width: "220px",
-            backgroundColor: "#fff",
             minHeight: "100vh",
-            borderRight: "1px solid #ddd"
           }}
         />
 
-        {/* Conteúdo */}
-        <div style={{ flex: 1, padding: "40px 50px" }}>
+        <div
+          style={{
+            flex: 1,
+            padding: "40px 60px",
+          }}
+        >
           <Container fluid>
 
-            {/* Título */}
             <div
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center"
+                alignItems: "center",
               }}
             >
-              <Header
-                as="h2"
-                style={{
-                  marginBottom: "10px",
-                  fontWeight: "600"
-                }}
-              >
+              <Header as="h2">
                 Notificações
               </Header>
 
-              {/* Sino */}
               <Icon
                 name={
                   notificacoesAtivas
-                    ? "bell outline"
-                    : "bell slash outline"
+                    ? "bell"
+                    : "bell slash"
                 }
                 size="large"
-                style={{ cursor: "pointer" }}
+                style={{
+                  cursor: "pointer",
+                }}
                 onClick={() =>
-                  setNotificacoesAtivas(!notificacoesAtivas)
+                  setNotificacoesAtivas(
+                    !notificacoesAtivas
+                  )
                 }
               />
             </div>
 
-            <Divider style={{ marginBottom: "30px" }} />
+            <Divider />
 
-            {/* Histórico */}
-            {notificacoes.length === 0 ? (
-              <p style={{ color: "#777" }}>
-                Nenhuma notificação encontrada.
-              </p>
+            {!notificacoesAtivas && (
+
+              <Segment color="red">
+                As notificações estão
+                desativadas.
+              </Segment>
+
+            )}
+
+            {loading ? (
+
+              <Loader
+                active
+                inline="centered"
+              />
+
+            ) : notificacoes.length === 0 ? (
+
+              <Segment placeholder>
+
+                <Header icon>
+                  <Icon name="bell outline" />
+                  Nenhuma notificação encontrada.
+                </Header>
+
+              </Segment>
+
             ) : (
+
               notificacoes.map((item) => (
+
                 <Segment
                   key={item.id}
                   style={{
+                    borderRadius: "10px",
                     marginBottom: "20px",
-                    borderRadius: "10px"
+                    backgroundColor: item.lida
+                      ? "#f9f9f9"
+                      : "#ffffff"
                   }}
                 >
 
-                  {/* Título */}
                   <div
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center"
+                      justifyContent:
+                        "space-between",
                     }}
                   >
-                    <Header as="h4" style={{ margin: 0 }}>
-                      {item.titulo}
-                    </Header>
-
-                    {/* Botões */}
                     <div>
 
-                      {/* Favoritar */}
+                      <Header
+                        as="h4"
+                        style={{
+                          marginBottom:
+                            "5px",
+                        }}
+                      >
+                        {item.titulo}
+                      </Header>
+
+                      <p
+                        style={{
+                          color: "#666",
+                        }}
+                      >
+                        {item.descricao}
+                      </p>
+
+                      <div
+                        style={{
+                          marginTop:
+                            "10px",
+                        }}
+                      >
+
+                        {item.lida ? (
+
+                          <Label color="green">
+                            Lida
+                          </Label>
+
+                        ) : (
+
+                          <Label color="orange">
+                            Não Lida
+                          </Label>
+
+                        )}
+
+                        {item.favorita && (
+
+                          <Label
+                            color="yellow"
+                            style={{
+                              marginLeft:
+                                "10px",
+                            }}
+                          >
+                            Favorita
+                          </Label>
+
+                        )}
+
+                      </div>
+
+                    </div>
+
+                    <div>
+
+                      {!item.lida && (
+
+                        <Icon
+                          name="check circle"
+                          size="large"
+                          color="green"
+                          style={{
+                            cursor:
+                              "pointer",
+                            marginRight:
+                              "15px",
+                          }}
+                          title="Marcar como lida"
+                          onClick={() =>
+                            marcarComoLida(
+                              item.id
+                            )
+                          }
+                        />
+
+                      )}
+
                       <Icon
                         name={
                           item.favorita
@@ -149,40 +301,43 @@ export default function Notificacoes() {
                             : "star outline"
                         }
                         size="large"
+                        color="yellow"
                         style={{
-                          cursor: "pointer",
-                          marginRight: "15px"
+                          cursor:
+                            "pointer",
+                          marginRight:
+                            "15px",
                         }}
+                        title="Favoritar"
                         onClick={() =>
-                          toggleFavorita(item.id)
+                          favoritar(
+                            item.id
+                          )
                         }
                       />
 
-                      {/* Excluir */}
                       <Icon
-                        name="trash alternate outline"
+                        name="trash"
                         size="large"
-                        style={{ cursor: "pointer" }}
+                        color="red"
+                        style={{
+                          cursor:
+                            "pointer",
+                        }}
+                        title="Excluir"
                         onClick={() =>
-                          excluirNotificacao(item.id)
+                          excluir(
+                            item.id
+                          )
                         }
                       />
 
                     </div>
                   </div>
-
-                  {/* Texto */}
-                  <p
-                    style={{
-                      marginTop: "10px",
-                      color: "#666"
-                    }}
-                  >
-                    {item.descricao}
-                  </p>
-
                 </Segment>
+
               ))
+
             )}
 
           </Container>
