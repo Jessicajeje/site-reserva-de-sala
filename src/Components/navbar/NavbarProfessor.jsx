@@ -12,7 +12,6 @@ export default function Navbar() {
  const menuItems = [
  { path: "/home", icon: <FaHome />, label: "Início" },
  { path: "/notificacoes", icon: <FaBell />, label: "Notificações" },
- { path: "/autenticacao", icon: <FaUser />, label: "Autenticação de professores" },
  { path: "/perfil", icon: <FaUser />, label: "Perfil" },
 
  ];

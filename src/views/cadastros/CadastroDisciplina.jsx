@@ -1,11 +1,9 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useLocation} from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess, notifyWarn } from "../../views/util/Util";
 import "../logins/estilo.css";
-import { set } from "date-fns";
 
 export default function CadastroDisciplina() {
   const { state } = useLocation();
@@ -19,24 +17,20 @@ export default function CadastroDisciplina() {
   const [periodoOfertado, setPeriodoOfertado] = useState();
   const [chTotal, setChTotal] = useState();
 
-  const opcoesDias = [
-    { key: "seg", text: "Segunda-feira", value: "SEGUNDA" },
-    { key: "ter", text: "Terça-feira", value: "TERCA" },
-    { key: "qua", text: "Quarta-feira", value: "QUARTA" },
-    { key: "qui", text: "Quinta-feira", value: "QUINTA" },
-    { key: "sex", text: "Sexta-feira", value: "SEXTA" },
-    { key: "sab", text: "Sábado", value: "SABADO" },
-  ];
   useEffect(() => {
 
-    axios.get("http://localhost:8080/api/curso")
-      .then((res) => {
-        setOpcoesCurso(res.data.map(c => ({
-          key: c.id,
-          text: `${c.nome} - períodos: ${ c.qtdPeriodos}`,
-          value: c.id
-        })));
+ axios.get("http://localhost:8080/api/curso")
+      .then((response) => {
+
+        const cursosFormatados = response.data.map((curso) => ({
+          key: curso.id,
+          text: curso.nome,
+          value: curso.id,
+        }));
+
+        setOpcoesCurso(cursosFormatados);
       });
+
     if (state?.id) {
       axios.get("http://localhost:8080/api/disciplina/" + state.id)
         .then((res) => {

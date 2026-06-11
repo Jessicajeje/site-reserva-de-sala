@@ -9,11 +9,13 @@ export default function CadastroCurso() {
   const { state } = useLocation();
 
   const [idCurso, setIdCurso] = useState();
-  const [opcoesDisciplinas, setOpcoesDisciplinas] = useState();
+  const [opcoesDisciplinas, setOpcoesDisciplinas] = useState([]);
+  const [disciplinas, setDisciplinas] = useState([]);
   const [nome, setNome] = useState();
   const [qtdPeriodos, setQtdPeriodos] = useState();
   const [area, setArea] = useState();
   const navigate = useNavigate();
+
   const opcoesArea = [
     { key: "TI", text: "Tecnologia da Informação", value: "ti" },
     { key: "ADM", text: "Administração", value: "adm" },
@@ -21,7 +23,6 @@ export default function CadastroCurso() {
     { key: "COM", text: "Comércio", value: "com" },
     { key: "QUA", text: "Qualidade", value: "qual" },
   ];
-  
 
   const opcoesCurso = [
     { key: "IPI", text: "Informática para Internet", value: "ipi" },
@@ -43,7 +44,6 @@ export default function CadastroCurso() {
           text: d.nome,
           value: d.id,
         }));
-
         setOpcoesDisciplinas(formatadas);
       })
       .catch(() => {
@@ -60,6 +60,12 @@ export default function CadastroCurso() {
           setNome(response.data.nome);
           setArea(response.data.area);
           setQtdPeriodos(response.data.qtdPeriodos);
+          
+          if (response.data.disciplinas && typeof response.data.disciplinas[0] === 'object') {
+            setDisciplinas(response.data.disciplinas.map(d => d.id));
+          } else {
+            setDisciplinas(response.data.disciplinas || []);
+          }
         });
     }
   }, [state]);
@@ -68,7 +74,8 @@ export default function CadastroCurso() {
     let cursoRequest = {
       nome: nome,
       area: area,
-      qtdPeriodos: qtdPeriodos
+      qtdPeriodos: qtdPeriodos,
+      disciplinas: disciplinas
     };
 
     if (idCurso != null) {
@@ -94,7 +101,6 @@ export default function CadastroCurso() {
         });
     }
   }
-
   return (
     <Grid
       textAlign="center"
@@ -133,10 +139,25 @@ export default function CadastroCurso() {
                 onChange={(e, { value }) => setNome(value)}
               />
             </Form.Field>
-              <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+            
+            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
               <Form.Select
                 fluid
-                label = "Área:"
+                multiple
+                search
+                label="Disciplinas do curso:"
+                placeholder="Selecione as disciplinas"
+                options={opcoesDisciplinas}
+                required
+                value={disciplinas}
+                onChange={(e, { value }) => setDisciplinas(value)}
+              />
+            </Form.Field>
+            
+            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+              <Form.Select
+                fluid
+                label="Área:"
                 required
                 options={opcoesArea}
                 placeholder="Selecione a área"
@@ -145,10 +166,10 @@ export default function CadastroCurso() {
               />
             </Form.Field>
 
-              <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
               <Form.Input
                 fluid
-                label = "Quantidade de períodos:"
+                label="Quantidade de períodos:"
                 required
                 type="number"
                 placeholder="Ex: 6"
@@ -156,8 +177,6 @@ export default function CadastroCurso() {
                 onChange={(e, { value }) => setQtdPeriodos(value)}
               />
             </Form.Field>
-
-
 
             <Button
               fluid

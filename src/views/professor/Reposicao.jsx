@@ -4,12 +4,11 @@ import { useLocation } from "react-router-dom";
 import {
   Button,
   Form,
-  Grid,
   Header,
   Icon,
   Segment,
   Select,
-  Table,
+  Table
 } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 
@@ -94,7 +93,7 @@ export default function Reposicao() {
     })?.value || opcoesSemanas[0].value;
 
   // Estados
-  const [semanaSelecionada, setSemanaSelecionada] = useState(
+  const [semana, setSemana] = useState(
     semanaAtualOuPrimeira,
   );
   const [preview, setPreview] = useState({
@@ -105,21 +104,36 @@ export default function Reposicao() {
   const [idReposicao, setIdReposicao] = useState(null);
   const [lista, setLista] = useState([]);
   const [turnoAtivo, setTurnoAtivo] = useState("Manhã");
-  const [dataSelecionada, setDataSelecionada] = useState("");
+  const [data, setData] = useState("");
   const [horaInicio, setHoraInicio] = useState("");
   const [horaFim, setHoraFim] = useState("");
   const [salas, setSalas] = useState([]);
-  const [salaSelecionada, setSalaSelecionada] = useState("");
+  const [sala, setSala] = useState("");
   const [turma, setTurma] = useState("");
   const [opcoesTurma, setOpcoesTurma] = useState([]);
   const [professor, setProfessor] = useState("");
+  const [disciplina, setDisciplina] = useState("");
+  const [opcoesDisciplina, setOpcoesDisciplina] = useState();
 
-  const diasExibidos = gerarDiasDaSemana(semanaSelecionada);
+  const diasExibidos = gerarDiasDaSemana(semana);
 
   // REQUISIÇÕES E INICIALIZAÇÃO
 
   useEffect(() => {
     setProfessor(localStorage.getItem("username") || "");
+        axios
+      .get("http://localhost:8080/api/disciplina")
+      .then((response) => {
+        setLista(response.data);
+        setOpcoesDisciplina(
+          response.data.map((t) => ({ key: t.id, text: t.nome, value: t.id })),
+        );
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar turmas:", err);
+        notifyError("Erro ao carregar turmas. Verifique a conexão.");
+      });
+
     axios
       .get("http://localhost:8080/api/turma")
       .then((response) => {
@@ -148,7 +162,7 @@ export default function Reposicao() {
         .get(`http://localhost:8080/api/reposicao/${state.id}`)
         .then((res) => {
           setIdReposicao(res.data.id);
-          setDataSelecionada(res.data.dataSelecionada || "");
+          setData(res.data.data || "");
           setHoraInicio(res.data.horaInicio || "");
           setHoraFim(res.data.horaFim || "");
           setTurma(res.data.turma || "");
@@ -163,7 +177,7 @@ export default function Reposicao() {
     //Desmarcar: se clicar exatamente no início que já existe
     if (preview.dia === diaStr && preview.horaInicio === hora) {
       setPreview({ dia: null, horaInicio: null, horaFim: null });
-      setDataSelecionada("");
+      setData("");
       setHoraInicio("");
       setHoraFim("");
       return;
@@ -174,7 +188,7 @@ export default function Reposicao() {
       const dataLocal = new Date(
         dia.getTime() - dia.getTimezoneOffset() * 60000,
       );
-      setDataSelecionada(dataLocal.toISOString().split("T")[0]);
+      setData(dataLocal.toISOString().split("T")[0]);
       setPreview({ dia: diaStr, horaInicio: hora, horaFim: hora });
       setHoraInicio(hora);
       setHoraFim(hora);
@@ -194,11 +208,12 @@ export default function Reposicao() {
 
   const salvarAgendamento = () => {
     const payload = {
-      dataSelecionada,
+      data,
       horaInicio,
       horaFim,
+      disciplina,
       turma,
-      salaId: salaSelecionada?.id,
+      salaId: sala?.id,
       professor: professor
     };
     const acao = idReposicao
@@ -251,8 +266,8 @@ export default function Reposicao() {
             <Select
               compact
               options={opcoesSemanas}
-              value={semanaSelecionada}
-              onChange={(e, { value }) => setSemanaSelecionada(value)}
+              value={semana}
+              onChange={(e, { value }) => setSemana(value)}
             />
             <Button.Group size="small">
               {Object.keys(horariosTurno).map((t) => (
@@ -400,17 +415,17 @@ export default function Reposicao() {
                   <Segment
                     key={sala.id}
                     raised
-                    onClick={() => setSalaSelecionada(sala)}
+                    onClick={() => setSala(sala)}
                     style={{
                       margin: 0,
                       borderRadius: "8px",
                       cursor: "pointer",
                       border:
-                        salaSelecionada?.id === sala.id
+                        sala?.id === sala.id
                           ? "3px solid #21ba45"
                           : "1px solid #ddd",
                       backgroundColor:
-                        salaSelecionada?.id === sala.id ? "#f0fff4" : "white",
+                        sala?.id === sala.id ? "#f0fff4" : "white",
                     }}
                   >
                     <Header as="h4" color="green" style={{ margin: 0 }}>
@@ -426,10 +441,6 @@ export default function Reposicao() {
                     >
                       <p>
                         <b>Bloco:</b> {sala.bloco || "N/A"}
-                      </p>
-
-                      <p>
-                        <b>Capacidade:</b> {sala.capacidade || "0"} Alunos
                       </p>
                     </div>
                   </Segment>
@@ -453,8 +464,8 @@ export default function Reposicao() {
               <Form.Input
                 label="Dia:"
                 type="date"
-                value={dataSelecionada}
-                onChange={(e) => setDataSelecionada(e.target.value)}
+                value={data}
+                onChange={(e) => setData(e.target.value)}
               />
 
               <div
@@ -480,12 +491,19 @@ export default function Reposicao() {
               <Form.Input
                 label="Sala"
                 value={
-                  salaSelecionada
-                    ? `${salaSelecionada.tipo}  ${salaSelecionada.numero}`
+                  sala
+                    ? `${sala.tipo}  ${sala.numero}`
                     : ""
                 }
                 readOnly
                 fluid
+              />
+              <Form.Select
+                label="Disciplina"
+                placeholder="Selecione"
+                options={opcoesDisciplina}
+                value={disciplina}
+                onChange={(e, { value }) => setDisciplina(value)}
               />
               <Form.Select
                 label="Turma"
