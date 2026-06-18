@@ -3,6 +3,7 @@ import axios from "axios";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { getErrorMessage } from "../util/getErrorMessage";
 import "../logins/estilo.css";
 
 export default function CadastroTurma() {
@@ -45,6 +46,21 @@ export default function CadastroTurma() {
         }));
 
         setOpcoesCurso(cursosFormatados);
+      })
+      .catch((error) => {
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
       });
 
     if (state != null && state.id != null) {
@@ -70,7 +86,22 @@ export default function CadastroTurma() {
           if (response.data.curso) {
             setIdCurso(response.data.curso.id);
           }
-        });
+        })
+        .catch((error) => {
+
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
+          } else {
+            notifyError(getErrorMessage(error));
+          }
+
+        });;
     }
 
   }, [state]);
@@ -100,19 +131,18 @@ export default function CadastroTurma() {
         })
         .catch((error) => {
 
-          if (error.response.data.errors !== undefined) {
+          const erros = error.response?.data?.errors;
 
-            for (let i = 0; i < error.response.data.errors.length; i++) {
+          if (erros?.length > 0) {
 
-              notifyError(error.response.data.errors[i].defaultMessage);
-
-            }
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
 
           } else {
-
-            notifyError(error.response.data.message);
-
+            notifyError(getErrorMessage(error));
           }
+
         });
 
     } else {
@@ -126,19 +156,18 @@ export default function CadastroTurma() {
         })
         .catch((error) => {
 
-          if (error.response.data.errors !== undefined) {
+          const erros = error.response?.data?.errors;
 
-            for (let i = 0; i < error.response.data.errors.length; i++) {
+          if (erros?.length > 0) {
 
-              notifyError(error.response.data.errors[i].defaultMessage);
-
-            }
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
 
           } else {
-
-            notifyError(error.response.data.message);
-
+            notifyError(getErrorMessage(error));
           }
+
         });
     }
   }

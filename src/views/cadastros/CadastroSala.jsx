@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
+import { getErrorMessage } from "../util/getErrorMessage";
 import '../logins/estilo.css';
 
 export default function CadastroSala({ lista = [] }) { // Definido como function e exportado diretamente
@@ -13,7 +14,7 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
   const [numero, setNumero] = useState();
   const [tipo, setTipo] = useState('sala');
 
- 
+
 
   const opcoesBloco = [
     { key: "b", text: "Bloco B", value: "Bloco_B" },
@@ -33,6 +34,21 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
           setBloco(response.data.bloco);
           setNumero(response.data.numero);
           setTipo(response.data.tipo || 'sala');
+        })
+        .catch((error) => {
+
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
+          } else {
+            notifyError(getErrorMessage(error));
+          }
+
         });
     }
   }, [state]);
@@ -53,14 +69,19 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
           setTimeout(() => navigate("/salas"), 1000);
         })
         .catch((error) => {
-          console.error(error);
-          if (error.response.data.errors !== undefined) {
-            for (let i = 0; i < error.response.data.errors.length; i++) {
-              notifyError(error.response.data.errors[i].defaultMessage);
-            }
+
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
           } else {
-            notifyError(error.response.data.message);
+            notifyError(getErrorMessage(error));
           }
+
         });
     } else {
       axios
@@ -70,14 +91,19 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
           setTimeout(() => navigate("/salas"), 1000);
         })
         .catch((error) => {
-          console.error(error);
-          if (error.response.data.errors !== undefined) {
-            for (let i = 0; i < error.response.data.errors.length; i++) {
-              notifyError(error.response.data.errors[i].defaultMessage);
-            }
+
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
           } else {
-            notifyError(error.response.data.message);
+            notifyError(getErrorMessage(error));
           }
+
         });
     }
   }
@@ -112,7 +138,7 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
 
             <Form.Field style={{ marginBottom: '15px' }}>
               <Form.Input
-              label="Número da sala:"
+                label="Número da sala:"
                 fluid
                 type="number"
                 value={numero}

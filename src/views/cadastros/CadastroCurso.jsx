@@ -3,6 +3,7 @@ import axios from "axios";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getErrorMessage } from "../util/getErrorMessage";
 import "../logins/estilo.css";
 
 export default function CadastroCurso() {
@@ -46,8 +47,20 @@ export default function CadastroCurso() {
         }));
         setOpcoesDisciplinas(formatadas);
       })
-      .catch(() => {
-        notifyError("Erro ao carregar disciplinas.");
+      .catch((error) => {
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
       });
   }, []);
 
@@ -60,12 +73,27 @@ export default function CadastroCurso() {
           setNome(response.data.nome);
           setArea(response.data.area);
           setQtdPeriodos(response.data.qtdPeriodos);
-          
+
           if (response.data.disciplinas && typeof response.data.disciplinas[0] === 'object') {
             setDisciplinas(response.data.disciplinas.map(d => d.id));
           } else {
             setDisciplinas(response.data.disciplinas || []);
           }
+        })
+        .catch((error) => {
+
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
+          } else {
+            notifyError(getErrorMessage(error));
+          }
+
         });
     }
   }, [state]);
@@ -86,8 +114,19 @@ export default function CadastroCurso() {
           navigate("/cursos");
         })
         .catch((error) => {
-          console.error(error);
-          notifyError("Erro ao alterar um curso.");
+
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
+          } else {
+            notifyError(getErrorMessage(error));
+          }
+
         });
     } else {
       axios
@@ -97,7 +136,19 @@ export default function CadastroCurso() {
           navigate("/cursos");
         })
         .catch((error) => {
-          notifyError("Erro ao cadastrar um curso.");
+
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
+          } else {
+            notifyError(getErrorMessage(error));
+          }
+
         });
     }
   }
@@ -139,7 +190,7 @@ export default function CadastroCurso() {
                 onChange={(e, { value }) => setNome(value)}
               />
             </Form.Field>
-            
+
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
               <Form.Select
                 fluid
@@ -153,7 +204,7 @@ export default function CadastroCurso() {
                 onChange={(e, { value }) => setDisciplinas(value)}
               />
             </Form.Field>
-            
+
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
               <Form.Select
                 fluid

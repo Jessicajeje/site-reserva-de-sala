@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Divider, Header, Icon, Modal, Table } from "semantic-ui-react";
 import "./Interface.css";
+import { notifyError, notifySuccess } from "../util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 
 export default function ProfessoresAtivos() {
   const [lista, setLista] = useState([]);
@@ -19,7 +21,22 @@ export default function ProfessoresAtivos() {
         (professor) => professor.ativo === true,
       );
       setLista(professoresAtivos);
-    });
+    })
+      .catch((error) => {
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
+      });
   }
 
   function confirmaRemover(id) {
@@ -31,11 +48,23 @@ export default function ProfessoresAtivos() {
     await axios
       .delete("http://localhost:8080/api/professor/" + idRemover)
       .then((response) => {
-        console.log("Professor removido com sucesso.");
+        notifySuccess("Professor removido com sucesso.");
         carregarLista();
       })
       .catch((error) => {
-        console.log("Erro ao remover um professor.");
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
       });
     setOpenModal(false);
   }

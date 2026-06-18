@@ -18,6 +18,7 @@ import {
 
 import { addDays, format, isSameDay, startOfWeek } from "date-fns";
 import { notifyError, notifySuccess } from "../util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 
 const DIAS_SEMANA = [
     "Segunda",
@@ -205,9 +206,19 @@ export default function GradeAlocacaoAula() {
                 carregar();
             })
             .catch((error) => {
-                notifyError(
-                    error.response?.data?.message || "Erro ao excluir"
-                );
+
+                const erros = error.response?.data?.errors;
+
+                if (erros?.length > 0) {
+
+                    erros.forEach(e => {
+                        notifyError(e.defaultMessage);
+                    });
+
+                } else {
+                    notifyError(getErrorMessage(error));
+                }
+
             });
     }
 
@@ -268,19 +279,19 @@ export default function GradeAlocacaoAula() {
                 carregar();
             })
             .catch((error) => {
-                if (error.response?.data?.errors !== undefined) {
-                    for (
-                        let i = 0;
-                        i < error.response.data.errors.length;
-                        i++
-                    ) {
-                        notifyError(
-                            error.response.data.errors[i].defaultMessage
-                        );
-                    }
+
+                const erros = error.response?.data?.errors;
+
+                if (erros?.length > 0) {
+
+                    erros.forEach(e => {
+                        notifyError(e.defaultMessage);
+                    });
+
                 } else {
-                    notifyError(error.response?.data?.message);
+                    notifyError(getErrorMessage(error));
                 }
+
             });
     }
 

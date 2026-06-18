@@ -12,6 +12,7 @@ import {
     Header
 } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
+import { getErrorMessage } from "../util/getErrorMessage";
 
 export default function ListAlocacaoAula() {
 
@@ -29,7 +30,19 @@ export default function ListAlocacaoAula() {
                 setLista(response.data);
             })
             .catch((error) => {
-                console.log(error);
+
+                const erros = error.response?.data?.errors;
+
+                if (erros?.length > 0) {
+
+                    erros.forEach(e => {
+                        notifyError(e.defaultMessage);
+                    });
+
+                } else {
+                    notifyError(getErrorMessage(error));
+                }
+
             });
     }
 
@@ -49,16 +62,37 @@ export default function ListAlocacaoAula() {
                     .then((response) => {
                         setLista(response.data)
                     })
+                    .catch((error) => {
+
+                        const erros = error.response?.data?.errors;
+
+                        if (erros?.length > 0) {
+
+                            erros.forEach(e => {
+                                notifyError(e.defaultMessage);
+                            });
+
+                        } else {
+                            notifyError(getErrorMessage(error));
+                        }
+
+                    });
             })
             .catch((error) => {
-                if (error.response.data.errors !== undefined) {
-                    for (let i = 0; i < error.response.data.errors.length; i++) {
-                        notifyError(error.response.data.errors[i].defaultMessage)
-                    }
+
+                const erros = error.response?.data?.errors;
+
+                if (erros?.length > 0) {
+
+                    erros.forEach(e => {
+                        notifyError(e.defaultMessage);
+                    });
+
                 } else {
-                    notifyError(error.response.data.message)
+                    notifyError(getErrorMessage(error));
                 }
-            })
+
+            });
         setOpenModal(false)
     }
 

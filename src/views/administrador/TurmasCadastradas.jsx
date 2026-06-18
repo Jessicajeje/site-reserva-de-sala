@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Divider, Header, Icon, Modal, Table } from "semantic-ui-react";
 import './Interface.css';
-import { notifyError } from "../util/Util";
+import { notifyError, notifySuccess } from "../util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 
 export default function TurmasCadastradas() {
   const [lista, setLista] = useState([]);
@@ -17,7 +18,22 @@ export default function TurmasCadastradas() {
   function carregarLista() {
     axios.get("http://localhost:8080/api/turma").then((response) => {
       setLista(response.data);
-    });
+    })
+      .catch((error) => {
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
+      });
   }
 
   function confirmaRemover(id) {
@@ -28,18 +44,24 @@ export default function TurmasCadastradas() {
   async function remover() {
     await axios.delete('http://localhost:8080/api/turma/' + idRemover)
       .then((response) => {
-        console.log('Turma removida com sucesso.')
+        notifySuccess('Turma removida com sucesso.')
         carregarLista();
       })
       .catch((error) => {
-        if (error.response.data.errors !== undefined) {
-          for (let i = 0; i < error.response.data.errors.length; i++) {
-            notifyError(error.response.data.errors[i].defaultMessage)
-          }
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
         } else {
-          notifyError(error.response.data.message)
+          notifyError(getErrorMessage(error));
         }
-      })
+
+      });
     setOpenModal(false)
   }
 

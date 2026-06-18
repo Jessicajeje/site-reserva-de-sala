@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Divider, Grid, Header, Icon, Modal } from "semantic-ui-react";
+import { notifyError } from "../util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 import './Interface.css';
 
 export default function DisciplinasCadastradas() {
@@ -14,7 +16,22 @@ export default function DisciplinasCadastradas() {
   function carregarLista() {
     axios.get("http://localhost:8080/api/disciplina").then((response) => {
       setLista(response.data);
-    });
+    })
+      .catch((error) => {
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
+      });
   }
 
   function confirmaRemover(id) {
@@ -28,12 +45,26 @@ export default function DisciplinasCadastradas() {
         carregarLista();
         setOpenModal(false);
       })
-      .catch(() => console.log('Erro ao remover.'));
+      .catch((error) => {
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
+      });
   }
 
   return (
     <section style={{ display: 'flex', flexDirection: 'column', padding: '2%', minHeight: '100vh' }}>
-      <Header as='h2' style={{ margin: 0 , textAlign: 'left'}}>
+      <Header as='h2' style={{ margin: 0, textAlign: 'left' }}>
         Disciplinas cadastradas
       </Header>
       <Divider style={{ marginVertical: '2%' }} />
@@ -66,19 +97,19 @@ export default function DisciplinasCadastradas() {
 
               <Card.Content extra>
                 <div className='ui two buttons'>
-                  <Button 
-                    as={Link} 
+                  <Button
+                    as={Link}
                     to="/cadastro-disciplina"
                     state={{ id: item.id }}
-                    icon="edit" 
-                    color="blue" 
-                    basic 
+                    icon="edit"
+                    color="blue"
+                    basic
                   />
-                  <Button 
-                    icon="trash" 
-                    color="red" 
-                    basic 
-                    onClick={() => confirmaRemover(item.id)} 
+                  <Button
+                    icon="trash"
+                    color="red"
+                    basic
+                    onClick={() => confirmaRemover(item.id)}
                   />
                 </div>
               </Card.Content>

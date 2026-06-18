@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Button, Container, Divider, Form, Icon, Grid } from "semantic-ui-react";
 import { notifySuccess, notifyError } from "../util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 
 export default function CadastroAlocacaoAula() {
 
@@ -38,7 +39,21 @@ export default function CadastroAlocacaoAula() {
                     setIdProfessor(data.professor?.id || null);
                     setSemestreLetivo(data.semestreLetivo || "");
                 })
-                .catch(() => notifyError("Erro ao carregar alocação"));
+                .catch((error) => {
+
+                    const erros = error.response?.data?.errors;
+
+                    if (erros?.length > 0) {
+
+                        erros.forEach(e => {
+                            notifyError(e.defaultMessage);
+                        });
+
+                    } else {
+                        notifyError(getErrorMessage(error));
+                    }
+
+                });
         }
 
         axios.get("http://localhost:8080/api/turma")
@@ -46,6 +61,21 @@ export default function CadastroAlocacaoAula() {
                 setListaTurma(
                     res.data.map(t => ({ text: t.nome, value: t.id }))
                 );
+            })
+            .catch((error) => {
+
+                const erros = error.response?.data?.errors;
+
+                if (erros?.length > 0) {
+
+                    erros.forEach(e => {
+                        notifyError(e.defaultMessage);
+                    });
+
+                } else {
+                    notifyError(getErrorMessage(error));
+                }
+
             });
 
         axios.get("http://localhost:8080/api/disciplina")
@@ -53,7 +83,22 @@ export default function CadastroAlocacaoAula() {
                 setListaDisciplina(
                     res.data.map(d => ({ text: d.nome, value: d.id }))
                 );
-            });
+            })
+            .catch((error) => {
+
+                const erros = error.response?.data?.errors;
+
+                if (erros?.length > 0) {
+
+                    erros.forEach(e => {
+                        notifyError(e.defaultMessage);
+                    });
+
+                } else {
+                    notifyError(getErrorMessage(error));
+                }
+
+            });;
 
         axios.get("http://localhost:8080/api/sala")
             .then((res) => {
@@ -63,14 +108,44 @@ export default function CadastroAlocacaoAula() {
                         value: s.id
                     }))
                 );
-            });
+            })
+            .catch((error) => {
+
+                const erros = error.response?.data?.errors;
+
+                if (erros?.length > 0) {
+
+                    erros.forEach(e => {
+                        notifyError(e.defaultMessage);
+                    });
+
+                } else {
+                    notifyError(getErrorMessage(error));
+                }
+
+            });;
 
         axios.get("http://localhost:8080/api/professor")
             .then((res) => {
                 setListaProfessor(
                     res.data.map(p => ({ text: p.nome, value: p.id }))
                 );
-            });
+            })
+            .catch((error) => {
+
+                const erros = error.response?.data?.errors;
+
+                if (erros?.length > 0) {
+
+                    erros.forEach(e => {
+                        notifyError(e.defaultMessage);
+                    });
+
+                } else {
+                    notifyError(getErrorMessage(error));
+                }
+
+            });;
 
     }, [state]);
 
@@ -89,26 +164,38 @@ export default function CadastroAlocacaoAula() {
             axios.put("http://localhost:8080/api/alocacao-aula/" + idAlocacaoAula, alocacaoAulaRequest)
                 .then((response) => { notifySuccess('Alocacao de aula alterada com sucesso.') })
                 .catch((error) => {
-                    if (error.response.data.errors !== undefined) {
-                        for (let i = 0; i < error.response.data.errors.length; i++) {
-                            notifyError(error.response.data.errors[i].defaultMessage)
-                        }
+
+                    const erros = error.response?.data?.errors;
+
+                    if (erros?.length > 0) {
+
+                        erros.forEach(e => {
+                            notifyError(e.defaultMessage);
+                        });
+
                     } else {
-                        notifyError(error.response.data.message)
+                        notifyError(getErrorMessage(error));
                     }
-                })
+
+                });
         } else { //Cadastro:
             axios.post("http://localhost:8080/api/alocacao-aula", alocacaoAulaRequest)
                 .then((response) => { notifySuccess('Alocacao de aula cadastrada com sucesso.') })
                 .catch((error) => {
-                    if (error.response.data.errors !== undefined) {
-                        for (let i = 0; i < error.response.data.errors.length; i++) {
-                            notifyError(error.response.data.errors[i].defaultMessage)
-                        }
+
+                    const erros = error.response?.data?.errors;
+
+                    if (erros?.length > 0) {
+
+                        erros.forEach(e => {
+                            notifyError(e.defaultMessage);
+                        });
+
                     } else {
-                        notifyError(error.response.data.message)
+                        notifyError(getErrorMessage(error));
                     }
-                })
+
+                });
         }
     }
 

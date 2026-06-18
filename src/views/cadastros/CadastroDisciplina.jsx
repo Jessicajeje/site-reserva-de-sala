@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess, notifyWarn } from "../../views/util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 import "../logins/estilo.css";
 
 export default function CadastroDisciplina() {
@@ -19,7 +20,7 @@ export default function CadastroDisciplina() {
 
   useEffect(() => {
 
- axios.get("http://localhost:8080/api/curso")
+    axios.get("http://localhost:8080/api/curso")
       .then((response) => {
 
         const cursosFormatados = response.data.map((curso) => ({
@@ -29,6 +30,21 @@ export default function CadastroDisciplina() {
         }));
 
         setOpcoesCurso(cursosFormatados);
+      })
+      .catch((error) => {
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
       });
 
     if (state?.id) {
@@ -39,13 +55,28 @@ export default function CadastroDisciplina() {
           setPeriodoOfertado(res.data.periodoOfertado);
           setNome(res.data.nome);
           setIdCurso(res.data.idCurso);
-        });
+        })
+        .catch((error) => {
+
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
+          } else {
+            notifyError(getErrorMessage(error));
+          }
+
+        });;
     }
   }, [state]);
 
   function salvar() {
 
-    if (!nome || !chTotal || !idCurso ) {
+    if (!nome || !chTotal || !idCurso) {
       notifyWarn("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
@@ -53,7 +84,7 @@ export default function CadastroDisciplina() {
     const disciplinaRequest = {
       nome: nome,
       chTotal: chTotal,
-    periodoOfertado: periodoOfertado,
+      periodoOfertado: periodoOfertado,
       idCurso: idCurso
     };
 
@@ -67,14 +98,19 @@ export default function CadastroDisciplina() {
         setTimeout(() => navigate("/disciplinas"), 1000); // Redireciona após salvar
       })
       .catch((error) => {
-        console.error(error);
-        if (error.response.data.errors !== undefined) {
-          for (let i = 0; i < error.response.data.errors.length; i++) {
-            notifyError(error.response.data.errors[i].defaultMessage);
-          }
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
         } else {
-          notifyError(error.response.data.message);
+          notifyError(getErrorMessage(error));
         }
+
       });
   }
 
@@ -100,14 +136,14 @@ export default function CadastroDisciplina() {
               value={nome}
               onChange={(e) => setNome(e.target.value)}
             />
-              <Form.Input
+            <Form.Input
               fluid
               label="Período ofertado:"
               required
               type="number"
               value={periodoOfertado}
               onChange={(e) => setPeriodoOfertado(e.target.value)}
-              />
+            />
             <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
               <Form.Input
                 fluid

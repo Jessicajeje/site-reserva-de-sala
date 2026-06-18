@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Divider, Header, Icon, Modal, Card } from "semantic-ui-react";
+import { notifyError, notifySuccess } from "../util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 import "./Interface.css";
 
 export default function SalasCadastradas() {
@@ -19,7 +21,19 @@ export default function SalasCadastradas() {
         setLista(response.data);
       })
       .catch((error) => {
-        console.error("Erro na requisição:", error);
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
       });
   }
 
@@ -32,11 +46,23 @@ export default function SalasCadastradas() {
     await axios
       .delete("http://localhost:8080/api/sala/" + idRemover)
       .then(() => {
-        console.log("Sala removida com sucesso.");
+        notifySuccess("Sala removida com sucesso.");
         carregarLista();
       })
       .catch((error) => {
-        console.log("Erro ao remover uma sala.");
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
       });
     setOpenModal(false);
   }
@@ -75,10 +101,10 @@ export default function SalasCadastradas() {
                 {lista.map((sala) => (
                   <Card key={sala.id} raised color="green">
                     <Card.Content>
-                      <Icon 
-                        name={sala.tipo === 'laboratorio' ? 'lab' : 'university'} 
-                        size="large" 
-                        floated="right" 
+                      <Icon
+                        name={sala.tipo === 'laboratorio' ? 'lab' : 'university'}
+                        size="large"
+                        floated="right"
                       />
                       <Card.Header>
                         {sala.tipo === 'laboratorio' ? 'Laboratório' : 'Sala'} {sala.numero}
@@ -90,18 +116,18 @@ export default function SalasCadastradas() {
 
                     <Card.Content extra>
                       <div className='ui two buttons'>
-                        <Button 
-                          basic 
-                          color='blue' 
-                          as={Link} 
-                          to="/cadastro-sala" 
+                        <Button
+                          basic
+                          color='blue'
+                          as={Link}
+                          to="/cadastro-sala"
                           state={{ id: sala.id }}
                         >
                           <Icon name="edit" /> Editar
                         </Button>
-                        <Button 
-                          basic 
-                          color='red' 
+                        <Button
+                          basic
+                          color='red'
                           onClick={() => confirmaRemover(sala.id)}
                         >
                           <Icon name="trash" /> Remover
@@ -124,8 +150,8 @@ export default function SalasCadastradas() {
       >
         <Header icon>
           <Icon name="trash" />
-          <div style={{ marginTop: "5%" }}> 
-            Tem certeza que deseja remover esse registro? 
+          <div style={{ marginTop: "5%" }}>
+            Tem certeza que deseja remover esse registro?
           </div>
         </Header>
         <Modal.Actions>

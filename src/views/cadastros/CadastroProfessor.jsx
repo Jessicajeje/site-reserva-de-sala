@@ -4,7 +4,8 @@ import { IMaskInput } from "react-imask";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../../views/util/Util";
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { getErrorMessage } from "../util/getErrorMessage";
 import "../logins/estilo.css";
 
 export default function CadastroProfessor() {
@@ -74,15 +75,19 @@ export default function CadastroProfessor() {
           setTimeout(() => navigate("/professores-ativos"), 1000);
         })
         .catch((error) => {
-          console.error(error);
 
-          if (error.response.data.errors !== undefined) {
-            for (let i = 0; i < error.response.data.errors.length; i++) {
-              notifyError(error.response.data.errors[i].defaultMessage);
-            }
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
           } else {
-            notifyError(error.response.data.message);
+            notifyError(getErrorMessage(error));
           }
+
         });
     } else {
       axios
@@ -95,15 +100,19 @@ export default function CadastroProfessor() {
           setTimeout(() => navigate("/"), 1000);
         })
         .catch((error) => {
-          console.error(error);
 
-          if (error.response.data.errors !== undefined) {
-            for (let i = 0; i < error.response.data.errors.length; i++) {
-              notifyError(error.response.data.errors[i].defaultMessage);
-            }
+          const erros = error.response?.data?.errors;
+
+          if (erros?.length > 0) {
+
+            erros.forEach(e => {
+              notifyError(e.defaultMessage);
+            });
+
           } else {
-            notifyError(error.response.data.message);
+            notifyError(getErrorMessage(error));
           }
+
         });
     }
   }
@@ -145,7 +154,7 @@ export default function CadastroProfessor() {
               />
 
               <Form.Field>
-<label>CPF</label>
+                <label>CPF</label>
                 <IMaskInput
                   mask="000.000.000-00"
                   value={cpf}
@@ -163,15 +172,15 @@ export default function CadastroProfessor() {
 
             <Form.Group widths="equal">
               <Form.Field>
-                  <label>Siape</label>
-              <IMaskInput
-              mask='00000000'
-                fluid
-                placeholder="Nº Siape"
-                value={siape}
-                onChange={(e) => setSiape(e.target.value)}
-              />
-</Form.Field>
+                <label>Siape</label>
+                <IMaskInput
+                  mask='00000000'
+                  fluid
+                  placeholder="Nº Siape"
+                  value={siape}
+                  onChange={(e) => setSiape(e.target.value)}
+                />
+              </Form.Field>
               <Form.Input
                 fluid
                 label="Email"
@@ -215,7 +224,7 @@ export default function CadastroProfessor() {
                 backgroundColor: "#21ba45",
                 color: "#fff",
                 marginTop: "1em",
-                marginBottom:'8%'
+                marginBottom: '8%'
               }}
               onClick={salvar}
             >

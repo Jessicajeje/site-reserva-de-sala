@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Button, Header, Icon, Table } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 
 export default function ValidarProfessor() {
   const [professores, setProfessores] = useState([]);
@@ -19,33 +20,45 @@ export default function ValidarProfessor() {
         );
         setProfessores(pendentes);
       })
-      .catch(() => {
-        console.log("Erro ao carregar professores.");
+      .catch((error) => {
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
       });
   }
 
- async function validar(id) {
-  try {
-    //Busca os dados atuais do professor diretamente da lista do estado
-    const professorAtual = professores.find(p => p.id === id);
-    
-    if (!professorAtual) {
-      notifyError("Professor não encontrado localmente.");
-      return;
+  async function validar(id) {
+    try {
+      //Busca os dados atuais do professor diretamente da lista do estado
+      const professorAtual = professores.find(p => p.id === id);
+
+      if (!professorAtual) {
+        notifyError("Professor não encontrado localmente.");
+        return;
+      }
+
+      //Envia o objeto completo esperado pelo ProfessorRequest do backend
+      await axios.put(`http://localhost:8080/api/professor/${id}`, {
+        ...professorAtual,
+        ativo: true
+      });
+
+      notifySuccess("Professor aprovado com sucesso!");
+      carregarPendentes();
+    } catch (error) {
+      console.error(error);
+      notifyError("Erro ao validar professor.");
     }
-
-    //Envia o objeto completo esperado pelo ProfessorRequest do backend
-    await axios.put(`http://localhost:8080/api/professor/${id}`, {
-      ...professorAtual,
-      ativo: true        
-    });
-
-    notifySuccess("Professor aprovado com sucesso!");
-    carregarPendentes();
-  } catch (error) {
-    console.error(error);
-    notifyError("Erro ao validar professor.");
-  }
   }
 
   return (

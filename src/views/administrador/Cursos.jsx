@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Divider, Header, Icon, Modal, Table } from "semantic-ui-react";
 import './Interface.css';
+import { notifyError, notifySuccess } from "../util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 
 export default function Cursos() {
   const [lista, setLista] = useState([]);
@@ -16,7 +18,22 @@ export default function Cursos() {
   function carregarLista() {
     axios.get("http://localhost:8080/api/curso").then((response) => {
       setLista(response.data);
-    });
+    })
+      .catch((error) => {
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
+      });
   }
 
   function confirmaRemover(id) {
@@ -27,12 +44,24 @@ export default function Cursos() {
   async function remover() {
     await axios.delete('http://localhost:8080/api/curso/' + idRemover)
       .then((response) => {
-        console.log('Curso removido com sucesso.')
+        notifySuccess('Curso removido com sucesso.')
         carregarLista();
       })
       .catch((error) => {
-        console.log('Erro ao remover um curso.')
-      })
+
+        const erros = error.response?.data?.errors;
+
+        if (erros?.length > 0) {
+
+          erros.forEach(e => {
+            notifyError(e.defaultMessage);
+          });
+
+        } else {
+          notifyError(getErrorMessage(error));
+        }
+
+      });
     setOpenModal(false)
   }
 
