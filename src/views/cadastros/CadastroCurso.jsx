@@ -11,7 +11,6 @@ export default function CadastroCurso() {
 
   const [idCurso, setIdCurso] = useState();
   const [opcoesDisciplinas, setOpcoesDisciplinas] = useState([]);
-  const [disciplinas, setDisciplinas] = useState([]);
   const [nome, setNome] = useState();
   const [qtdPeriodos, setQtdPeriodos] = useState();
   const [area, setArea] = useState();
@@ -74,11 +73,6 @@ export default function CadastroCurso() {
           setArea(response.data.area);
           setQtdPeriodos(response.data.qtdPeriodos);
 
-          if (response.data.disciplinas && typeof response.data.disciplinas[0] === 'object') {
-            setDisciplinas(response.data.disciplinas.map(d => d.id));
-          } else {
-            setDisciplinas(response.data.disciplinas || []);
-          }
         })
         .catch((error) => {
 
@@ -102,8 +96,7 @@ export default function CadastroCurso() {
     let cursoRequest = {
       nome: nome,
       area: area,
-      qtdPeriodos: qtdPeriodos,
-      disciplinas: disciplinas
+      qtdPeriodos: qtdPeriodos
     };
 
     if (idCurso != null) {
@@ -188,20 +181,6 @@ export default function CadastroCurso() {
                 required
                 value={nome}
                 onChange={(e, { value }) => setNome(value)}
-              />
-            </Form.Field>
-
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <Form.Select
-                fluid
-                multiple
-                search
-                label="Disciplinas do curso:"
-                placeholder="Selecione as disciplinas"
-                options={opcoesDisciplinas}
-                required
-                value={disciplinas}
-                onChange={(e, { value }) => setDisciplinas(value)}
               />
             </Form.Field>
 
