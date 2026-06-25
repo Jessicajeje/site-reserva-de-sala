@@ -17,10 +17,10 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
 
 
   const opcoesBloco = [
-    { key: "b", text: "Bloco B", value: "Bloco_B" },
-    { key: "c", text: "Bloco C", value: "Bloco_C" },
-    { key: "d", text: "Bloco D", value: "Bloco_D" },
-    { key: "a", text: "Bloco A", value: "Bloco_A" }
+    { key: "b", text: "Bloco B", value: "b" },
+    { key: "c", text: "Bloco C", value: "c" },
+    { key: "d", text: "Bloco D", value: "d" },
+    { key: "a", text: "Bloco A", value: "a" }
   ];
 
   const atualizaTipo = (e, { value }) => setTipo(value);
