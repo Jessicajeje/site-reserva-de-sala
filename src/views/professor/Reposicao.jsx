@@ -102,7 +102,6 @@ export default function Reposicao() {
     horarioFim: null,
   });
   const [idReposicao, setIdReposicao] = useState(null);
-  const [lista, setLista] = useState([]);
   const [turnoAtivo, setTurnoAtivo] = useState("Manhã");
   const [dataSelecionada, setDataSelecionada] = useState("");
   const [dataAulaOriginal, setDataAulaOriginal] = useState("");
@@ -115,18 +114,17 @@ export default function Reposicao() {
   const [idDisciplina, setIdDisciplina] = useState("");
   const [opcoesDisciplina, setOpcoesDisciplina] = useState([]);
   const [idProfessor, setIdProfessor] = useState("");
-  const [emailProfessor, setEmailProfessor] = useState("");
+  const [NomeProfessor, setNomeProfessor] = useState("");
   const diasExibidos = gerarDiasDaSemana(semanaSelecionada);
 
   // REQUISIÇÕES E INICIALIZAÇÃO
 
   useEffect(() => {
-    setIdProfessor(Number(localStorage.getItem("idProfessor")));
-    setEmailProfessor(localStorage.getItem("username") || "");
+   const idSalvo = (Number(localStorage.getItem("idProfessor")));
+    
     axios
       .get("http://localhost:8080/api/turma")
       .then((response) => {
-        setLista(response.data);
         setOpcoesTurma(
           response.data.map((t) => ({ key: t.id, text: t.nome, value: t.id })),
         );
@@ -135,6 +133,20 @@ export default function Reposicao() {
         console.error("Erro ao buscar turmas:", err);
         notifyError("Erro ao carregar turmas. Verifique a conexão.");
       });
+
+      if(idSalvo){
+        setIdProfessor(idSalvo)
+
+        axios.get(`http://localhost:8080/api/professor/${idSalvo}`)
+      .then((response) => {
+        setNomeProfessor(response.data.nome);
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar nome do professor:", err);
+        notifyError("Erro ao carregar nome do professor. Verifique a conexão.");
+      });
+  }
+      
 
     axios
       .get("http://localhost:8080/api/sala")
@@ -172,7 +184,7 @@ export default function Reposicao() {
           setSalas(res.data.salas || []);
         });
     }
-  }, [state]);
+  }, [idProfessor, state]);
 
   const selecionarHorario = (dia, hora) => {
     const diaStr = dia.toString();
@@ -385,7 +397,7 @@ export default function Reposicao() {
                                 whiteSpace: "nowrap",
                               }}
                             >
-                              <b>{emailProfessor}</b>
+                              <b>{NomeProfessor}</b>
                               <Icon
                                 name="user circle"
                                 style={{ margin: "1px 0" }}
@@ -440,9 +452,10 @@ export default function Reposicao() {
                         salaSelecionada?.id === sala.id ? "#f0fff4" : "white",
                     }}
                   >
-                    <Header as="h4" color="green" style={{ margin: 0 }}>
-                      {sala.nome || `Sala ${sala.numero}`}
-                    </Header>
+                      <Header style={{color:'green'}}>
+                        {sala.tipo === "laboratorio" ? "Laboratório" : "Sala"}{" "}
+                        {sala.numero}
+                      </Header>
 
                     <div
                       style={{
@@ -455,9 +468,6 @@ export default function Reposicao() {
                         <b>Bloco:</b> {sala.bloco || "N/A"}
                       </p>
 
-                      <p>
-                        <b>Capacidade:</b> {sala.capacidade || "0"} Alunos
-                      </p>
                     </div>
                   </Segment>
                 ))}
@@ -537,7 +547,7 @@ export default function Reposicao() {
               />
               <Form.Input
                 label="Professor"
-                value={emailProfessor}
+                value={NomeProfessor}
                 readOnly fluid />
 
               <Button
