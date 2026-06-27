@@ -1,6 +1,6 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
   Form,
@@ -9,6 +9,7 @@ import {
   Segment,
   Select,
   Table,
+  Modal
 } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 
@@ -77,32 +78,51 @@ const horariosTurno = {
   Noite: ["18:30", "19:15", "20:00", "20:45", "21:30", "22:15"],
 };
 
+const obterDiaSemana = (data) => {
+  const dias = [
+    "DOMINGO",
+    "SEGUNDA",
+    "TERCA",
+    "QUARTA",
+    "QUINTA",
+    "SEXTA",
+    "SABADO",
+  ];
+  return dias[data.getDay()];
+};
+
+const getProximoHorario = (hora, turno) => {
+  const horasDoTurno = horariosTurno[turno];
+  const idx = horasDoTurno.indexOf(hora);
+  if (idx === -1 || idx >= horasDoTurno.length - 1) {
+    // Último slot: soma 45 min
+    const [h, m] = hora.split(":").map(Number);
+    const total = h * 60 + m + 45;
+    return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  }
+  return horasDoTurno[idx + 1];
+};
+
 /* --- COMPONENTE PRINCIPAL --- */
 
 export default function Reposicao() {
   const { state } = useLocation();
+  const navigate = useNavigate();
   const opcoesSemanas = getSemanasDoMes();
 
   const semanaAtualOuPrimeira =
     opcoesSemanas.find((s) => {
       const inicioSemana = new Date(s.value);
       const fimSemana = new Date(s.value);
-      fimSemana.setDate(inicioSemana.getDate() + 7); // Janela de 7 dias
+      fimSemana.setDate(inicioSemana.getDate() + 7);
       const hoje = new Date();
       return hoje >= inicioSemana && hoje < fimSemana;
     })?.value || opcoesSemanas[0].value;
 
   // Estados
-  const [semanaSelecionada, setSemanaSelecionada] = useState(
-    semanaAtualOuPrimeira,
-  );
-  const [preview, setPreview] = useState({
-    dia: null,
-    horarioInicio: null,
-    horarioFim: null,
-  });
+  const [semanaSelecionada, setSemanaSelecionada] = useState(semanaAtualOuPrimeira);
+  const [preview, setPreview] = useState({ dia: null, horarioInicio: null, horarioFim: null });
   const [idReposicao, setIdReposicao] = useState(null);
-  const [lista, setLista] = useState([]);
   const [turnoAtivo, setTurnoAtivo] = useState("Manhã");
   const [dataSelecionada, setDataSelecionada] = useState("");
   const [dataAulaOriginal, setDataAulaOriginal] = useState("");
@@ -117,16 +137,65 @@ export default function Reposicao() {
   const [idProfessor, setIdProfessor] = useState("");
   const [emailProfessor, setEmailProfessor] = useState("");
   const diasExibidos = gerarDiasDaSemana(semanaSelecionada);
+  const [alocacoes, setAlocacoes] = useState([]);
+  const [reposicoes, setReposicoes] = useState([]);
+  const [modalAberto, setModalAberto] = useState(false);
+  const [eventoSelecionado, setEventoSelecionado] = useState(null);
+  const [nomeProfessor, setNomeProfessor] = useState("");
 
-  // REQUISIÇÕES E INICIALIZAÇÃO
+  // ─── SALAS DISPONÍVEIS PARA O HORÁRIO SELECIONADO ────────────────────────────
+  // Filtra salas que já têm alocação fixa (por diaSemana) ou reposição
+  // agendada no mesmo dia e horário escolhido. Recalcula sempre que o
+  // horário ou a base de dados mudar.
+  const salasDisponiveis = useMemo(() => {
+    if (!dataSelecionada || !horarioInicio || !horarioFim) return salas;
 
+    const [ano, mes, dia] = dataSelecionada.split("-").map(Number);
+    const diaObj = new Date(ano, mes - 1, dia);
+    const diaSemana = obterDiaSemana(diaObj);
+
+    const toMin = (t) => {
+      const [h, m] = (t ?? "00:00").substring(0, 5).split(":").map(Number);
+      return h * 60 + m;
+    };
+
+    const inicioMin = toMin(horarioInicio);
+    const fimMin = toMin(horarioFim);
+    const salasOcupadasIds = new Set();
+
+    // Alocações fixas (verificadas pelo dia da semana)
+    alocacoes.forEach((al) => {
+      al.horarios?.forEach((h) => {
+        if (h.diaSemana !== diaSemana) return;
+        const alocInicio = toMin(h.horarioInicio);
+        const alocFim = toMin(h.horarioFim);
+        if (!(fimMin <= alocInicio || inicioMin >= alocFim)) {
+          if (al.sala?.id) salasOcupadasIds.add(al.sala.id);
+        }
+      });
+    });
+
+    // Reposições (verificadas pela data específica)
+    reposicoes.forEach((r) => {
+      if (r.dataReposicao !== dataSelecionada) return;
+      const repInicio = toMin(r.horarioInicio);
+      const repFim = toMin(r.horarioFim);
+      if (!(fimMin <= repInicio || inicioMin >= repFim)) {
+        if (r.sala?.id) salasOcupadasIds.add(r.sala.id);
+      }
+    });
+
+    return salas.filter((sala) => !salasOcupadasIds.has(sala.id));
+  }, [dataSelecionada, horarioInicio, horarioFim, salas, alocacoes, reposicoes]);
+
+  // ─── INICIALIZAÇÃO ────
   useEffect(() => {
     setIdProfessor(Number(localStorage.getItem("idProfessor")));
     setEmailProfessor(localStorage.getItem("username") || "");
+
     axios
       .get("http://localhost:8080/api/turma")
       .then((response) => {
-        setLista(response.data);
         setOpcoesTurma(
           response.data.map((t) => ({ key: t.id, text: t.nome, value: t.id })),
         );
@@ -138,25 +207,34 @@ export default function Reposicao() {
 
     axios
       .get("http://localhost:8080/api/sala")
-      .then((response) => {
-        setSalas(response.data);
-      })
+      .then((response) => setSalas(response.data))
       .catch((err) => {
         console.error("Erro ao buscar salas:", err);
         notifyError("Erro ao carregar salas. Verifique a conexão.");
       });
 
     axios
-      .get("http://localhost:8080/api/disciplina")
-      .then((response) => {
-        setOpcoesDisciplina(
-          response.data.map((t) => ({ key: t.id, text: t.nome, value: t.id })),
-        );
+      .get("http://localhost:8080/api/alocacao-aula")
+      .then((res) => setAlocacoes(res.data));
+
+    axios
+      .get("http://localhost:8080/api/reposicao")
+      .then((res) => {
+        const data = res.data;
+        setReposicoes(Array.isArray(data) ? data : data.content || []);
       })
       .catch((err) => {
-        console.error("Erro ao buscar disciplinas:", err);
-        notifyError("Erro ao carregar disciplinas. Verifique a conexão.");
+        console.error("Erro reposições:", err);
+        setReposicoes([]);
       });
+
+    const idProf = Number(localStorage.getItem("idProfessor"));
+    setIdProfessor(idProf);
+
+    axios
+      .get(`http://localhost:8080/api/professor/${idProf}`)
+      .then((res) => setNomeProfessor(res.data.nome))
+      .catch((err) => console.error("Erro ao buscar professor:", err));
 
     if (state?.id) {
       axios
@@ -167,17 +245,42 @@ export default function Reposicao() {
           setDataAulaOriginal(res.data.dataAulaOriginal || "");
           setHorarioInicio(res.data.horarioInicio || "");
           setHorarioFim(res.data.horarioFim || "");
-          setIdDisciplina(res.data.idDisciplina || "");
           setIdTurma(res.data.idTurma || "");
+          setIdDisciplina(res.data.idDisciplina || "");
           setSalas(res.data.salas || []);
         });
     }
   }, [state]);
 
+  useEffect(() => {
+    if (!idTurma) {
+      setOpcoesDisciplina([]);
+      setIdDisciplina("");
+      return;
+    }
+
+    const disciplinas = alocacoes
+      .filter((a) => a.turma?.id === idTurma)
+      .map((a) => a.disciplina)
+      .filter(
+        (disciplina, index, self) =>
+          disciplina &&
+          index === self.findIndex((d) => d.id === disciplina.id)
+      );
+
+    setOpcoesDisciplina(
+      disciplinas.map((d) => ({
+        key: d.id,
+        text: d.nome,
+        value: d.id,
+      }))
+    );
+  }, [idTurma, alocacoes]);
+
+  // ─── SELEÇÃO DE HORÁRIO NO CALENDÁRIO ───
   const selecionarHorario = (dia, hora) => {
     const diaStr = dia.toString();
 
-    //Desmarcar: se clicar exatamente no início que já existe
     if (preview.dia === diaStr && preview.horarioInicio === hora) {
       setPreview({ dia: null, horarioInicio: null, horarioFim: null });
       setDataSelecionada("");
@@ -186,7 +289,6 @@ export default function Reposicao() {
       return;
     }
 
-    //Novo: se mudar de dia ou não houver nada selecionado
     if (preview.dia !== diaStr || !preview.horarioInicio) {
       const dataLocal = new Date(
         dia.getTime() - dia.getTimezoneOffset() * 60000,
@@ -194,39 +296,61 @@ export default function Reposicao() {
       setDataSelecionada(dataLocal.toISOString().split("T")[0]);
       setPreview({ dia: diaStr, horarioInicio: hora, horarioFim: hora });
       setHorarioInicio(hora);
-      setHorarioFim(hora);
+      setHorarioFim(getProximoHorario(hora, turnoAtivo));
+      return;
     }
-    //Esticar: se for no mesmo dia
-    else {
-      if (hora > preview.horarioInicio) {
-        setPreview({ ...preview, horarioFim: hora });
-        setHorarioFim(hora);
-      } else {
+
+    if (hora > preview.horarioInicio) {
+      const horasDoTurno = horariosTurno[turnoAtivo];
+      const idxStart = horasDoTurno.indexOf(preview.horarioInicio);
+      const idxClicked = horasDoTurno.indexOf(hora);
+
+      if (idxStart === -1 || idxClicked === -1) {
         setPreview({ dia: diaStr, horarioInicio: hora, horarioFim: hora });
         setHorarioInicio(hora);
-        setHorarioFim(hora);
+        setHorarioFim(getProximoHorario(hora, turnoAtivo));
+        return;
       }
+
+      let fimSeguro = preview.horarioInicio;
+      for (let i = idxStart + 1; i <= idxClicked; i++) {
+        const h = horasDoTurno[i];
+        if (existeAlocacao(dia, h) || existeReposicao(dia, h)) break;
+        fimSeguro = h;
+      }
+
+      setPreview({ ...preview, horarioFim: fimSeguro });
+      setHorarioFim(getProximoHorario(fimSeguro, turnoAtivo));
+    } else {
+      setPreview({ dia: diaStr, horarioInicio: hora, horarioFim: hora });
+      setHorarioInicio(hora);
+      setHorarioFim(getProximoHorario(hora, turnoAtivo));
     }
   };
 
   const formatarData = (data) => {
     if (!data) return "";
-
     const [ano, mes, dia] = data.split("-");
     return `${dia}/${mes}/${ano}`;
   };
 
   const salvarAgendamento = () => {
+    const formatarParaBR = (dataISO) => {
+      if (!dataISO) return "";
+      const [ano, mes, dia] = dataISO.split("-");
+      return `${dia}/${mes}/${ano}`;
+    };
+    if (!validarAntesDeSalvar()) return;
     const payload = {
       idTurma,
       idDisciplina,
       idSala: salaSelecionada?.id,
       idProfessor,
-      dataReposicao: formatarData(dataSelecionada),
-      dataAulaOriginal: formatarData(dataAulaOriginal),
+      dataReposicao: formatarParaBR(dataSelecionada),
+      dataAulaOriginal: formatarParaBR(dataAulaOriginal),
       horarioInicio,
       horarioFim,
-      statusReposicao: "PENDENTE"
+      statusReposicao: "PENDENTE",
     };
     const acao = idReposicao
       ? axios.put(`http://localhost:8080/api/reposicao/${idReposicao}`, payload)
@@ -237,10 +361,72 @@ export default function Reposicao() {
         notifySuccess("Agendado!");
         setTimeout(() => window.location.reload(), 1000);
       })
-      .catch((err) =>
-        notifyError(err.response?.data?.message),
-      );
+      .catch((err) => notifyError(err.response?.data?.message));
   };
+
+  const conflitoNoIntervalo = (dia, inicioHora, fimHora) => {
+    const diaSemana = obterDiaSemana(dia);
+    return alocacoes.some((alocacao) =>
+      alocacao.horarios?.some((h) => {
+        if (h.diaSemana !== diaSemana) return false;
+        const inicio = h.horarioInicio.substring(0, 5);
+        const fim = h.horarioFim.substring(0, 5);
+        return !(fimHora < inicio || inicioHora > fim);
+      })
+    );
+  };
+
+  const existeAlocacao = (dia, hora) => {
+    const diaSemana = obterDiaSemana(dia);
+    return alocacoes.find((alocacao) =>
+      alocacao.horarios?.some((h) => {
+        if (h.diaSemana !== diaSemana) return false;
+        const inicio = h.horarioInicio.substring(0, 5);
+        const fim = h.horarioFim.substring(0, 5);
+        return hora >= inicio && hora <= fim;
+      })
+    );
+  };
+
+  const existeReposicao = (dia, hora) => {
+    const dataISO = [
+      dia.getFullYear(),
+      String(dia.getMonth() + 1).padStart(2, "0"),
+      String(dia.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    const toMin = (t) => {
+      const [h, m] = (t ?? "00:00").substring(0, 5).split(":").map(Number);
+      return h * 60 + m;
+    };
+
+    const horaMin = toMin(hora);
+
+    return (
+      reposicoes.find((r) => {
+        if (r.dataReposicao !== dataISO) return false;
+        const inicioMin = toMin(r.horarioInicio);
+        const fimMin = toMin(r.horarioFim);
+        return horaMin >= inicioMin && horaMin <= fimMin;
+      }) ?? null
+    );
+  };
+
+  const validarAntesDeSalvar = () => {
+    const [ano, mes, dia] = dataSelecionada.split("-").map(Number);
+    const diaObj = new Date(ano, mes - 1, dia);
+    if (conflitoNoIntervalo(diaObj, horarioInicio, horarioFim)) {
+      notifyError("Conflito com alocação existente.");
+      return false;
+    }
+    return true;
+  };
+
+  const abrirDetalhes = (tipo, dados) => {
+    setEventoSelecionado({ tipo, dados });
+    setModalAberto(true);
+  };
+
   return (
     <div style={{ padding: "2% 4%", fontFamily: "sans-serif" }}>
       <Header as="h2" dividing>
@@ -257,7 +443,7 @@ export default function Reposicao() {
           boxSizing: "border-box",
         }}
       >
-        {/* PAINEL ESQUERDO: Calendário e Seletores */}
+        {/* PAINEL ESQUERDO: Calendário + Salas */}
         <div
           style={{
             flex: "1",
@@ -266,6 +452,16 @@ export default function Reposicao() {
             flexDirection: "column",
           }}
         >
+          <Button
+            icon
+            labelPosition="left"
+            color="grey"
+            onClick={() => navigate("/home")}
+            style={{ marginBottom: "1rem" }}
+          >
+            <Icon name="arrow left" />
+            Voltar
+          </Button>
           {/* Topo do calendário */}
           <div
             style={{
@@ -295,12 +491,7 @@ export default function Reposicao() {
             </Button.Group>
           </div>
 
-          <div
-            style={{
-              width: "100%",
-              overflowX: "auto",
-            }}
-          >
+          <div style={{ width: "100%", overflowX: "auto" }}>
             <Table
               celled
               definition
@@ -335,21 +526,37 @@ export default function Reposicao() {
                       <b>{hora}</b>
                     </Table.Cell>
                     {diasExibidos.map((dia) => {
+                      const aula = existeAlocacao(dia, hora);
+                      const reposicao = existeReposicao(dia, hora);
+                      const concluida = reposicao?.statusReposicao === "CONCLUIDA";
                       const diaStr = dia.toString();
                       const hoje = eHoje(dia);
 
                       const isSelected =
+                        !aula &&
+                        !reposicao &&
                         preview.dia === diaStr &&
                         hora >= preview.horarioInicio &&
                         hora <= preview.horarioFim;
 
                       const isStart = isSelected && hora === preview.horarioInicio;
                       const isEnd = isSelected && hora === preview.horarioFim;
+
                       return (
                         <Table.Cell
                           key={dia.toString()}
-                          selectable
-                          onClick={() => selecionarHorario(dia, hora)}
+                          selectable={!aula && !reposicao}
+                          onClick={() => {
+                            if (aula) {
+                              abrirDetalhes("ALOCAÇÃO", aula);
+                              return;
+                            }
+                            if (reposicao) {
+                              abrirDetalhes("REPOSIÇÃO", reposicao);
+                              return;
+                            }
+                            selecionarHorario(dia, hora);
+                          }}
                           style={{
                             height: "60px",
                             position: "relative",
@@ -367,6 +574,131 @@ export default function Reposicao() {
                             zIndex: isSelected ? 1 : 0,
                           }}
                         >
+                          {aula && reposicao ? (
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: "2px",
+                                background: "#fcd0d0",
+                                borderLeft: "3px solid #ff0000",
+                                borderRadius: "4px",
+                                padding: "3px 6px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "9px",
+                                fontWeight: "bold",
+                                color: "#ff0000",
+                              }}
+                            >
+                              ⚠ CONFLITO
+                            </div>
+                          ) : aula ? (
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: "2px",
+                                background: "#eff4ff",
+                                borderLeft: "3px solid #1e5eff",
+                                borderRadius: "4px",
+                                padding: "3px 6px",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center",
+                                gap: "2px",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontSize: "9px",
+                                  fontWeight: "bold",
+                                  color: "#000000",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {aula.professor?.nome}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "9px",
+                                  color: "#333",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {aula.turma?.nome} · {aula.disciplina?.nome}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "9px",
+                                  color: "#888",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                Sala {aula.sala?.nome ?? aula.sala?.numero}
+                              </span>
+                            </div>
+                          ) : reposicao ? (
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: "2px",
+                                background: concluida ? "#e6f9ed" : "#fff8ef",
+                                borderLeft: concluida
+                                  ? "3px solid #21ba45"
+                                  : "3px solid #f97316",
+                                borderRadius: "4px",
+                                padding: "3px 6px",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center",
+                                gap: "2px",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontSize: "9px",
+                                  fontWeight: "bold",
+                                  color: "rgb(0, 0, 0)",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {reposicao.professor?.nome}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "9px",
+                                  color: "#333",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {reposicao.turma?.nome} · {reposicao.disciplina?.nome}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "9px",
+                                  color: "#888",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {reposicao.sala?.tipo} {reposicao.sala?.numero}
+                              </span>
+                            </div>
+                          ) : null}
+
                           {isStart && (
                             <div
                               style={{
@@ -385,11 +717,9 @@ export default function Reposicao() {
                                 whiteSpace: "nowrap",
                               }}
                             >
-                              <b>{emailProfessor}</b>
-                              <Icon
-                                name="user circle"
-                                style={{ margin: "1px 0" }}
-                              />
+                              <b>{nomeProfessor}</b>
+                              <Icon name="user circle" style={{ margin: "1px 0" }} />
+                              {/* Mostra o intervalo real: início até próximo slot */}
                               <span>
                                 {horarioInicio} - {horarioFim}
                               </span>
@@ -404,15 +734,96 @@ export default function Reposicao() {
             </Table>
           </div>
 
-          {/* NOVA SEÇÃO: LISTAGEM DE SALAS ABAIXO DO CALENDÁRIO */}
+          <Segment
+            secondary
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "18px",
+              alignItems: "center",
+              marginBottom: "1rem",
+              padding: "12px 16px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  background: "#eff4ff",
+                  borderLeft: "4px solid #1e5eff",
+                  borderRadius: 4,
+                }}
+              />
+              <span>Alocação de Aula</span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  background: "#fff8ef",
+                  borderLeft: "4px solid #f97316",
+                  borderRadius: 4,
+                }}
+              />
+              <span>Reposição Pendente</span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  background: "#e6f9ed",
+                  borderLeft: "4px solid #21ba45",
+                  borderRadius: 4,
+                }}
+              />
+              <span>Reposição Concluída</span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  background: "#e2efda",
+                  borderRadius: 4,
+                }}
+              />
+              <span>Horário Selecionado</span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  background: "#fcd0d0",
+                  borderLeft: "4px solid #ff0000",
+                  borderRadius: 4,
+                }}
+              />
+              <span>Conflito</span>
+            </div>
+          </Segment>
+
+          {/* SALAS DISPONÍVEIS */}
           <div style={{ marginTop: "1em" }}>
             <Header as="h3" style={{ marginBottom: "1em" }}>
-              <Icon name="building outline" /> Salas Disponíveis
+              <Icon name="building outline" />
+              {dataSelecionada && horarioInicio
+                ? `Salas Disponíveis — ${formatarData(dataSelecionada)} · ${horarioInicio}–${horarioFim}`
+                : "Salas Disponíveis"}
             </Header>
 
-            {salas.length === 0 ? (
+            {salasDisponiveis.length === 0 ? (
               <Segment textAlign="center" secondary style={{ color: "grey" }}>
-                Nenhuma salas encontrada ou carregando...
+                {dataSelecionada && horarioInicio
+                  ? "Nenhuma sala disponível para o horário selecionado."
+                  : "Selecione um horário no calendário para ver as salas disponíveis."}
               </Segment>
             ) : (
               <div
@@ -423,7 +834,7 @@ export default function Reposicao() {
                   width: "100%",
                 }}
               >
-                {salas.map((sala) => (
+                {salasDisponiveis.map((sala) => (
                   <Segment
                     key={sala.id}
                     raised
@@ -441,9 +852,8 @@ export default function Reposicao() {
                     }}
                   >
                     <Header as="h4" color="green" style={{ margin: 0 }}>
-                      {sala.nome || `Sala ${sala.numero}`}
+                      {sala.nome || `${sala.tipo === "laboratorio" ? "Laboratório" : "Sala"} ${sala.numero}`}
                     </Header>
-
                     <div
                       style={{
                         marginTop: "8px",
@@ -454,10 +864,7 @@ export default function Reposicao() {
                       <p>
                         <b>Bloco:</b> {sala.bloco || "N/A"}
                       </p>
-
-                      <p>
-                        <b>Capacidade:</b> {sala.capacidade || "0"} Alunos
-                      </p>
+                      {/* campo "Capacidade" removido conforme solicitado */}
                     </div>
                   </Segment>
                 ))}
@@ -466,12 +873,8 @@ export default function Reposicao() {
           </div>
         </div>
 
-        <div
-          style={{
-            width: "320px",
-            marginTop: "3.3em",
-          }}
-        >
+        {/* PAINEL DIREITO: Formulário */}
+        <div style={{ width: "320px", marginTop: "3.3em" }}>
           <Segment raised style={{ width: "100%", boxSizing: "border-box" }}>
             <Header as="h3" textAlign="center" style={{ marginBottom: "1em" }}>
               Agendar Reposição
@@ -493,17 +896,13 @@ export default function Reposicao() {
                 }}
               >
                 <div style={{ flex: 1 }}>
-                  <Form.Input
-                    label="Início"
-                    value={horarioInicio}
-                    readOnly
-                    fluid
-                  />
+                  <Form.Input label="Início" value={horarioInicio} readOnly fluid />
                 </div>
                 <div style={{ flex: 1 }}>
                   <Form.Input label="Fim" value={horarioFim} readOnly fluid />
                 </div>
               </div>
+
               <Form.Input
                 label="Sala"
                 value={
@@ -514,6 +913,7 @@ export default function Reposicao() {
                 readOnly
                 fluid
               />
+
               <Form.Input
                 fluid
                 type="date"
@@ -521,24 +921,29 @@ export default function Reposicao() {
                 value={dataAulaOriginal}
                 onChange={(e) => setDataAulaOriginal(e.target.value)}
               />
+
               <Form.Select
                 label="Turma"
                 placeholder="Selecione"
                 options={opcoesTurma}
                 value={idTurma}
-                onChange={(e, { value }) => setIdTurma(value)}
+                onChange={(e, { value }) => {
+                  setIdTurma(value);
+                  setIdDisciplina(""); // reseta disciplina ao trocar turma
+                }}
               />
+
+              {/* Disciplina só aparece (e é habilitada) após selecionar turma */}
               <Form.Select
                 label="Disciplina"
-                placeholder="Selecione"
+                placeholder={idTurma ? "Selecione" : "Selecione uma turma primeiro"}
                 options={opcoesDisciplina}
                 value={idDisciplina}
+                disabled={!idTurma}
                 onChange={(e, { value }) => setIdDisciplina(value)}
               />
-              <Form.Input
-                label="Professor"
-                value={emailProfessor}
-                readOnly fluid />
+
+              <Form.Input label="Professor" value={nomeProfessor} readOnly fluid />
 
               <Button
                 fluid
@@ -553,6 +958,85 @@ export default function Reposicao() {
           </Segment>
         </div>
       </div>
-    </div >
+
+      {/* MODAL DE DETALHES */}
+      <Modal
+        open={modalAberto}
+        onClose={() => setModalAberto(false)}
+        size="small"
+      >
+        <Modal.Header>{eventoSelecionado?.tipo}</Modal.Header>
+
+        <Modal.Content>
+          {eventoSelecionado && (
+            <div style={{ lineHeight: "2" }}>
+              <p>
+                <b>Professor:</b> {eventoSelecionado.dados.professor?.nome}
+              </p>
+              <p>
+                <b>Turma:</b> {eventoSelecionado.dados.turma?.nome}
+              </p>
+              <p>
+                <b>Disciplina:</b> {eventoSelecionado.dados.disciplina?.nome}
+              </p>
+              <p>
+                <b>Sala:</b>{" "}
+                {eventoSelecionado.dados.sala?.nome ||
+                  eventoSelecionado.dados.sala?.numero}
+              </p>
+
+              {eventoSelecionado.tipo === "ALOCAÇÃO" && (
+                <>
+                  <p>
+                    <b>ID:</b> {eventoSelecionado.dados.id}
+                  </p>
+                  <p>
+                    <b>Curso:</b> {eventoSelecionado.dados.turma?.curso?.nome}
+                  </p>
+                  <p>
+                    <b>Horários:</b>
+                  </p>
+                  <ul>
+                    {eventoSelecionado.dados.horarios?.map((h, i) => (
+                      <li key={i}>
+                        {h.diaSemana} - {h.horarioInicio} às {h.horarioFim}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+
+              {eventoSelecionado.tipo === "REPOSIÇÃO" && (
+                <>
+                  <p>
+                    <b>ID:</b> {eventoSelecionado.dados.id}
+                  </p>
+                  <p>
+                    <b>Data da Reposição:</b>{" "}
+                    {eventoSelecionado.dados.dataReposicao}
+                  </p>
+                  <p>
+                    <b>Data Aula Original:</b>{" "}
+                    {eventoSelecionado.dados.dataAulaOriginal}
+                  </p>
+                  <p>
+                    <b>Horário:</b>{" "}
+                    {eventoSelecionado.dados.horarioInicio} às{" "}
+                    {eventoSelecionado.dados.horarioFim}
+                  </p>
+                  <p>
+                    <b>Status:</b> {eventoSelecionado.dados.statusReposicao}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+        </Modal.Content>
+
+        <Modal.Actions>
+          <Button onClick={() => setModalAberto(false)}>Fechar</Button>
+        </Modal.Actions>
+      </Modal>
+    </div>
   );
 }

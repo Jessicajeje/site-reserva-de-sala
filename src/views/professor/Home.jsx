@@ -1,15 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import {
   Button,
   Card,
   Container,
   Divider,
-  Form,
   Grid,
   Header,
   Icon,
-  Image,
   Modal
 } from "semantic-ui-react";
 
@@ -17,93 +16,108 @@ import Navbar from "../../Components/navbar/NavbarProfessor";
 
 export default function Home() {
 
-  const [open, setOpen] = useState(false);
+  const [reposicoes, setReposicoes] = useState([]);
 
-  const [reservas, setReservas] = useState([]);
+  useEffect(() => {
 
-  const [editando, setEditando] = useState(null);
+    const idProfessor =
+      localStorage.getItem("idProfessor");
 
-  const [formData, setFormData] = useState({
-    professor: "",
-    disciplina: "",
-    data: "",
-    horaInicial: "",
-    horaFinal: "",
-    sala: "",
-    observacoes: ""
-  });
+    axios
+      .get("http://localhost:8080/api/reposicao")
+      .then((res) => {
 
-  // Atualiza os campos
-  function handleChange(e, { name, value }) {
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  }
+        const minhasReposicoes = res.data.filter(
+          r => r.professor?.id === Number(idProfessor)
+        );
 
-  // Salvar reserva
-  function salvarReserva() {
+        setReposicoes(minhasReposicoes);
 
-    // EDIÇÃO
-    if (editando !== null) {
-
-      const novasReservas = reservas.map((item, index) => {
-        if (index === editando) {
-          return formData;
-        }
-
-        return item;
       });
 
-      setReservas(novasReservas);
+  }, []);
 
-      setEditando(null);
+  const [openConfirmarModal, setOpenConfirmarModal] = useState(false);
+  const [openCancelarModal, setOpenCancelarModal] = useState(false);
 
-    } else {
+  const [reposicaoSelecionada, setReposicaoSelecionada] = useState(null);
 
-      // NOVA RESERVA
-      setReservas([...reservas, formData]);
-    }
+  const formatarParaBR = (dataISO) => {
+    if (!dataISO) return "";
+    const [ano, mes, dia] = dataISO.split("-");
+    return `${dia}/${mes}/${ano}`;
+  };
 
-    // Limpa formulário
-    setFormData({
-      professor: "",
-      disciplina: "",
-      data: "",
-      horaInicial: "",
-      horaFinal: "",
-      sala: "",
-      observacoes: ""
-    });
+  const normalizarHora = (hora) => {
+    if (!hora) return "";
 
-    setOpen(false);
+    // pega só HH:mm (remove segundos)
+    return hora.length > 5 ? hora.slice(0, 5) : hora;
+  };
+
+  function concluirReposicao(reposicao) {
+
+    const payload = {
+      idTurma: reposicao.turma.id,
+      idDisciplina: reposicao.disciplina.id,
+      idProfessor: reposicao.professor.id,
+      idSala: reposicao.sala.id,
+      dataReposicao: formatarParaBR(reposicao.dataReposicao),
+      dataAulaOriginal: formatarParaBR(reposicao.dataAulaOriginal),
+      horarioInicio: normalizarHora(reposicao.horarioInicio),
+      horarioFim: normalizarHora(reposicao.horarioFim),
+      statusReposicao: "CONCLUIDA"
+    };
+
+    axios
+      .put(
+        `http://localhost:8080/api/reposicao/${reposicao.id}`,
+        payload
+      )
+      .then(() => {
+
+        setReposicoes((antigas) =>
+          antigas.map((r) =>
+            r.id === reposicao.id
+              ? {
+                ...r,
+                statusReposicao: "CONCLUIDA"
+              }
+              : r
+          )
+        );
+
+      });
   }
 
-  // Editar reserva
-  function editarReserva(index) {
+  function confirmarConclusao() {
 
-    setFormData(reservas[index]);
+    concluirReposicao(reposicaoSelecionada);
 
-    setEditando(index);
+    setOpenConfirmarModal(false);
 
-    setOpen(true);
+    setReposicaoSelecionada(null);
+
   }
 
-  // Excluir reserva
-  function excluirReserva(index) {
+  function confirmarCancelamento() {
 
-    const confirmar = window.confirm(
-      "Tem certeza que deseja excluir esta reserva?"
-    );
+    axios
+      .delete(
+        `http://localhost:8080/api/reposicao/${reposicaoSelecionada.id}`
+      )
+      .then(() => {
 
-    if (confirmar) {
+        setReposicoes((antigas) =>
+          antigas.filter((r) => r.id !== reposicaoSelecionada.id)
+        );
 
-      const novasReservas = reservas.filter(
-        (_, i) => i !== index
-      );
+        setOpenCancelarModal(false);
 
-      setReservas(novasReservas);
-    }
+        setReposicaoSelecionada(null);
+
+      });
+
   }
 
   return (
@@ -136,8 +150,161 @@ export default function Home() {
             </Button>
           </Container>
 
+          <Grid stackable style={{ marginTop: "20px" }}>
+            {reposicoes.map((r) => (
+              <Grid.Column
+                key={r.id}
+                computer={5}
+                tablet={8}
+                mobile={16}
+              >
+                <Card fluid>
+
+                  <Card.Content>
+
+                    <Card.Header>
+                      {r.disciplina?.nome}
+                    </Card.Header>
+
+                    <Card.Meta>
+                      {r.dataReposicao}
+                    </Card.Meta>
+
+                    <Card.Description>
+
+                      <p>
+                        <b>Turma:</b> {r.turma?.nome}
+                      </p>
+
+                      <p>
+                        <b>{r.sala?.tipo === "laboratorio" ? "Lab" : "Sala"}:</b>{" "}
+                        {r.sala?.numero}
+                      </p>
+
+                      <p>
+                        <b>Horário:</b>
+                        {" "}
+                        {r.horarioInicio}
+                        {" - "}
+                        {r.horarioFim}
+                      </p>
+
+                    </Card.Description>
+
+                  </Card.Content>
+
+                  <Card.Content extra>
+
+                    {r.statusReposicao === "PENDENTE" ? (
+                      <>
+                        <Button
+                          color="green"
+                          fluid
+                          onClick={() => {
+                            setReposicaoSelecionada(r);
+                            setOpenConfirmarModal(true);
+                          }}
+                        >
+                          Confirmar Aula Ministrada
+                        </Button>
+
+                        <Button
+                          color="red"
+                          fluid
+                          style={{ marginTop: "10px" }}
+                          onClick={() => {
+                            setReposicaoSelecionada(r);
+                            setOpenCancelarModal(true);
+                          }}
+                        >
+                          Cancelar Reposição
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        fluid
+                        color="green"
+                        disabled
+                      >
+                        Concluída
+                      </Button>
+                    )}
+
+                  </Card.Content>
+
+                </Card>
+              </Grid.Column>
+            ))}
+          </Grid>
+
         </div>
       </div>
+
+      <Modal
+        size="tiny"
+        open={openConfirmarModal}
+        onClose={() => setOpenConfirmarModal(false)}
+        closeOnDimmerClick={false}
+        closeOnEscape={false}
+      >
+        <Modal.Header>
+          Confirmar aula ministrada
+        </Modal.Header>
+
+        <Modal.Content>
+          <p>
+            Tem certeza que deseja marcar esta reposição como concluída?
+          </p>
+        </Modal.Content>
+
+        <Modal.Actions>
+          <Button
+            onClick={() => setOpenConfirmarModal(false)}
+          >
+            Cancelar
+          </Button>
+
+          <Button
+            color="green"
+            onClick={confirmarConclusao}
+          >
+            Confirmar
+          </Button>
+        </Modal.Actions>
+      </Modal>
+
+      <Modal
+        size="tiny"
+        open={openCancelarModal}
+        onClose={() => setOpenCancelarModal(false)}
+        closeOnDimmerClick={false}
+        closeOnEscape={false}
+      >
+        <Modal.Header>
+          Cancelar reposição
+        </Modal.Header>
+
+        <Modal.Content>
+          <p>
+            Tem certeza que deseja cancelar esta reposição?
+          </p>
+        </Modal.Content>
+
+        <Modal.Actions>
+          <Button
+            onClick={() => setOpenCancelarModal(false)}
+          >
+            Voltar
+          </Button>
+
+          <Button
+            negative
+            onClick={confirmarCancelamento}
+          >
+            Cancelar Reposição
+          </Button>
+        </Modal.Actions>
+      </Modal>
     </div>
   );
 }
