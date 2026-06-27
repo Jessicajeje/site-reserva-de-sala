@@ -135,13 +135,13 @@ export default function Reposicao() {
   const [idDisciplina, setIdDisciplina] = useState("");
   const [opcoesDisciplina, setOpcoesDisciplina] = useState([]);
   const [idProfessor, setIdProfessor] = useState("");
-  const [NomeProfessor, setNomeProfessor] = useState("");
   const diasExibidos = gerarDiasDaSemana(semanaSelecionada);
   const [alocacoes, setAlocacoes] = useState([]);
   const [reposicoes, setReposicoes] = useState([]);
   const [modalAberto, setModalAberto] = useState(false);
   const [eventoSelecionado, setEventoSelecionado] = useState(null);
   const [nomeProfessor, setNomeProfessor] = useState("");
+  const [emailProfessor, setEmailProfessor] = useState("");
 
   // ─── SALAS DISPONÍVEIS PARA O HORÁRIO SELECIONADO ────────────────────────────
   // Filtra salas que já têm alocação fixa (por diaSemana) ou reposição
@@ -203,21 +203,7 @@ export default function Reposicao() {
       .catch((err) => {
         console.error("Erro ao buscar turmas:", err);
         notifyError("Erro ao carregar turmas. Verifique a conexão.");
-      });
-
-      if(idSalvo){
-        setIdProfessor(idSalvo)
-
-        axios.get(`http://localhost:8080/api/professor/${idSalvo}`)
-      .then((response) => {
-        setNomeProfessor(response.data.nome);
-      })
-      .catch((err) => {
-        console.error("Erro ao buscar nome do professor:", err);
-        notifyError("Erro ao carregar nome do professor. Verifique a conexão.");
-      });
-  }
-      
+      });    
 
     axios
       .get("http://localhost:8080/api/sala")
@@ -878,7 +864,6 @@ export default function Reposicao() {
                       <p>
                         <b>Bloco:</b> {sala.bloco || "N/A"}
                       </p>
-                      {/* campo "Capacidade" removido conforme solicitado */}
                     </div>
                   </Segment>
                 ))}
