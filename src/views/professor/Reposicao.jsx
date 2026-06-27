@@ -135,7 +135,7 @@ export default function Reposicao() {
   const [idDisciplina, setIdDisciplina] = useState("");
   const [opcoesDisciplina, setOpcoesDisciplina] = useState([]);
   const [idProfessor, setIdProfessor] = useState("");
-  const [emailProfessor, setEmailProfessor] = useState("");
+  const [NomeProfessor, setNomeProfessor] = useState("");
   const diasExibidos = gerarDiasDaSemana(semanaSelecionada);
   const [alocacoes, setAlocacoes] = useState([]);
   const [reposicoes, setReposicoes] = useState([]);
@@ -205,6 +205,20 @@ export default function Reposicao() {
         notifyError("Erro ao carregar turmas. Verifique a conexão.");
       });
 
+      if(idSalvo){
+        setIdProfessor(idSalvo)
+
+        axios.get(`http://localhost:8080/api/professor/${idSalvo}`)
+      .then((response) => {
+        setNomeProfessor(response.data.nome);
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar nome do professor:", err);
+        notifyError("Erro ao carregar nome do professor. Verifique a conexão.");
+      });
+  }
+      
+
     axios
       .get("http://localhost:8080/api/sala")
       .then((response) => setSalas(response.data))
@@ -250,7 +264,7 @@ export default function Reposicao() {
           setSalas(res.data.salas || []);
         });
     }
-  }, [state]);
+  }, [idProfessor, state]);
 
   useEffect(() => {
     if (!idTurma) {
