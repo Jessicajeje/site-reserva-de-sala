@@ -63,6 +63,7 @@ const gerarDiasDaSemana = (timestampSegunda) => {
   });
 };
 
+// FIX 1 — Removido "12:45" (slot inexistente)
 const horariosTurno = {
   Manhã: [
     "07:15",
@@ -72,10 +73,9 @@ const horariosTurno = {
     "10:30",
     "11:15",
     "12:00",
-    "12:45",
   ],
-  Tarde: ["13:45", "14:30", "15:15", "16:00", "16:45", "17:30"],
-  Noite: ["18:30", "19:15", "20:00", "20:45", "21:30", "22:15"],
+  Tarde: ["13:45", "14:30", "15:15", "16:00", "16:45"],
+  Noite: ["18:15", "19:00", "19:45", "20:30", "21:15"],
 };
 
 const obterDiaSemana = (data) => {
@@ -91,16 +91,13 @@ const obterDiaSemana = (data) => {
   return dias[data.getDay()];
 };
 
-const getProximoHorario = (hora, turno) => {
-  const horasDoTurno = horariosTurno[turno];
-  const idx = horasDoTurno.indexOf(hora);
-  if (idx === -1 || idx >= horasDoTurno.length - 1) {
-    // Último slot: soma 45 min
-    const [h, m] = hora.split(":").map(Number);
-    const total = h * 60 + m + 45;
-    return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
-  }
-  return horasDoTurno[idx + 1];
+// FIX 2 — Sempre soma 45 min ao início para obter o fim real.
+// Antes, pegava o próximo slot do array: 08:45 → 09:45 (errado);
+// agora: 08:45 + 45 min = 09:30 (correto).
+const getProximoHorario = (hora) => {
+  const [h, m] = hora.split(":").map(Number);
+  const total = h * 60 + m + 45;
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 };
 
 /* --- COMPONENTE PRINCIPAL --- */
@@ -144,9 +141,6 @@ export default function Reposicao() {
   const [emailProfessor, setEmailProfessor] = useState("");
 
   // ─── SALAS DISPONÍVEIS PARA O HORÁRIO SELECIONADO ────────────────────────────
-  // Filtra salas que já têm alocação fixa (por diaSemana) ou reposição
-  // agendada no mesmo dia e horário escolhido. Recalcula sempre que o
-  // horário ou a base de dados mudar.
   const salasDisponiveis = useMemo(() => {
     if (!dataSelecionada || !horarioInicio || !horarioFim) return salas;
 
@@ -163,7 +157,6 @@ export default function Reposicao() {
     const fimMin = toMin(horarioFim);
     const salasOcupadasIds = new Set();
 
-    // Alocações fixas (verificadas pelo dia da semana)
     alocacoes.forEach((al) => {
       al.horarios?.forEach((h) => {
         if (h.diaSemana !== diaSemana) return;
@@ -175,7 +168,6 @@ export default function Reposicao() {
       });
     });
 
-    // Reposições (verificadas pela data específica)
     reposicoes.forEach((r) => {
       if (r.dataReposicao !== dataSelecionada) return;
       const repInicio = toMin(r.horarioInicio);
@@ -296,7 +288,7 @@ export default function Reposicao() {
       setDataSelecionada(dataLocal.toISOString().split("T")[0]);
       setPreview({ dia: diaStr, horarioInicio: hora, horarioFim: hora });
       setHorarioInicio(hora);
-      setHorarioFim(getProximoHorario(hora, turnoAtivo));
+      setHorarioFim(getProximoHorario(hora));
       return;
     }
 
@@ -308,7 +300,7 @@ export default function Reposicao() {
       if (idxStart === -1 || idxClicked === -1) {
         setPreview({ dia: diaStr, horarioInicio: hora, horarioFim: hora });
         setHorarioInicio(hora);
-        setHorarioFim(getProximoHorario(hora, turnoAtivo));
+        setHorarioFim(getProximoHorario(hora));
         return;
       }
 
@@ -320,11 +312,11 @@ export default function Reposicao() {
       }
 
       setPreview({ ...preview, horarioFim: fimSeguro });
-      setHorarioFim(getProximoHorario(fimSeguro, turnoAtivo));
+      setHorarioFim(getProximoHorario(fimSeguro));
     } else {
       setPreview({ dia: diaStr, horarioInicio: hora, horarioFim: hora });
       setHorarioInicio(hora);
-      setHorarioFim(getProximoHorario(hora, turnoAtivo));
+      setHorarioFim(getProximoHorario(hora));
     }
   };
 
@@ -383,7 +375,7 @@ export default function Reposicao() {
         if (h.diaSemana !== diaSemana) return false;
         const inicio = h.horarioInicio.substring(0, 5);
         const fim = h.horarioFim.substring(0, 5);
-        return hora >= inicio && hora <= fim;
+        return hora >= inicio && hora < fim;
       })
     );
   };
@@ -407,7 +399,7 @@ export default function Reposicao() {
         if (r.dataReposicao !== dataISO) return false;
         const inicioMin = toMin(r.horarioInicio);
         const fimMin = toMin(r.horarioFim);
-        return horaMin >= inicioMin && horaMin <= fimMin;
+        return horaMin >= inicioMin && horaMin < fimMin;
       }) ?? null
     );
   };
@@ -501,7 +493,7 @@ export default function Reposicao() {
             >
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell style={{ width: "80px" }} />
+                  <Table.HeaderCell style={{ width: "110px" }} />
                   {diasExibidos.map((dia) => {
                     const info = formatarDia(dia);
                     const hoje = eHoje(dia);
@@ -522,8 +514,11 @@ export default function Reposicao() {
               <Table.Body>
                 {horariosTurno[turnoAtivo].map((hora) => (
                   <Table.Row key={hora}>
-                    <Table.Cell collapsing>
-                      <b>{hora}</b>
+                    {/* FIX 3 — Exibe "início – fim" na coluna esquerda */}
+                    <Table.Cell collapsing style={{ whiteSpace: "nowrap" }}>
+                      <b style={{ fontSize: "11px" }}>
+                        {hora} – {getProximoHorario(hora)}
+                      </b>
                     </Table.Cell>
                     {diasExibidos.map((dia) => {
                       const aula = existeAlocacao(dia, hora);
@@ -719,7 +714,6 @@ export default function Reposicao() {
                             >
                               <b>{nomeProfessor}</b>
                               <Icon name="user circle" style={{ margin: "1px 0" }} />
-                              {/* Mostra o intervalo real: início até próximo slot */}
                               <span>
                                 {horarioInicio} - {horarioFim}
                               </span>
@@ -928,11 +922,10 @@ export default function Reposicao() {
                 value={idTurma}
                 onChange={(e, { value }) => {
                   setIdTurma(value);
-                  setIdDisciplina(""); // reseta disciplina ao trocar turma
+                  setIdDisciplina("");
                 }}
               />
 
-              {/* Disciplina só aparece (e é habilitada) após selecionar turma */}
               <Form.Select
                 label="Disciplina"
                 placeholder={idTurma ? "Selecione" : "Selecione uma turma primeiro"}

@@ -74,15 +74,18 @@ function construirIntervalos(horaInicio, minInicio, count) {
 const TURNOS = [
     {
         nome: "Manhã",
-        slots: construirIntervalos(7, 30, 6),
+        slots: [
+            ...construirIntervalos(7, 15, 3),  // 07:15→08:00, 08:00→08:45, 08:45→09:30
+            ...construirIntervalos(9, 45, 4),  // 09:45→10:30, 10:30→11:15, 11:15→12:00, 12:00→12:45
+        ]
     },
     {
         nome: "Tarde",
-        slots: construirIntervalos(13, 30, 5),
+        slots: construirIntervalos(13, 45, 5),
     },
     {
         nome: "Noite",
-        slots: construirIntervalos(18, 30, 5),
+        slots: construirIntervalos(18, 15, 5),
     },
 ];
 
