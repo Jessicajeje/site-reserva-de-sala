@@ -9,32 +9,24 @@ import {
   Grid,
   Header,
   Icon,
-  Modal
+  Modal,
 } from "semantic-ui-react";
 
 import Navbar from "../../Components/navbar/NavbarProfessor";
 
 export default function Home() {
-
   const [reposicoes, setReposicoes] = useState([]);
 
   useEffect(() => {
+    const idProfessor = localStorage.getItem("idProfessor");
 
-    const idProfessor =
-      localStorage.getItem("idProfessor");
+    axios.get("http://localhost:8080/api/reposicao").then((res) => {
+      const minhasReposicoes = res.data.filter(
+        (r) => r.professor?.id === Number(idProfessor),
+      );
 
-    axios
-      .get("http://localhost:8080/api/reposicao")
-      .then((res) => {
-
-        const minhasReposicoes = res.data.filter(
-          r => r.professor?.id === Number(idProfessor)
-        );
-
-        setReposicoes(minhasReposicoes);
-
-      });
-
+      setReposicoes(minhasReposicoes);
+    });
   }, []);
 
   const [openConfirmarModal, setOpenConfirmarModal] = useState(false);
@@ -42,10 +34,11 @@ export default function Home() {
 
   const [reposicaoSelecionada, setReposicaoSelecionada] = useState(null);
 
-  const formatarParaBR = (dataISO) => {
-    if (!dataISO) return "";
-    const [ano, mes, dia] = dataISO.split("-");
-    return `${dia}/${mes}/${ano}`;
+  const formatarData = (dataStr) => {
+    if (!dataStr) return "";
+    if (dataStr.includes("-")) return dataStr; // Já está no formato correto
+    const [dia, mes, ano] = dataStr.split("/");
+    return `${ano}-${mes}-${dia}`;
   };
 
   const normalizarHora = (hora) => {
@@ -56,83 +49,66 @@ export default function Home() {
   };
 
   function concluirReposicao(reposicao) {
-
     const payload = {
       idTurma: reposicao.turma.id,
       idDisciplina: reposicao.disciplina.id,
       idProfessor: reposicao.professor.id,
       idSala: reposicao.sala.id,
-      dataReposicao: formatarParaBR(reposicao.dataReposicao),
-      dataAulaOriginal: formatarParaBR(reposicao.dataAulaOriginal),
+      dataReposicao: formatarData(reposicao.dataReposicao),
+      dataAulaOriginal: formatarData(reposicao.dataAulaOriginal),
       horarioInicio: normalizarHora(reposicao.horarioInicio),
       horarioFim: normalizarHora(reposicao.horarioFim),
-      statusReposicao: "CONCLUIDA"
+      statusReposicao: "CONCLUIDA",
     };
 
     axios
-      .put(
-        `http://localhost:8080/api/reposicao/${reposicao.id}`,
-        payload
-      )
+      .put(`http://localhost:8080/api/reposicao/${reposicao.id}`, payload)
       .then(() => {
-
         setReposicoes((antigas) =>
           antigas.map((r) =>
             r.id === reposicao.id
               ? {
-                ...r,
-                statusReposicao: "CONCLUIDA"
-              }
-              : r
-          )
+                  ...r,
+                  statusReposicao: "CONCLUIDA",
+                }
+              : r,
+          ),
         );
-
       });
   }
 
   function confirmarConclusao() {
-
     concluirReposicao(reposicaoSelecionada);
 
     setOpenConfirmarModal(false);
 
     setReposicaoSelecionada(null);
-
   }
 
   function confirmarCancelamento() {
-
     axios
-      .delete(
-        `http://localhost:8080/api/reposicao/${reposicaoSelecionada.id}`
-      )
+      .delete(`http://localhost:8080/api/reposicao/${reposicaoSelecionada.id}`)
       .then(() => {
-
         setReposicoes((antigas) =>
-          antigas.filter((r) => r.id !== reposicaoSelecionada.id)
+          antigas.filter((r) => r.id !== reposicaoSelecionada.id),
         );
 
         setOpenCancelarModal(false);
 
         setReposicaoSelecionada(null);
-
       });
-
   }
 
   return (
     <div style={{ backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-
       <Navbar tela={"home"} />
 
       <div style={{ display: "flex" }}>
-
         {/* CONTEÚDO */}
         <div style={{ flex: 1, padding: "30px" }}>
-
-          <Container fluid>
-
-            <Header as="h1">
+          {/* Removido o Container fluid que gerava o bloco branco de fundo */}
+          <div style={{ background: "transparent", padding: 0 }}>
+            <Header as="h1" style={{ margin: 0 }}>
               Início - Meus agendamentos
             </Header>
 
@@ -144,99 +120,88 @@ export default function Home() {
               labelPosition="left"
               as={Link}
               to="/reposicao"
+              style={{marginBottom:"4%", marginTop:"1%"}}
             >
               <Icon name="plus" />
               Agendar reposição
             </Button>
-          </Container>
+          </div>
 
           <Grid stackable style={{ marginTop: "20px" }}>
             {reposicoes.map((r) => (
-              <Grid.Column
-                key={r.id}
-                computer={5}
-                tablet={8}
-                mobile={16}
-              >
+              <Grid.Column key={r.id} computer={5} tablet={8} mobile={16}>
                 <Card fluid>
-
                   <Card.Content>
+                    <Card.Header>{r.disciplina?.nome}</Card.Header>
 
-                    <Card.Header>
-                      {r.disciplina?.nome}
-                    </Card.Header>
-
-                    <Card.Meta>
-                      {r.dataReposicao}
-                    </Card.Meta>
+                    <Card.Meta>{r.dataReposicao}</Card.Meta>
 
                     <Card.Description>
-
                       <p>
                         <b>Turma:</b> {r.turma?.nome}
                       </p>
 
                       <p>
-                        <b>{r.sala?.tipo === "laboratorio" ? "Lab" : "Sala"}:</b>{" "}
+                        <b>
+                          {r.sala?.tipo === "laboratorio" ? "Lab" : "Sala"}:
+                        </b>{" "}
                         {r.sala?.numero}
                       </p>
 
                       <p>
-                        <b>Horário:</b>
-                        {" "}
-                        {r.horarioInicio}
+                        <b>Horário:</b> {r.horarioInicio}
                         {" - "}
                         {r.horarioFim}
                       </p>
-
                     </Card.Description>
-
                   </Card.Content>
 
                   <Card.Content extra>
-
                     {r.statusReposicao === "PENDENTE" ? (
                       <>
-                        <Button
-                          color="green"
-                          fluid
-                          onClick={() => {
-                            setReposicaoSelecionada(r);
-                            setOpenConfirmarModal(true);
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "10px",
+                            marginTop: "10px",
+                            width: "100%",
                           }}
                         >
-                          Confirmar Aula Ministrada
-                        </Button>
+                          <Button
+                            color="green"
+                            fluid
+                            style={{ margin: 0 }}
+                            onClick={() => {
+                              setReposicaoSelecionada(r);
+                              setOpenConfirmarModal(true);
+                            }}
+                          >
+                            Confirmar Aula Ministrada
+                          </Button>
 
-                        <Button
-                          color="red"
-                          fluid
-                          style={{ marginTop: "10px" }}
-                          onClick={() => {
-                            setReposicaoSelecionada(r);
-                            setOpenCancelarModal(true);
-                          }}
-                        >
-                          Cancelar Reposição
-                        </Button>
+                          <Button
+                            color="red"
+                            fluid
+                            style={{ margin: 0 }}
+                            onClick={() => {
+                              setReposicaoSelecionada(r);
+                              setOpenCancelarModal(true);
+                            }}
+                          >
+                            Cancelar Reposição
+                          </Button>
+                        </div>
                       </>
                     ) : (
-                      <Button
-                        fluid
-                        color="green"
-                        disabled
-                      >
+                      <Button fluid color="green" disabled>
                         Concluída
                       </Button>
                     )}
-
                   </Card.Content>
-
                 </Card>
               </Grid.Column>
             ))}
           </Grid>
-
         </div>
       </div>
 
@@ -247,27 +212,16 @@ export default function Home() {
         closeOnDimmerClick={false}
         closeOnEscape={false}
       >
-        <Modal.Header>
-          Confirmar aula ministrada
-        </Modal.Header>
+        <Modal.Header>Confirmar aula ministrada</Modal.Header>
 
         <Modal.Content>
-          <p>
-            Tem certeza que deseja marcar esta reposição como concluída?
-          </p>
+          <p>Tem certeza que deseja marcar esta reposição como concluída?</p>
         </Modal.Content>
 
         <Modal.Actions>
-          <Button
-            onClick={() => setOpenConfirmarModal(false)}
-          >
-            Cancelar
-          </Button>
+          <Button onClick={() => setOpenConfirmarModal(false)}>Cancelar</Button>
 
-          <Button
-            color="green"
-            onClick={confirmarConclusao}
-          >
+          <Button color="green" onClick={confirmarConclusao}>
             Confirmar
           </Button>
         </Modal.Actions>
@@ -280,27 +234,16 @@ export default function Home() {
         closeOnDimmerClick={false}
         closeOnEscape={false}
       >
-        <Modal.Header>
-          Cancelar reposição
-        </Modal.Header>
+        <Modal.Header>Cancelar reposição</Modal.Header>
 
         <Modal.Content>
-          <p>
-            Tem certeza que deseja cancelar esta reposição?
-          </p>
+          <p>Tem certeza que deseja cancelar esta reposição?</p>
         </Modal.Content>
 
         <Modal.Actions>
-          <Button
-            onClick={() => setOpenCancelarModal(false)}
-          >
-            Voltar
-          </Button>
+          <Button onClick={() => setOpenCancelarModal(false)}>Voltar</Button>
 
-          <Button
-            negative
-            onClick={confirmarCancelamento}
-          >
+          <Button negative onClick={confirmarCancelamento}>
             Cancelar Reposição
           </Button>
         </Modal.Actions>
