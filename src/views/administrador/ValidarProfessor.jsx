@@ -6,6 +6,7 @@ import { getErrorMessage } from "../util/getErrorMessage";
 
 export default function ValidarProfessor() {
   const [professores, setProfessores] = useState([]);
+  const [loadingId, setLoadingId] = useState(null);
 
   useEffect(() => {
     carregarPendentes();
@@ -15,42 +16,35 @@ export default function ValidarProfessor() {
     axios
       .get("http://localhost:8080/api/professor")
       .then((response) => {
+        
         const pendentes = response.data.filter(
-          (professor) => professor.ativo === false,
+          (professor) => professor.ativo === false
         );
         setProfessores(pendentes);
       })
       .catch((error) => {
-
         const erros = error.response?.data?.errors;
-
         if (erros?.length > 0) {
-
-          erros.forEach(e => {
-            notifyError(e.defaultMessage);
-          });
-
+          erros.forEach((e) => notifyError(e.defaultMessage));
         } else {
           notifyError(getErrorMessage(error));
         }
-
       });
   }
 
   async function validar(id) {
+    setLoadingId(id);
     try {
-      //Busca os dados atuais do professor diretamente da lista do estado
-      const professorAtual = professores.find(p => p.id === id);
+      const professorAtual = professores.find((p) => p.id === id);
 
       if (!professorAtual) {
         notifyError("Professor não encontrado localmente.");
         return;
       }
 
-      //Envia o objeto completo esperado pelo ProfessorRequest do backend
       await axios.put(`http://localhost:8080/api/professor/${id}`, {
         ...professorAtual,
-        ativo: true
+        ativo: true,
       });
 
       notifySuccess("Professor aprovado com sucesso!");
@@ -58,6 +52,28 @@ export default function ValidarProfessor() {
     } catch (error) {
       console.error(error);
       notifyError("Erro ao validar professor.");
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  async function reprovar(id) {
+    if (!window.confirm("Tem certeza que deseja reprovar este professor? A conta de usuário correspondente será desativada.")) {
+      return;
+    }
+
+    setLoadingId(id);
+    try {
+      
+      await axios.delete(`http://localhost:8080/api/professor/${id}`);
+      
+      notifySuccess("Professor reprovado e usuário desabilitado com sucesso!");
+      carregarPendentes();
+    } catch (error) {
+      console.error(error);
+      notifyError("Erro ao reprovar professor.");
+    } finally {
+      setLoadingId(null);
     }
   }
 
@@ -100,7 +116,17 @@ export default function ValidarProfessor() {
                     color="green"
                     icon="check"
                     content="Aprovar"
-                    onClick={() => validar(prof.id)}//ativo == true
+                    disabled={loadingId !== null}
+                    loading={loadingId === prof.id}
+                    onClick={() => validar(prof.id)}
+                  />
+                  <Button
+                    color="red"
+                    icon="remove"
+                    content="Reprovar"
+                    disabled={loadingId !== null}
+                    loading={loadingId === prof.id}
+                    onClick={() => reprovar(prof.id)}
                   />
                 </Table.Cell>
               </Table.Row>
