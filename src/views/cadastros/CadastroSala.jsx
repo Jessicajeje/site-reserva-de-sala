@@ -1,9 +1,10 @@
 import axios from "axios";
 import { useEffect, useState } from 'react';
 import { useLocation } from "react-router-dom";
-import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
+import { Button, Form, Icon, Divider } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
 import { getErrorMessage } from "../util/getErrorMessage";
+import {Link} from "react-router-dom";
 
 export default function CadastroSala({ lista = [] }) { // Definido como function e exportado diretamente
   const { state } = useLocation();
@@ -107,60 +108,91 @@ export default function CadastroSala({ lista = [] }) { // Definido como function
   }
 
   return (
-    <Grid textAlign="center" style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }} verticalAlign="middle">
-      <Grid.Column style={{ maxWidth: 500 }}>
-        <Segment raised style={{ padding: '3em' }}>
-          <Header as="h2" textAlign="center" style={{ marginBottom: '1.5em' }}>
-            {idSala === undefined ? (
-              <>
-                <span style={{ color: "darkgray" }}>Cadastro <Icon name="angle double right" size="small" /></span> Sala
-              </>
-            ) : (
-              <>
-                <span style={{ color: "darkgray" }}>Alteração <Icon name="angle double right" size="small" /></span> Sala
-              </>
-            )}
-          </Header>
+  <div className="container-cadastro">
+    <div className="card-formulario">
+      
+      {/* CABEÇALHO DO FORMULÁRIO COM LÓGICA DE CONDICIONAL */}
+      <h2 className="titulo-form">
+        <span style={{ color: "darkgray" }}>
+          {idSala === undefined ? "Cadastro" : "Alteração"} &nbsp;
+          <Icon name="angle double right" size="small" />
+        </span>
+        Sala
+      </h2>
 
-          <Form size="large">
-            <Form.Field style={{ marginBottom: "1.5em" }}>
-              <Form.Select
-                fluid
-                label="Bloco:"
-                placeholder="Selecione o bloco"
-                options={opcoesBloco}
-                value={bloco}
-                onChange={(e, { value }) => setBloco(value)}
-              />
-            </Form.Field>
+      <Divider />
 
-            <Form.Field style={{ marginBottom: '15px' }}>
-              <Form.Input
-                label="Número da sala:"
-                fluid
-                type="number"
-                value={numero}
-                onChange={(e, { value }) => setNumero(value)}
-              />
-            </Form.Field>
+      {/* CAMPOS DO FORMULÁRIO INTEGRADOS AO CSS PADRÃO */}
+      <Form className="formulario-padrao" size="large" style={{ textAlign: "left" }}>
+        
+        <Form.Field style={{ marginBottom: "1.5em" }}>
+          <Form.Select
+            fluid
+            required
+            label="Bloco:"
+            placeholder="Selecione o bloco"
+            options={opcoesBloco}
+            value={bloco}
+            onChange={(e, { value }) => setBloco(value)}
+          />
+        </Form.Field>
 
-            <Form.Group inline>
-              <label>Tipo:</label>
-              <Form.Radio label="Sala" value='sala' checked={tipo === 'sala'} onChange={atualizaTipo} />
-              <Form.Radio label="Laboratório" value='laboratorio' checked={tipo === 'laboratorio'} onChange={atualizaTipo} />
-            </Form.Group>
+        <Form.Field style={{ marginBottom: "1.5em" }}>
+          <Form.Input
+            fluid
+            required
+            label="Número da sala:"
+            type="number"
+            placeholder="Ex: 101"
+            value={numero}
+            onChange={(e, { value }) => setNumero(value)}
+          />
+        </Form.Field>
 
-            <Button
-              fluid
-              size="huge"
-              style={{ backgroundColor: "#21ba45", color: "#fff" }}
-              onClick={salvar}
-            >
-              Concluir
-            </Button>
-          </Form>
-        </Segment>
-      </Grid.Column>
-    </Grid>
-  );
+        {/* SELEÇÃO DE TIPO (SALA / LABORATÓRIO) ESTILIZADA */}
+        <Form.Group inline style={{ margin: "2em 0", padding: "10px", background: "#fafafa", borderRadius: "10px" }}>
+          <label style={{ fontWeight: "700", color: "#444", marginRight: "20px" }}>Tipo:*</label>
+          <Form.Radio 
+            label="Sala" 
+            value="sala" 
+            checked={tipo === "sala"} 
+            onChange={atualizaTipo} 
+            style={{ marginRight: "15px" }}
+          />
+          <Form.Radio 
+            label="Laboratório" 
+            value="laboratorio" 
+            checked={tipo === "laboratorio"} 
+            onChange={atualizaTipo} 
+          />
+        </Form.Group>
+
+        {/* ÁREA DE BOTÕES PADRONIZADA NA BASE DO CARD */}
+        <div className="grupo-botoes-form">
+          <Button
+            fluid
+            className="btn-salvar-form"
+            type="button"
+            onClick={salvar}
+          >
+            <Icon name="checkmark" />
+            Concluir
+          </Button>
+
+          <Button
+            fluid
+            className="btn-voltar-form"
+            as={Link}
+            to="/cadastro-sala" /* Ajuste para a sua rota real da listagem de salas */
+          >
+            <Icon name="reply" />
+            Voltar
+          </Button>
+        </div>
+
+      </Form>
+    </div>
+  </div>
+);
+
 }

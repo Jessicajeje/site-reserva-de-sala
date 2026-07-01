@@ -221,7 +221,6 @@ return (
                         </Card.Meta>
 
                         <div className="bloco-card">
-                          bloco:{" "}
                           {sala.bloco
                             ? sala.bloco.replace("_", " ")
                             : "não informado"}
@@ -240,9 +239,6 @@ return (
 
                   <Card.Content extra>
                     <div className="acoes-card">
-                      <Button basic color="orange" size="small">
-                        Desabilitar
-                      </Button>
 
                       <div className="acoes-direita">
                         <Button

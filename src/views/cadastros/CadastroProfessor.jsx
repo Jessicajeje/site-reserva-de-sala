@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { IMaskInput } from "react-imask";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
+import { Button, Form, Icon, Divider } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from "../util/getErrorMessage";
@@ -117,122 +117,130 @@ export default function CadastroProfessor() {
   }
 
   return (
-    <Grid
-      textAlign="center"
-      style={{ height: "100vh", backgroundColor: "#f4f4f4" }}
-      verticalAlign="middle"
-    >
-      <Grid.Column style={{ maxWidth: 600 }}>
-        <Segment raised style={{ padding: "3em" }}>
-          <Header as="h1" textAlign="center" style={{ marginBottom: "1.5em" }}>
-            {idProfessor === undefined ? (
-              <h2>
-                <span style={{ color: "darkgray" }}>
-                  Cadastro <Icon name="angle double right" size="small" />
-                </span>{" "}
-                Docente
-              </h2>
-            ) : (
-              <h2>
-                <span style={{ color: "darkgray" }}>
-                  Alteração <Icon name="angle double right" size="small" />
-                </span>{" "}
-                Docente
-              </h2>
-            )}
-          </Header>
+  <div className="container-cadastro">
+    <div className="card-formulario">
+      
+      {/* CABEÇALHO DO FORMULÁRIO COM LÓGICA DE CONDICIONAL */}
+      <h2 className="titulo-form">
+        <span style={{ color: "darkgray" }}>
+          {idProfessor === undefined ? "Cadastro" : "Alteração"} &nbsp;
+          <Icon name="angle double right" size="small" />
+        </span>
+        Docente
+      </h2>
 
-          <Form size="large" style={{ textAlign: "left" }}>
-            <Form.Group widths="equal">
-              <Form.Input
-                fluid
-                label="Nome"
-                placeholder="Nome"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-              />
+      <Divider />
 
-              <Form.Field>
-                <label>CPF</label>
-                <IMaskInput
-                  mask="000.000.000-00"
-                  value={cpf}
-                  onAccept={(value) => setCpf(value)}
-                  placeholder="000.000.000-00"
-                  style={{
-                    padding: "0.67857143em 1em",
-                    border: "1px solid rgba(34,36,38,.15)",
-                    borderRadius: ".28571429rem",
-                    width: "100%",
-                  }}
-                />
-              </Form.Field>
-            </Form.Group>
+      {/* CAMPOS DO FORMULÁRIO INTEGRADOS AO CSS PADRÃO */}
+      <Form className="formulario-padrao" size="large" style={{ textAlign: "left" }}>
+        <Form.Group widths="equal">
+          <Form.Input
+            fluid
+            required
+            label="Nome"
+            placeholder="Nome completo"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+          />
 
-            <Form.Group widths="equal">
-              <Form.Field>
-                <label>Siape</label>
-                <IMaskInput
-                  mask='00000000'
-                  fluid
-                  placeholder="Nº Siape"
-                  value={siape}
-                  onChange={(e) => setSiape(e.target.value)}
-                />
-              </Form.Field>
-              <Form.Input
-                fluid
-                label="Email"
-                placeholder="Email institucional"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-            </Form.Group>
-
-            <Form.Input
-              fluid
-              label="Senha"
-              type="password"
-              placeholder="Digite uma password"
-              value={password}
-              disabled={!!idProfessor}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <Form.Input
-              fluid
-              label="Confirmar Senha"
-              type="password"
-              placeholder="Repita a password"
-              value={confirmarSenha}
-              disabled={!!idProfessor}
-              onChange={(e) => setConfirmarSenha(e.target.value)}
-              error={
-                confirmarSenha !== "" && password !== confirmarSenha
-                  ? { content: "As senhas não coincidem", pointing: "below" }
-                  : false
-              }
-            />
-
-            <Button
-              fluid
-              size="huge"
-              type="button"
+          <Form.Field required>
+            <label>CPF</label>
+            <IMaskInput
+              mask="000.000.000-00"
+              value={cpf}
+              onAccept={(value) => setCpf(value)}
+              placeholder="000.000.000-00"
               style={{
-                backgroundColor: "#21ba45",
-                color: "#fff",
-                marginTop: "1em",
-                marginBottom: '8%'
+                padding: "12px 15px",
+                border: "1px solid #cccccc",
+                borderRadius: "10px",
+                width: "100%",
               }}
-              onClick={salvar}
-            >
-              Concluir
-            </Button>
-          </Form>
-          <Link to={'/'}> <p>voltar para log-in docente</p></Link>
-        </Segment>
-      </Grid.Column>
-    </Grid>
-  );
+            />
+          </Form.Field>
+        </Form.Group>
+
+        <Form.Group widths="equal">
+          <Form.Field required>
+            <label>SIAPE</label>
+            <IMaskInput
+              mask="00000000"
+              placeholder="Nº SIAPE"
+              value={siape}
+              onAccept={(value) => setSiape(value)}
+              style={{
+                padding: "12px 15px",
+                border: "1px solid #cccccc",
+                borderRadius: "10px",
+                width: "100%",
+              }}
+            />
+          </Form.Field>
+
+          <Form.Input
+            fluid
+            required
+            label="E-mail"
+            placeholder="Email institucional"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Form.Group>
+
+        <Form.Input
+          fluid
+          required={!idProfessor}
+          label="Senha"
+          type="password"
+          placeholder="Digite uma senha"
+          value={password}
+          disabled={!!idProfessor}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ marginBottom: "1.5em" }}
+        />
+
+        <Form.Input
+          fluid
+          required={!idProfessor}
+          label="Confirmar Senha"
+          type="password"
+          placeholder="Repita a senha"
+          value={confirmarSenha}
+          disabled={!!idProfessor}
+          onChange={(e) => setConfirmarSenha(e.target.value)}
+          error={
+            confirmarSenha !== "" && password !== confirmarSenha
+              ? { content: "As senhas não coincidem", pointing: "below" }
+              : false
+          }
+        />
+
+        {/* ÁREA DE BOTÕES PADRONIZADA NA BASE DO CARD */}
+        <div className="grupo-botoes-form" style={{ marginTop: "25px" }}>
+          <Button
+            fluid
+            className="btn-salvar-form"
+            type="button"
+            onClick={salvar}
+          >
+            <Icon name="checkmark" />
+            Concluir
+          </Button>
+
+          <Button
+            fluid
+            className="btn-voltar-form"
+            as={Link}
+            to="/"
+          >
+            <Icon name="reply" />
+            Voltar para login docente
+          </Button>
+        </div>
+
+      </Form>
+    </div>
+  </div>
+);
+
 }

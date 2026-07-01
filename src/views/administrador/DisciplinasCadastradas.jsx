@@ -228,15 +228,11 @@ return (
 
             <Card.Content extra>
               <div className="acoes-card">
-                <Button basic color="orange" size="small">
-                  Desabilitar
-                </Button>
 
                 <div className="acoes-direita">
                   <Button
                     className="btn-action-minimal"
                     icon
-                    color="teal"
                     as={Link}
                     to="/cadastro-disciplina"
                     state={{ id: item.id }}
