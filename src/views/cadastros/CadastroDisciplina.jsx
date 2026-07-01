@@ -1,10 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
+import { Button, Form, Icon, Divider} from "semantic-ui-react";
+import {Link} from "react-router-dom";
 import { notifyError, notifySuccess, notifyWarn } from "../../views/util/Util";
 import { getErrorMessage } from "../util/getErrorMessage";
-import "../logins/estilo.css";
+
 
 export default function CadastroDisciplina() {
   const { state } = useLocation();
@@ -113,78 +114,94 @@ export default function CadastroDisciplina() {
 
       });
   }
+return (
+  <div className="container-cadastro">
+    <div className="card-formulario">
+      
+      {/* CABEÇALHO DO FORMULÁRIO COM LÓGICA DE CONDICIONAL */}
+      <h2 className="titulo-form">
+        <span style={{ color: "darkgray" }}>
+          {idDisciplina === undefined ? "Cadastro" : "Alteração"} &nbsp;
+          <Icon name="angle double right" size="small" />
+        </span>
+        Disciplina
+      </h2>
 
-  return (
-    <Grid textAlign="center" style={{ height: "100vh", backgroundColor: "#f4f4f4" }} verticalAlign="middle">
-      <Grid.Column style={{ maxWidth: 550 }}>
-        <Segment raised style={{ padding: "3em" }}>
-          <Header as="h1" textAlign="center" style={{ marginBottom: "1.5em" }}>
-            {idDisciplina === undefined ? (
-              <h2><span style={{ color: "darkgray" }}>Cadastro <Icon name="angle double right" size="small" /></span> Disciplina</h2>
-            ) : (
-              <h2><span style={{ color: "darkgray" }}>Alteração <Icon name="angle double right" size="small" /></span> Disciplina</h2>
-            )}
-          </Header>
+      <Divider />
 
-          <Form size="large" style={{ textAlign: "left" }}>
+      {/* CAMPOS DO FORMULÁRIO INTEGRADOS AO CSS PADRÃO */}
+      <Form className="formulario-padrao" size="large" style={{ textAlign: "left" }}>
+        
+        <Form.Input
+          fluid
+          required
+          label="Nome da disciplina:"
+          placeholder="Ex: Algoritmos II"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          style={{ marginBottom: "1.5em" }}
+        />
 
-            <Form.Input
-              fluid
-              required
-              label="Nome da disciplina:*"
-              placeholder="Ex: Algoritmos II"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-            />
-            <Form.Input
-              fluid
-              label="Período ofertado:"
-              required
-              type="number"
-              value={periodoOfertado}
-              onChange={(e) => setPeriodoOfertado(e.target.value)}
-            />
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <Form.Input
-                fluid
-                label="Carga horária:"
-                required
-                type="number"
-                placeholder="Ex: 1"
-                value={chTotal}
-                onChange={(e, { value }) => setChTotal(value)}
-              />
-            </Form.Field>
+        <Form.Group widths="equal">
+          <Form.Input
+            fluid
+            label="Período ofertado:"
+            required
+            type="number"
+            placeholder="Ex: 1"
+            value={periodoOfertado}
+            onChange={(e) => setPeriodoOfertado(e.target.value)}
+          />
 
-            <Form.Field>
-              <Form.Select
-                fluid
-                required
-                label="Curso:"
-                placeholder="Selecione o curso"
-                options={opcoesCurso}
-                value={idCurso}
-                onChange={(e, { value }) => setIdCurso(value)}
-                noResultsMessage="Nenhuma turma encontrada."
-              />
-            </Form.Field>
+          <Form.Input
+            fluid
+            label="Carga horária (horas):"
+            required
+            type="number"
+            placeholder="Ex: 60"
+            value={chTotal}
+            onChange={(e, { value }) => setChTotal(value)}
+          />
+        </Form.Group>
 
-            <Button
-              fluid
-              size="huge"
-              type="button"
-              style={{
-                backgroundColor: "#21ba45",
-                color: "#fff",
-                marginTop: "1em",
-              }}
-              onClick={salvar}
-            >
-              Concluir
-            </Button>
-          </Form>
-        </Segment>
-      </Grid.Column>
-    </Grid>
-  );
+        <Form.Field style={{ marginTop: "1.5em", marginBottom: "2em" }}>
+          <Form.Select
+            fluid
+            required
+            label="Curso:"
+            placeholder="Selecione o curso"
+            options={opcoesCurso}
+            value={idCurso}
+            onChange={(e, { value }) => setIdCurso(value)}
+            noResultsMessage="Nenhum curso encontrado."
+          />
+        </Form.Field>
+
+        {/* ÁREA DE BOTÕES PADRONIZADA NA BASE DO CARD */}
+        <div className="grupo-botoes-form">
+          <Button
+            fluid
+            className="btn-salvar-form"
+            type="button"
+            onClick={salvar}
+          >
+            <Icon name="checkmark" />
+            Concluir
+          </Button>
+
+          <Button
+            fluid
+            className="btn-voltar-form"
+            as={Link}
+            to="/consultar-disciplinas" /* Ajuste para a sua rota real da listagem de disciplinas */
+          >
+            <Icon name="reply" />
+            Voltar
+          </Button>
+        </div>
+
+      </Form>
+    </div>
+  </div>
+);
 }

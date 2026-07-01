@@ -1,8 +1,9 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Button, Header, Icon, Table } from "semantic-ui-react";
+import { Button, Header, Icon, Table, Divider } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../util/Util";
 import { getErrorMessage } from "../util/getErrorMessage";
+import "./css/turmas.css";
 
 export default function ValidarProfessor() {
   const [professores, setProfessores] = useState([]);
@@ -61,53 +62,87 @@ export default function ValidarProfessor() {
     }
   }
 
-  return (
-    <div style={{ padding: "2%" }}>
-      <Header as="h2">
-        <Icon name="user check" />
-        <Header.Content>Professores aguardando validação</Header.Content>
-      </Header>
+ return (
+  <div style={{ marginTop: "3%" }}>
+    <section className="container-turmas" style={{ padding: "2%" }}>
+      
+      {/* TOPO DA TABELA PADRONIZADO */}
+      <div className="topo-tabela" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1%" }}>
+        <div>
+          <Header as="h2" className="titulo-pagina" style={{ margin: 0, textAlign: "left" }}>
+            <Icon name="user check" style={{ marginRight: "10px", fontSize: "0.9em" }} />
+            Professores aguardando validação
+          </Header>
+        </div>
+      </div>
 
-      <Table celled color="green">
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Nome</Table.HeaderCell>
-            <Table.HeaderCell>E-mail</Table.HeaderCell>
-            <Table.HeaderCell>Siape</Table.HeaderCell>
-            <Table.HeaderCell textAlign="center">Ações</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
+      <Divider />
 
-        <Table.Body>
-          {professores.length === 0 ? (
-            <Table.Row>
-              <Table.Cell
-                colSpan="4"
-                textAlign="center"
-                style={{ opacity: 0.5, color: "grey" }}
-              >
-                Nenhum professor pendente.
-              </Table.Cell>
-            </Table.Row>
-          ) : (
-            professores.map((prof) => (
-              <Table.Row key={prof.id}>
-                <Table.Cell>{prof.nome}</Table.Cell>
-                <Table.Cell>{prof.email}</Table.Cell>
-                <Table.Cell>{prof.siape}</Table.Cell>
-                <Table.Cell textAlign="center">
-                  <Button
-                    color="green"
-                    icon="check"
-                    content="Aprovar"
-                    onClick={() => validar(prof.id)}//ativo == true
-                  />
-                </Table.Cell>
+      {/* VERIFICAÇÃO DE LISTA VAZIA OU EXIBIÇÃO DA TABELA COPIANDO O FLUXO DE TURMAS */}
+      {!professores || professores.length === 0 ? (
+        <div className="estado-vazio" style={{ textAlign: "center", padding: "5% 0" }}>
+          <div className="icone-vazio" style={{ fontSize: "3em", color: "#ccc", marginBottom: "15px" }}>
+            <Icon name="users" />
+          </div>
+          <h3>Nenhum professor pendente</h3>
+          <p style={{ color: "#777" }}>
+            Todos os cadastros de professores já foram validados.
+          </p>
+        </div>
+      ) : (
+        <div className="tabela-wrapper">
+          <Table color="green" sortable celled className="tabela-turmas">
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell>Nome</Table.HeaderCell>
+                <Table.HeaderCell>E-mail</Table.HeaderCell>
+                <Table.HeaderCell>SIAPE</Table.HeaderCell>
+                <Table.HeaderCell textAlign="center" width={3}>Ações</Table.HeaderCell>
               </Table.Row>
-            ))
-          )}
-        </Table.Body>
-      </Table>
-    </div>
-  );
+            </Table.Header>
+
+            <Table.Body>
+              {professores.map((prof) => (
+                <Table.Row key={prof.id}>
+                  <Table.Cell>
+                    <div className="curso-cell" style={{ fontWeight: "bold" }}>
+                      {prof.nome}
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell>{prof.email}</Table.Cell>
+                  <Table.Cell>
+                    <div className="periodo-badge">
+                      {prof.siape}
+                    </div>
+                  </Table.Cell>
+
+                  {/* BOTÃO DE APROVAÇÃO ALINHADO AO PADRÃO */}
+                  <Table.Cell textAlign="center">
+                    <div className="acoes-tabela" style={{ display: "flex", justifyContent: "center" }}>
+                      <Button
+                        className="btn-nova-turma"
+                        style={{ 
+                          background: "#5DA348", 
+                          color: "white", 
+                          borderRadius: "10px", 
+                          padding: "10px 16px",
+                          boxShadow: "none"
+                        }}
+                        icon="check"
+                        content="Aprovar"
+                        labelPosition="left"
+                        onClick={() => validar(prof.id)}
+                      />
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        </div>
+      )}
+    </section>
+  </div>
+);
+
 }

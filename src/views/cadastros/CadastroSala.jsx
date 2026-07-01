@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useLocation } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from '../../views/util/Util';
-import '../logins/estilo.css';
 import { getErrorMessage } from "../util/getErrorMessage";
 
 export default function CadastroSala({ lista = [] }) { // Definido como function e exportado diretamente

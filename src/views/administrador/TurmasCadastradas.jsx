@@ -15,6 +15,7 @@ import {
 import "./Interface.css";
 import { notifyError, notifySuccess } from "../util/Util";
 import { getErrorMessage } from "../util/getErrorMessage";
+import "./css/turmas.css";
 
 export default function TurmasCadastradas() {
   const [lista, setLista] = useState([]);
@@ -130,90 +131,101 @@ export default function TurmasCadastradas() {
         console.error("Erro ao filtrar turmas:", error);
       });
   }
-  return (
+return (
     <div>
       <div style={{ marginTop: "3%" }}>
-        <section textAlign="justified">
-          <Header
-            as="h2"
-            style={{ textAlign: "left", marginLeft: "2%", marginTop: "5%" }}
-          >
-            Turmas cadastradas
-          </Header>
-          <Divider />
+        <section className="container-turmas" style={{ padding: "2%" }}>
+          
+          {/* TOPO DA TABELA REESTRUTURADO */}
+          <div className="topo-tabela" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1%" }}>
+            <div>
+              <Header as="h2" className="titulo-pagina" style={{ margin: 0, textAlign: "left" }}>
+                Turmas cadastradas
+              </Header>
+            </div>
 
-          <Menu compact>
-            <Menu.Item
-              name="menuFiltro"
-              active={menuFiltro === true}
-              onClick={() => handleMenuFiltro()}
-            >
-              <Icon name="filter" />
-              Filtrar
-            </Menu.Item>
-          </Menu>
-          <div style={{ marginTop: "3%", padding: "2%" }}>
             <Button
-              label="Nova turma"
+              className="btn-nova-turma"
               color="yellow"
               icon="clipboard outline"
-              floated="right"
+              labelPosition="left"
               as={Link}
               to="/cadastro-turma"
+              content="Nova turma"
             />
+          </div>
 
-            <br />
-            <br />
-            <br />
+          <Divider />
 
-            {menuFiltro ? (
-              <Segment>
-                <Form className="form-filtros">
-                  <Form.Group widths="equal">
-                    <Form.Input
-                      icon="search"
-                      value={nome}
-                      onChange={(e) => handleChangeNome(e.target.value)}
-                      label="Nome"
-                      placeholder="Filtrar por nome"
-                      labelPosition="left"
-                      width={4}
-                    />
+          {/* BOTÃO DO MENU DE FILTRO */}
+          <div style={{ marginBottom: "2%" }}>
+            <Menu compact>
+              <Menu.Item
+                name="menuFiltro"
+                active={menuFiltro === true}
+                onClick={() => handleMenuFiltro()}
+              >
+                <Icon name="filter" />
+                Filtrar
+              </Menu.Item>
+            </Menu>
+          </div>
 
-                    <Form.Input
-                      icon="search"
-                      value={turno}
-                      onChange={(e) => handleChangeTurno(e.target.value)}
-                      label="Turno"
-                      placeholder="Filtrar por turno"
-                      labelPosition="left"
-                      width={4}
-                    />
-                    <Form.Select
-                      placeholder="Filtrar por Curso"
-                      label="Curso"
-                      options={listaCurso}
-                      value={idCurso}
-                      width={4}
-                      onChange={(e, { value }) => {
-                        handleChangeIdCurso(value);
-                      }}
-                    />
-                  </Form.Group>
-                </Form>
-              </Segment>
-            ) : (
-              ""
-            )}
+          {/* FORMULÁRIO DE FILTROS SEGUINDO AS SUAS VARIÁVEIS REAIS */}
+          {menuFiltro ? (
+            <Segment style={{ marginBottom: "2%" }}>
+              <Form className="form-filtros">
+                <Form.Group widths="equal">
+                  <Form.Input
+                    icon="search"
+                    value={nome}
+                    onChange={(e) => handleChangeNome(e.target.value)}
+                    label="Nome"
+                    placeholder="Filtrar por nome"
+                    labelPosition="left"
+                    width={4}
+                  />
 
-            {lista.length === 0 ? (
-              <div style={{ textAlign: "center", marginTop: "5%" }}>
-                <h3 style={{ opacity: 0.5, color: "grey" }}>
-                  Nenhuma turma cadastrada ainda.
-                </h3>
+                  <Form.Input
+                    icon="search"
+                    value={turno}
+                    onChange={(e) => handleChangeTurno(e.target.value)}
+                    label="Turno"
+                    placeholder="Filtrar por turno"
+                    labelPosition="left"
+                    width={4}
+                  />
+                  <Form.Select
+                    placeholder="Filtrar por Curso"
+                    label="Curso"
+                    options={listaCurso}
+                    value={idCurso}
+                    width={4}
+                    onChange={(e, { value }) => {
+                      handleChangeIdCurso(value);
+                    }}
+                  />
+                </Form.Group>
+              </Form>
+            </Segment>
+          ) : (
+            ""
+          )}
+
+          {/* MENSAGEM OU TABELA COM AS CLASSES INTEGRADAS */}
+          {lista.length === 0 ? (
+            <div className="estado-vazio" style={{ textAlign: "center", padding: "5% 0" }}>
+              <div className="icone-vazio" style={{ fontSize: "3em", color: "#ccc", marginBottom: "15px" }}>
+                <Icon name="users" />
               </div>
-            ) : (
-              <Table color="green" sortable celled>
+              <h3>Nenhuma turma cadastrada ainda</h3>
+              <p style={{ color: "#777" }}>
+                Cadastre uma nova turma para começar.
+              </p>
+            </div>
+          ) : (
+            <div className="tabela-wrapper">
+              <Table color="green" sortable celled className="tabela-turmas">
                 <Table.Header>
                   <Table.Row>
                     <Table.HeaderCell>Nome</Table.HeaderCell>
@@ -223,19 +235,25 @@ export default function TurmasCadastradas() {
                     <Table.HeaderCell>Qtd. Máx Alunos</Table.HeaderCell>
                     <Table.HeaderCell>Alunos Matriculados</Table.HeaderCell>
                     <Table.HeaderCell>Status</Table.HeaderCell>
-                    <Table.HeaderCell textAlign="center">
-                      Ações
-                    </Table.HeaderCell>
+                    <Table.HeaderCell textAlign="center">Ações</Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
 
                 <Table.Body>
                   {lista.map((turma) => (
                     <Table.Row key={turma.id}>
-                      <Table.Cell>{turma.nome}</Table.Cell>
+                      <Table.Cell>
+                        <div className="curso-cell" style={{ fontWeight: "bold" }}>
+                          {turma.nome}
+                        </div>
+                      </Table.Cell>
                       <Table.Cell>{turma.turno}</Table.Cell>
                       <Table.Cell>{turma.anoEntrada}</Table.Cell>
-                      <Table.Cell>{turma.semestreEntrada}</Table.Cell>
+                      <Table.Cell>
+                        <div className="periodo-badge">
+                          {turma.semestreEntrada}° Semestre
+                        </div>
+                      </Table.Cell>
                       <Table.Cell>{turma.qtdMaximaAlunos}</Table.Cell>
                       <Table.Cell>{turma.qtdAlunosMatriculados}</Table.Cell>
                       <Table.Cell>
@@ -243,42 +261,40 @@ export default function TurmasCadastradas() {
                       </Table.Cell>
 
                       <Table.Cell textAlign="center">
-                        <Button
-                          inverted
-                          circular
-                          color="blue"
-                          title="Clique aqui para editar os dados da turma"
-                          icon
-                        >
-                          <Link
+                        <div className="acoes-tabela" style={{ display: "flex", justifyContent: "center", gap: "5px" }}>
+                          <Button
+                            className="btn-action-minimal"
+                            icon
+                            as={Link}
                             to="/cadastro-turma"
                             state={{ id: turma.id }}
-                            style={{ color: "blue" }}
+                            title="Clique aqui para editar os dados da turma"
                           >
-                            <Icon name="edit" />
-                          </Link>
-                        </Button>
-                        &nbsp;
-                        <Button
-                          inverted
-                          circular
-                          color="red"
-                          title="Clique aqui para remover a turma"
-                          icon
-                          onClick={(e) => confirmaRemover(turma.id)}
-                        >
-                          <Icon name="trash" />
-                        </Button>
+                            <Icon name="edit outline" />
+                          </Button>
+
+                          <Button
+                            className="btn-action-minimal btn-remover"
+                            icon
+                            color="red"
+                            basic
+                            onClick={(e) => confirmaRemover(turma.id)}
+                            title="Clique aqui para remover a turma"
+                          >
+                            <Icon name="trash alternate outline" />
+                          </Button>
+                        </div>
                       </Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>
               </Table>
-            )}
-          </div>
+            </div>
+          )}
         </section>
       </div>
 
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
       <Modal
         basic
         onClose={() => setOpenModal(false)}
@@ -288,8 +304,7 @@ export default function TurmasCadastradas() {
         <Header icon>
           <Icon name="trash" />
           <div style={{ marginTop: "5%" }}>
-            {" "}
-            Tem certeza que deseja remover esse registro?{" "}
+            Tem certeza que deseja remover esse registro?
           </div>
         </Header>
         <Modal.Actions>
@@ -308,4 +323,5 @@ export default function TurmasCadastradas() {
       </Modal>
     </div>
   );
+
 }

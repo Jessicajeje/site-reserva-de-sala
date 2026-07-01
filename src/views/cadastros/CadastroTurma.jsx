@@ -4,7 +4,7 @@ import { notifyError, notifySuccess } from "../../views/util/Util";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { getErrorMessage } from "../util/getErrorMessage";
-import "../logins/estilo.css";
+
 
 export default function CadastroTurma() {
   const { state } = useLocation();

@@ -1,0 +1,83 @@
+/* CONTAINER MAIOR QUE CENTRALIZA O CARD NO MEIO DA TELA */
+.container-cadastro {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  min-height: 90vh !important;
+  background-color: #f4f4f4 !important;
+  padding: 40px !important;
+  width: 100% !important;
+}
+
+/* O CARD BRANCO CENTRALIZADO COM OS CANTOS ARREDONDADOS */
+.card-formulario {
+  width: 100% !important;
+  max-width: 800px !important; /* Limita a largura para não esticar na tela toda */
+  background: #ffffff !important;
+  padding: 40px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+  margin: 0 auto !important;
+}
+
+/* CABEÇALHO DO CARD */
+.titulo-form {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #222 !important;
+  text-align: left !important;
+}
+
+/* CONFIGURAÇÃO DOS LABELS DO FORMULÁRIO */
+.ui.form.formulario-padrao .field label {
+  color: #333 !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  margin-bottom: 8px !important;
+}
+
+/* CAIXAS DE SELEÇÃO E INPUTS ARREDONDADOS */
+.formulario-padrao input,
+.formulario-padrao .ui.selection.dropdown {
+  border-radius: 10px !important;
+  border: 1px solid #cccccc !important;
+  padding: 12px 15px !important;
+}
+
+/* ESPAÇAMENTO DOS BOTÕES NA BASE */
+.grupo-botoes-form {
+  margin-top: 30px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 15px !important;
+}
+
+/* FORÇAR COMPORTAMENTO E DESIGN DOS BOTÕES DO FORMULÁRIO */
+.ui.button.btn-salvar-form {
+  background-color: #5DA348 !important; /* Verde idêntico ao das tabelas */
+  color: white !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  padding: 15px !important;
+  box-shadow: 0 4px 12px rgba(93, 163, 72, 0.2) !important;
+  transition: 0.2s ease !important;
+}
+
+.ui.button.btn-salvar-form:hover {
+  background-color: #4c8d3b !important;
+  transform: translateY(-2px) !important;
+}
+
+.ui.button.btn-voltar-form {
+  background-color: #f2711c !important; /* Laranja visível */
+  color: white !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  padding: 12px !important;
+  transition: 0.2s ease !important;
+}
+
+.ui.button.btn-voltar-form:hover {
+  background-color: #e15f0b !important;
+  transform: translateY(-2px) !important;
+}

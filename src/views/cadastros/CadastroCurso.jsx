@@ -1,10 +1,11 @@
-import { Button, Form, Grid, Segment, Header, Icon } from "semantic-ui-react";
+import { Button, Form, Icon, Divider } from "semantic-ui-react";
+import {Link} from "react-router-dom";
 import axios from "axios";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../util/getErrorMessage";
-import "../logins/estilo.css";
+import "./formulario.css";
 
 export default function CadastroCurso() {
   const { state } = useLocation();
@@ -145,84 +146,85 @@ export default function CadastroCurso() {
         });
     }
   }
-  return (
-    <Grid
-      textAlign="center"
-      style={{ height: "100vh", backgroundColor: "#f4f4f4" }}
-      verticalAlign="middle"
-    >
-      <Grid.Column style={{ maxWidth: 500 }}>
-        <Segment raised style={{ padding: "3em" }}>
-          <Header as="h1" textAlign="center" style={{ marginBottom: "1.5em" }}>
-            {idCurso === undefined ? (
-              <h2>
-                <span style={{ color: "darkgray" }}>
-                  Cadastro <Icon name="angle double right" size="small" />
-                </span>{" "}
-                Curso
-              </h2>
-            ) : (
-              <h2>
-                <span style={{ color: "darkgray" }}>
-                  Alteração <Icon name="angle double right" size="small" />
-                </span>{" "}
-                Curso
-              </h2>
-            )}
-          </Header>
+return (
+  <div className="container-cadastro">
+    <div className="card-formulario">
+      
+      {/* CABEÇALHO DO FORMULÁRIO COM LÓGICA DE CONDICIONAL */}
+      <h2 className="titulo-form">
+        <span style={{ color: "darkgray" }}>
+          {idCurso === undefined ? "Cadastro" : "Alteração"} &nbsp;
+          <Icon name="angle double right" size="small" />
+        </span>
+        Curso
+      </h2>
 
-          <Form size="large">
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <Form.Select
-                fluid
-                label="nome do curso:"
-                placeholder="Selecione o curso"
-                options={opcoesCurso}
-                required
-                value={nome}
-                onChange={(e, { value }) => setNome(value)}
-              />
-            </Form.Field>
+      <Divider />
 
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <Form.Select
-                fluid
-                label="Área:"
-                required
-                options={opcoesArea}
-                placeholder="Selecione a área"
-                value={area}
-                onChange={(e, { value }) => setArea(value)}
-              />
-            </Form.Field>
+      {/* CAMPOS DO FORMULÁRIO INTEGRADOS AO CSS PADRÃO */}
+      <Form className="formulario-padrao" size="large">
+        
+        <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+          <Form.Select
+            fluid
+            label="Nome do curso:"
+            placeholder="Selecione o curso"
+            options={opcoesCurso}
+            required
+            value={nome}
+            onChange={(e, { value }) => setNome(value)}
+          />
+        </Form.Field>
 
-            <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
-              <Form.Input
-                fluid
-                label="Quantidade de períodos:"
-                required
-                type="number"
-                placeholder="Ex: 6"
-                value={qtdPeriodos}
-                onChange={(e, { value }) => setQtdPeriodos(value)}
-              />
-            </Form.Field>
+        <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+          <Form.Select
+            fluid
+            label="Área:"
+            placeholder="Selecione a área"
+            options={opcoesArea}
+            required
+            value={area}
+            onChange={(e, { value }) => setArea(value)}
+          />
+        </Form.Field>
 
-            <Button
-              fluid
-              size="huge"
-              style={{
-                backgroundColor: "#21ba45",
-                color: "#fff",
-                padding: "15px",
-              }}
-              onClick={salvar}
-            >
-              Concluir
-            </Button>
-          </Form>
-        </Segment>
-      </Grid.Column>
-    </Grid>
-  );
+        <Form.Field style={{ marginBottom: "2em", textAlign: "left" }}>
+          <Form.Input
+            fluid
+            label="Quantidade de períodos:"
+            type="number"
+            placeholder="Ex: 6"
+            required
+            value={qtdPeriodos}
+            onChange={(e, { value }) => setQtdPeriodos(value)}
+          />
+        </Form.Field>
+
+        {/* ÁREA DE BOTÕES PADRONIZADA NA BASE DO CARD */}
+        <div className="grupo-botoes-form">
+          <Button
+            fluid
+            className="btn-salvar-form"
+            onClick={salvar}
+          >
+            <Icon name="checkmark" />
+            Concluir
+          </Button>
+
+          <Button
+            fluid
+            className="btn-voltar-form"
+            as={Link}
+            to="/consultar-cursos" /* Ajuste para a rota real da sua listagem de cursos */
+          >
+            <Icon name="reply" />
+            Voltar
+          </Button>
+        </div>
+
+      </Form>
+    </div>
+  </div>
+);
+
 }

@@ -5,7 +5,6 @@ import {
   Button,
   Card,
   Divider,
-  Grid,
   Header,
   Icon,
   Modal,
@@ -15,6 +14,7 @@ import {
 } from "semantic-ui-react";
 import { notifyError } from "../util/Util";
 import { getErrorMessage } from "../util/getErrorMessage";
+import "./css/disciplinas.css";
 import "./Interface.css";
 
 export default function DisciplinasCadastradas() {
@@ -121,7 +121,7 @@ export default function DisciplinasCadastradas() {
         console.error("Erro ao filtrar disciplinas:", error);
       });
   }
-  return (
+return (
     <section
       style={{
         display: "flex",
@@ -135,115 +135,141 @@ export default function DisciplinasCadastradas() {
       </Header>
       <Divider style={{ marginVertical: "2%" }} />
 
-      <Menu compact>
-        <Menu.Item
-          name="menuFiltro"
-          active={menuFiltro === true}
-          onClick={() => handleMenuFiltro()}
-        >
-          <Icon name="filter" />
-          Filtrar
-        </Menu.Item>
-      </Menu>
-      <br />
-      <br />
-      <Grid columns={4} stackable>
-        {/* Card de Atalho para Novo Cadastro */}
-        <Grid.Column>
-          <Card
-            as={Link}
-            to="/cadastro-disciplina"
-            style={{
-              textAlign: "center",
-              height: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+      <div style={{ marginBottom: "2%" }}>
+        <Menu compact>
+          <Menu.Item
+            name="menuFiltro"
+            active={menuFiltro === true}
+            onClick={() => handleMenuFiltro()}
           >
-            <Card.Content>
-              <Icon
-                name="plus"
-                size="large"
-                style={{ color: "#aaaaaa", fontWeight: "lighter" }}
+            <Icon name="filter" />
+            Filtrar
+          </Menu.Item>
+        </Menu>
+      </div>
+
+      {menuFiltro ? (
+        <Segment style={{ marginBottom: "2%" }}>
+          <Form className="form-filtros">
+            <Form.Group widths="equal">
+              <Form.Input
+                icon="search"
+                value={nome}
+                onChange={(e) => handleChangeNome(e.target.value)}
+                label="Nome"
+                placeholder="Filtrar por nome"
+                labelPosition="left"
+                width={4}
               />
-              <div
-                style={{
-                  marginTop: "15px",
-                  color: "#a3a3a3",
-                  fontWeight: "bold",
+              <Form.Select
+                placeholder="Filtrar por Curso"
+                label="Curso"
+                options={listaCurso}
+                value={idCurso}
+                onChange={(e, { value }) => {
+                  handleChangeIdCurso(value);
                 }}
-              >
-                cadastrar nova Disciplina
+              />
+            </Form.Group>
+          </Form>
+        </Segment>
+      ) : (
+        ""
+      )}
+
+      {/* AREA DA GRID DE CARDS COM ESTILOS CUSTOMIZADOS */}
+      <div className="disciplinas-grid">
+
+        {/* CARD FIXO DE CRIAÇÃO */}
+        <Link to="/cadastro-disciplina" className="card-add-link">
+          <Card className="card-add-new">
+            <Card.Content className="card-add-content">
+              <div className="add-icon-circle">
+                <Icon name="plus" />
               </div>
+              <span>cadastrar disciplina</span>
             </Card.Content>
           </Card>
-        </Grid.Column>
+        </Link>
 
-        {menuFiltro ? (
-          <Segment>
-            <Form className="form-filtros">
-              <Form.Group widths="equal">
-                <Form.Input
-                  icon="search"
-                  value={nome}
-                  onChange={(e) => handleChangeNome(e.target.value)}
-                  label="Nome"
-                  placeholder="Filtrar por nome"
-                  labelPosition="left"
-                  width={4}
-                />
-                <Form.Select
-                  placeholder="Filtrar por Curso"
-                  label="Curso"
-                  options={listaCurso}
-                  value={idCurso}
-                  onChange={(e, { value }) => {
-                    handleChangeIdCurso(value);
-                  }}
-                />
-              </Form.Group>
-            </Form>
-          </Segment>
-        ) : (
-          ""
-        )}
-        {/* Mapeamento direto da lista sem filtros */}
+        {/* LISTAGEM DINÂMICA */}
         {lista.map((item) => (
-          <Grid.Column key={item.id}>
-            <Card fluid>
-              <Card.Content>
-                <Card.Header>{item.nome}</Card.Header>
-                <Card.Meta>Carga Horária: {item.chTotal}h</Card.Meta>
-                <Card.Meta>Período Ofertado: {item.periodoOfertado}</Card.Meta>
-                <Card.Description>
-                  Curso: {item.curso ? item.curso.nome : "N/A"}
-                </Card.Description>
-              </Card.Content>
+          <Card key={item.id} className="card-disciplina">
+            <Card.Content>
+              <div className="card-topo">
+                <div>
+                  <Card.Header className="titulo-disciplina">
+                    {item.nome}
+                  </Card.Header>
 
-              <Card.Content extra>
-                <div className="ui two buttons">
+                  <Card.Meta className="meta-disciplina">
+                    Curso: {item.curso ? item.curso.nome : "Sem curso definido"}
+                  </Card.Meta>
+                  
+                  <div className="meta-disciplina" style={{ color: "rgba(0,0,0,.4)", fontSize: "0.9em", marginTop: "3px" }}>
+                    Carga Horária: {item.chTotal}h | Período: {item.periodoOfertado}
+                  </div>
+                </div>
+
+                <div className="icone-disciplina">
+                  <Icon name="book" />
+                </div>
+              </div>
+
+              {/* Exemplo de exibição de horários, caso existam no seu modelo */}
+              <div className="horario-disciplina">
+                <Icon name="clock outline" />
+                Início: {item.horarioInicio || "00:00"}
+                <span style={{ marginLeft: "10px" }}>
+                  FIM: {item.horarioFim || "00:00"}
+                </span>
+              </div>
+            </Card.Content>
+
+            <Card.Content extra>
+              <div className="acoes-card">
+                <Button basic color="orange" size="small">
+                  Desabilitar
+                </Button>
+
+                <div className="acoes-direita">
                   <Button
+                    className="btn-action-minimal"
+                    icon
+                    color="teal"
                     as={Link}
                     to="/cadastro-disciplina"
                     state={{ id: item.id }}
-                    icon="edit"
-                    color="blue"
-                    basic
-                  />
+                  >
+                    <Icon name="edit outline" />
+                  </Button>
+
                   <Button
-                    icon="trash"
+                    className="btn-action-minimal"
+                    icon
                     color="red"
                     basic
                     onClick={() => confirmaRemover(item.id)}
-                  />
+                  >
+                    <Icon name="trash alternate outline" />
+                  </Button>
                 </div>
-              </Card.Content>
-            </Card>
-          </Grid.Column>
+              </div>
+            </Card.Content>
+          </Card>
         ))}
-      </Grid>
+      </div>
 
+      {/* MENSAGEM SE A LISTA DE DISCIPLINAS RETORNAR VAZIA */}
+      {lista.length === 0 && (
+        <div className="mensagem-vazia" style={{ textAlign: "center", marginTop: "5%" }}>
+          <h3 style={{ opacity: 0.5, color: "grey" }}>
+            Nenhuma disciplina cadastrada ainda.
+          </h3>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
       <Modal
         basic
         onClose={() => setOpenModal(false)}

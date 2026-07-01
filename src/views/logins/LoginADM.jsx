@@ -1,6 +1,5 @@
 import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
 import { Link} from "react-router-dom";
-import './estilo.css';
 
 const LoginADM = () => {
   return (

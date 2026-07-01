@@ -6,7 +6,6 @@ import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../../views/util/Util";
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from "../util/getErrorMessage";
-import "../logins/estilo.css";
 
 export default function CadastroProfessor() {
   const { state } = useLocation();

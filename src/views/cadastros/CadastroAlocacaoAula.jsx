@@ -1,9 +1,10 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Button, Container, Divider, Form, Icon, Grid } from "semantic-ui-react";
+import { Button, Divider, Form, Icon, } from "semantic-ui-react";
 import { notifySuccess, notifyError } from "../util/Util";
 import { getErrorMessage } from "../util/getErrorMessage";
+import "./formulario.css";
 
 export default function CadastroAlocacaoAula() {
 
@@ -199,99 +200,95 @@ export default function CadastroAlocacaoAula() {
         }
     }
 
-    return (
-        <Grid textAlign="center" style={{ height: "98vh", backgroundColor: "#f4f4f4" }} verticalAlign="middle">
-            <Grid.Column style={{ maxWidth: 850 }}>
-                <Container textAlign="justified">
+return (
+  <div className="container-cadastro">
+    <div className="card-formulario">
+      
+      {/* CABEÇALHO DO FORMULÁRIO */}
+      <h2 className="titulo-form">
+        <span style={{ color: "darkgray" }}>
+          {idAlocacaoAula ? "Alteração" : "Cadastro"} &nbsp;
+          <Icon name="angle double right" size="small" />
+        </span>
+        Alocação de Aula
+      </h2>
 
-                    <h2>
-                        <span style={{ color: "darkgray" }}>
-                            {idAlocacaoAula ? "Alteração" : "Cadastro"} &nbsp;
-                            <Icon name="angle double right" size="small" />
-                        </span>
-                        Alocação de Aula
-                    </h2>
+      <Divider />
 
-                    <Divider />
+      {/* CAMPOS DO FORMULÁRIO */}
+      <Form className="formulario-padrao">
+        <Form.Group widths="equal">
+          <Form.Select
+            required
+            label="Turma"
+            options={listaTurma}
+            value={idTurma}
+            onChange={(e, { value }) => setIdTurma(value)}
+          />
 
-                    <Form>
+          <Form.Select
+            required
+            label="Disciplina"
+            options={listaDisciplina}
+            value={idDisciplina}
+            onChange={(e, { value }) => setIdDisciplina(value)}
+          />
+        </Form.Group>
 
-                        <Form.Group>
-                            <Form.Select
-                                required
-                                label="Turma"
-                                width={8}
-                                options={listaTurma}
-                                value={idTurma}
-                                onChange={(e, { value }) => setIdTurma(value)}
-                            />
+        <Form.Group widths="equal">
+          <Form.Select
+            required
+            label="Sala"
+            options={listaSala}
+            value={idSala}
+            onChange={(e, { value }) => setIdSala(value)}
+          />
 
-                            <Form.Select
-                                required
-                                label="Disciplina"
-                                width={8}
-                                options={listaDisciplina}
-                                value={idDisciplina}
-                                onChange={(e, { value }) => setIdDisciplina(value)}
-                            />
-                        </Form.Group>
+          <Form.Select
+            required
+            label="Professor"
+            options={listaProfessor}
+            value={idProfessor}
+            onChange={(e, { value }) => setIdProfessor(value)}
+          />
+        </Form.Group>
 
-                        <Form.Group>
-                            <Form.Select
-                                required
-                                label="Sala"
-                                width={8}
-                                options={listaSala}
-                                value={idSala}
-                                onChange={(e, { value }) => setIdSala(value)}
-                            />
+        <Form.Input
+          required
+          label="Semestre Letivo"
+          placeholder="Ex: 2026.1"
+          value={semestreLetivo}
+          onChange={(e) => setSemestreLetivo(e.target.value)}
+        />
+      </Form>
 
-                            <Form.Select
-                                required
-                                label="Professor"
-                                width={8}
-                                options={listaProfessor}
-                                value={idProfessor}
-                                onChange={(e, { value }) => setIdProfessor(value)}
-                            />
-                        </Form.Group>
+      {/* ÁREA DE BOTÕES INTERNOS DO CARD */}
+      <div className="grupo-botoes-form">
+        <Button
+          color="green"
+          fluid
+          size="large"
+          className="btn-salvar-form"
+          onClick={salvar}
+        >
+          <Icon name="save" />
+          Salvar
+        </Button>
 
-                        <Form.Input
-                            required
-                            label="Semestre Letivo"
-                            value={semestreLetivo}
-                            onChange={(e) => setSemestreLetivo(e.target.value)}
-                        />
+        <Button
+          color="orange"
+          fluid
+          size="medium"
+          className="btn-voltar-form"
+          as={Link}
+          to={'/alocacoes-aulas'}
+        >
+          <Icon name='reply' />
+          Voltar
+        </Button>
+      </div>
 
-                    </Form>
-
-                    <Button
-                        fluid
-                        size="huge"
-                        color="green"
-                        style={{ marginTop: "20px" }}
-                        onClick={salvar}
-                    >
-                        <Icon name="save" />
-                        Salvar
-                    </Button>
-
-                </Container>
-
-                <Link to={'/alocacoes-aulas'}>
-                    <Button
-                        type="button"
-                        icon
-                        labelPosition='left'
-                        color='orange'
-                        style={{ marginTop: "20px" }}
-                    >
-                        <Icon name='reply' />
-                        Voltar
-                    </Button>
-                </Link>
-
-            </Grid.Column>
-        </Grid>
-    );
+    </div>
+  </div>
+);
 }

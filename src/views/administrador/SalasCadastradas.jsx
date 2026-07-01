@@ -15,6 +15,8 @@ import {
 import { notifyError, notifySuccess } from "../util/Util";
 import { getErrorMessage } from "../util/getErrorMessage";
 import "./Interface.css";
+import "./css/salas.css";
+
 
 export default function SalasCadastradas() {
   const [lista, setLista] = useState([]);
@@ -122,7 +124,7 @@ export default function SalasCadastradas() {
         console.error("Erro ao filtrar salas:", error);
       });
   }
-  return (
+return (
     <div>
       <div style={{ marginTop: "3%" }}>
         <section>
@@ -133,18 +135,22 @@ export default function SalasCadastradas() {
             Salas cadastradas
           </Header>
           <Divider />
-          <Menu compact>
-            <Menu.Item
-              name="menuFiltro"
-              active={menuFiltro === true}
-              onClick={() => handleMenuFiltro()}
-            >
-              <Icon name="filter" />
-              Filtrar
-            </Menu.Item>
-          </Menu>
+          
+          <div style={{ marginLeft: "2%", marginBottom: "2%" }}>
+            <Menu compact>
+              <Menu.Item
+                name="menuFiltro"
+                active={menuFiltro === true}
+                onClick={() => handleMenuFiltro()}
+              >
+                <Icon name="filter" />
+                Filtrar
+              </Menu.Item>
+            </Menu>
+          </div>
+
           {menuFiltro ? (
-            <Segment>
+            <Segment style={{ margin: "0 2% 2% 2%" }}>
               <Form className="form-filtros">
                 <Form.Group widths="equal">
                   <Form.Input
@@ -165,7 +171,7 @@ export default function SalasCadastradas() {
                     labelPosition="left"
                     width={4}
                   />
-                                <Form.Input
+                  <Form.Input
                     icon="search"
                     value={tipo}
                     onChange={(e) => handleChangeTipo(e.target.value)}
@@ -181,76 +187,102 @@ export default function SalasCadastradas() {
             ""
           )}
 
-          <div style={{ marginTop: "3%", padding: "2%" }}>
-            <Button
-              label="Nova sala"
-              color="yellow"
-              icon="clipboard outline"
-              floated="right"
-              as={Link}
-              to="/cadastro-sala"
-            />
-            <br />
-            <br />
-            <br />
+          {/* AREA DA GRID DE CARDS COM ESTILOS CUSTOMIZADOS */}
+          <div style={{ padding: "2%" }}>
+            <div className="salas-grid">
 
-            {lista.length === 0 ? (
-              <div style={{ textAlign: "center", marginTop: "5%" }}>
-                <h3 style={{ opacity: 0.5, color: "grey" }}>
-                  Nenhuma sala cadastrada ainda.
-                </h3>
-              </div>
-            ) : (
-              <Card.Group itemsPerRow={3} stackable style={{ padding: "1%" }}>
-                {lista.map((sala) => (
-                  <Card key={sala.id} raised color="green">
-                    <Card.Content>
-                      <Icon
-                        name={
-                          sala.tipo === "laboratorio" ? "lab" : "university"
-                        }
-                        size="large"
-                        floated="right"
-                      />
-                      <Card.Header>
-                        {sala.tipo === "laboratorio" ? "Laboratório" : "Sala"}{" "}
-                        {sala.numero}
-                      </Card.Header>
-                      <Card.Meta>
-                        {sala.bloco
-                          ? sala.bloco.replace("_", " ")
-                          : "Bloco não informado"}
-                      </Card.Meta>
-                    </Card.Content>
+              {/* CARD FIXO DE CRIAÇÃO (Substitui o botão amarelo flutuante antigo) */}
+              <Link to="/cadastro-sala" className="card-add-link">
+                <Card className="card-add-new">
+                  <Card.Content className="card-add-content">
+                    <div className="add-icon-circle">
+                      <Icon name="plus" />
+                    </div>
+                    <span>Cadastrar sala</span>
+                  </Card.Content>
+                </Card>
+              </Link>
 
-                    <Card.Content extra>
-                      <div className="ui two buttons">
+              {/* LISTAGEM DINÂMICA DOS CARDS */}
+              {lista.map((sala) => (
+                <Card key={sala.id} className="card-sala">
+                  <Card.Content>
+                    <div className="card-header-custom">
+                      <div>
+                        <Card.Header className="titulo-card">
+                          {sala.tipo === "laboratorio" ? "Laboratório" : "Sala"}{" "}
+                          {sala.numero}
+                        </Card.Header>
+
+                        <Card.Meta className="meta-card">
+                          {sala.tipo === "laboratorio"
+                            ? "tipo: laboratório"
+                            : "tipo: sala de aula"}
+                        </Card.Meta>
+
+                        <div className="bloco-card">
+                          bloco:{" "}
+                          {sala.bloco
+                            ? sala.bloco.replace("_", " ")
+                            : "não informado"}
+                        </div>
+                      </div>
+
+                      <div className="icone-card">
+                        <Icon
+                          name={
+                            sala.tipo === "laboratorio" ? "lab" : "university"
+                          }
+                        />
+                      </div>
+                    </div>
+                  </Card.Content>
+
+                  <Card.Content extra>
+                    <div className="acoes-card">
+                      <Button basic color="orange" size="small">
+                        Desabilitar
+                      </Button>
+
+                      <div className="acoes-direita">
                         <Button
-                          basic
-                          color="blue"
+                          className="btn-action-minimal"
+                          icon
                           as={Link}
                           to="/cadastro-sala"
                           state={{ id: sala.id }}
                         >
-                          <Icon name="edit" /> Editar
+                          <Icon name="edit outline" />
                         </Button>
+
                         <Button
-                          basic
+                          className="btn-action-minimal"
+                          icon
                           color="red"
                           onClick={() => confirmaRemover(sala.id)}
                         >
-                          <Icon name="trash" /> Remover
+                          <Icon name="trash alternate outline" />
                         </Button>
                       </div>
-                    </Card.Content>
-                  </Card>
-                ))}
-              </Card.Group>
+                    </div>
+                  </Card.Content>
+                </Card>
+              ))}
+            </div>
+
+            {/* MENSAGEM SE A LISTA DE SALAS RETORNAR VAZIA */}
+            {lista.length === 0 && (
+              <div className="mensagem-vazia" style={{ textAlign: "center", marginTop: "5%" }}>
+                <h3 style={{ opacity: 0.5, color: "grey" }}>
+                  Nenhuma sala cadastrada ainda.
+                </h3>
+              </div>
             )}
           </div>
         </section>
       </div>
 
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (Mantido intacto) */}
       <Modal
         basic
         onClose={() => setOpenModal(false)}

@@ -1,0 +1,187 @@
+/* =========================
+   CONTAINER PRINCIPAL
+========================= */
+
+.container-turmas {
+  padding: 35px;
+}
+
+/* =========================
+   TOPO
+========================= */
+
+.topo-tabela {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.titulo-pagina {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: #222;
+}
+
+/* =========================
+   BOTÃO NOVA TURMA
+========================= */
+
+.btn-nova-turma {
+  background: #5DA348 !important;
+  color: white !important;
+  border-radius: 10px !important;
+  padding: 12px 18px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(93,163,72,0.18) !important;
+  transition: 0.2s ease !important;
+}
+
+.btn-nova-turma:hover {
+  transform: translateY(-2px);
+  background: #4c8d3b !important;
+}
+
+/* =========================
+   TABELA
+========================= */
+
+.tabela-wrapper {
+  margin-top: 30px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.tabela-turmas {
+  border: none !important;
+  margin: 0 !important;
+}
+
+/* HEADER */
+
+.tabela-turmas thead th {
+  background: #f8f9fb !important;
+  color: #444 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  padding: 18px !important;
+  border-bottom: 1px solid #ececec !important;
+}
+
+/* LINHAS */
+
+.tabela-turmas tbody tr {
+  transition: 0.2s ease;
+}
+
+.tabela-turmas tbody tr:hover {
+  background: #fafafa !important;
+}
+
+/* CÉLULAS */
+
+.tabela-turmas td {
+  padding: 18px !important;
+  border-top: 1px solid #f0f0f0 !important;
+}
+
+/* CURSO */
+
+.curso-cell {
+  font-weight: 600;
+  color: #333;
+}
+
+/* BADGE PERÍODO */
+
+.periodo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: rgba(93,163,72,0.12);
+  color: #5DA348;
+  font-weight: 700;
+}
+
+/* =========================
+   AÇÕES
+========================= */
+
+.acoes-tabela {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-acao {
+  background: #f7f7f7 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  transition: 0.2s ease !important;
+}
+
+.btn-acao:hover {
+  transform: scale(1.05);
+  background: #efefef !important;
+}
+
+.btn-remover:hover {
+  background: rgba(255,0,0,0.08) !important;
+}
+
+/* =========================
+   ESTADO VAZIO
+========================= */
+
+.estado-vazio {
+  margin-top: 70px;
+  text-align: center;
+  color: #888;
+}
+
+.icone-vazio {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 20px auto;
+  border-radius: 50%;
+  background: #f3f3f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  color: #b5b5b5;
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+
+@media (max-width: 768px) {
+
+  .container-turmas {
+    padding: 20px;
+  }
+
+  .topo-tabela {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .btn-nova-turma {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tabela-wrapper {
+    overflow-x: auto;
+  }
+
+}

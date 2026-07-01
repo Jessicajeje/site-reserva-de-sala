@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
 import { registerSuccessfulLoginForJwt } from "../util/AuthenticationService";
 import { notifyError } from "../util/Util";
-import "./estilo.css";
 
 const LoginProfessor = () => {
   const navigate = useNavigate();
