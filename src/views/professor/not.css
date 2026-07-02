@@ -1,0 +1,186 @@
+/* =========================
+FUNDO DA PÁGINA
+========================= */
+.pagina-notificacoes{
+    background:#f4f6f9;
+    min-height:100vh;
+}
+/* =========================
+ÁREA DE CONTEUDO
+========================= */
+.conteudo-notificacoes{
+    background:white;
+    border-radius:18px;
+    padding:35px;
+    box-shadow:0 8px 20px rgba(0,0,0,.05);
+}
+/* =========================
+CABEÇALHO
+========================= */
+.header-notificacoes{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+/* TITULO */
+.titulo-notificacoes{
+    font-size:30px;
+    font-weight:700;
+    color:#222;
+}
+/* SUBTITULO */
+.subtitulo-notificacoes{
+    color:#777;
+    margin-top:6px;
+}
+/* =========================
+SINO
+========================= */
+.botao-sino{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    background:#f4f6f9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    transition:.2s;
+    cursor:pointer;
+}
+/* =========================
+NOTIFICAÇÕES DESLIGADAS
+========================= */
+.alerta-notificacao{
+    border-left:5px solid #d9534f;
+    background:#fff7f7;
+    border-radius:12px;
+    padding:18px;
+    margin-bottom:25px;
+}
+/* =========================
+CARDS
+========================= */
+.card-notificacao{
+    background:white;
+    border-radius:16px;
+    padding:22px;
+    margin-bottom:18px;
+    box-shadow:0 4px 14px rgba(0,0,0,.05);
+    transition:.25s;
+}
+.card-notificacao:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 24px rgba(0,0,0,.08);
+}
+/* =========================
+NOTIFICAÇÃO NÃO LIDA
+========================= */
+.lida{
+    opacity:.82;
+}
+/* =========================
+TITULO
+========================= */
+.titulo-card{
+    font-size:19px;
+    font-weight:700;
+    color:#222;
+}
+/* =========================
+DESCRIÇÃO
+========================= */
+.descricao-card{
+    margin-top:8px;
+    color:#666;
+    line-height:1.6;
+}
+/* =========================
+LABELS
+========================= */
+.badges{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+.status-badge{
+    border-radius:20px;
+    padding:6px 12px;
+}
+/* =========================
+AÇÕES
+========================= */
+.acoes-notificacao{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:20px;
+}
+/* =========================
+ÍCONES
+========================= */
+.acao-icon{
+    transition:.2s;
+    cursor:pointer;
+}
+.acao-icon:hover{
+    transform:scale(1.18);
+}
+/* =========================
+FAV NOTIFIAÇÕES
+========================= */
+.estrela-favorita{
+    color:#f7c948;
+}
+/* =========================
+LOADER
+========================= */
+.loader-central{
+    margin-top:80px;
+}
+/* =========================
+ESTADO VAZIO
+========================= */
+.estado-vazio{
+    text-align:center;
+    padding:80px;
+    color:#777;
+}
+.estado-vazio i{
+    font-size:70px;
+    color:#d4d4d4;
+    margin-bottom:20px;
+}
+/* =========================
+RESPONSIVIDADE
+========================= */
+@media(max-width:768px){
+.header-notificacoes{
+flex-direction:column;
+align-items:flex-start;
+gap:20px;
+}
+.card-notificacao{
+padding:18px;
+}
+.acoes-notificacao{
+margin-top:20px;
+justify-content:flex-end;
+}
+}
+/* =========================
+PEQ ANIMAÇÃO
+========================= */
+.card-notificacao{
+animation:fadeUp .3s ease;
+}
+@keyframes fadeUp{
+from{
+opacity:0;
+transform:translateY(10px);
+}
+to{
+opacity:1;
+transform:none;
+}
+}

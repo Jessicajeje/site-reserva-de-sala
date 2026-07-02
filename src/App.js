@@ -1,5 +1,4 @@
 import 'react-toastify/dist/ReactToastify.css';
-import './App.css';
 import { setupAxiosInterceptors } from './views/util/AuthenticationService.js';
 import { ToastContainer } from 'react-toastify';
 import Rotas from './Rotas';

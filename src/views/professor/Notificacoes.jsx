@@ -12,6 +12,7 @@ import {
 } from "semantic-ui-react";
 
 import Navbar from "../../Components/navbar/NavbarProfessor";
+import "./not.css";
 
 export default function Notificacoes() {
 
