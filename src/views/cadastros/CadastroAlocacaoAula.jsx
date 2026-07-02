@@ -15,7 +15,6 @@ export default function CadastroAlocacaoAula() {
     const [listaTurma, setListaTurma] = useState([]);
 
     const [idDisciplina, setIdDisciplina] = useState(null);
-    const [listaDisciplina, setListaDisciplina] = useState([]);
 
     const [idSala, setIdSala] = useState(null);
     const [listaSala, setListaSala] = useState([]);
@@ -23,7 +22,12 @@ export default function CadastroAlocacaoAula() {
     const [idProfessor, setIdProfessor] = useState(null);
     const [listaProfessor, setListaProfessor] = useState([]);
 
-    const [semestreLetivo, setSemestreLetivo] = useState("");
+    const [semestreLetivo, setSemestreLetivo] = useState(null);
+
+    const opcoesSemestre = [
+        { key: 1, text: "1", value: 1 },
+        { key: 2, text: "2", value: 2 },
+    ];
 
     useEffect(() => {
 
@@ -58,9 +62,7 @@ export default function CadastroAlocacaoAula() {
 
         axios.get("http://localhost:8080/api/turma")
             .then((res) => {
-                setListaTurma(
-                    res.data.map(t => ({ text: t.nome, value: t.id }))
-                );
+                setListaTurma(res.data);
             })
             .catch((error) => {
 
@@ -77,28 +79,6 @@ export default function CadastroAlocacaoAula() {
                 }
 
             });
-
-        axios.get("http://localhost:8080/api/disciplina")
-            .then((res) => {
-                setListaDisciplina(
-                    res.data.map(d => ({ text: d.nome, value: d.id }))
-                );
-            })
-            .catch((error) => {
-
-                const erros = error.response?.data?.errors;
-
-                if (erros?.length > 0) {
-
-                    erros.forEach(e => {
-                        notifyError(e.defaultMessage);
-                    });
-
-                } else {
-                    notifyError(getErrorMessage(error));
-                }
-
-            });;
 
         axios.get("http://localhost:8080/api/sala")
             .then((res) => {
@@ -199,6 +179,20 @@ export default function CadastroAlocacaoAula() {
         }
     }
 
+    const opcoesTurma = listaTurma.map(t => ({
+        text: `${t.nome} - ${t.turno}`,
+        value: t.id
+    }));
+
+    const turmaSelecionada = listaTurma.find(t => t.id === idTurma);
+
+    const opcoesDisciplina = turmaSelecionada
+        ? turmaSelecionada.curso.disciplinas.map(d => ({
+            text: d.nome,
+            value: d.id
+        }))
+        : [];
+
     return (
         <Grid textAlign="center" style={{ height: "98vh", backgroundColor: "#f4f4f4" }} verticalAlign="middle">
             <Grid.Column style={{ maxWidth: 850 }}>
@@ -221,16 +215,19 @@ export default function CadastroAlocacaoAula() {
                                 required
                                 label="Turma"
                                 width={8}
-                                options={listaTurma}
+                                options={opcoesTurma}
                                 value={idTurma}
-                                onChange={(e, { value }) => setIdTurma(value)}
+                                onChange={(e, { value }) => {
+                                    setIdTurma(value);
+                                    setIdDisciplina(null);
+                                }}
                             />
 
                             <Form.Select
                                 required
                                 label="Disciplina"
                                 width={8}
-                                options={listaDisciplina}
+                                options={opcoesDisciplina}
                                 value={idDisciplina}
                                 onChange={(e, { value }) => setIdDisciplina(value)}
                             />
@@ -256,13 +253,14 @@ export default function CadastroAlocacaoAula() {
                             />
                         </Form.Group>
 
-                        <Form.Input
+                        <Form.Select
                             required
                             label="Semestre Letivo"
+                            options={opcoesSemestre}
                             value={semestreLetivo}
-                            onChange={(e) => setSemestreLetivo(e.target.value)}
+                            placeholder="Selecione o semestre"
+                            onChange={(e, { value }) => setSemestreLetivo(value)}
                         />
-
                     </Form>
 
                     <Button

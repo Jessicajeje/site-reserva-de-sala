@@ -116,6 +116,7 @@ export default function GradeAlocacaoAula() {
     const [professorSelecionado, setProfessorSelecionado] = useState("");
     const [disciplinaSelecionada, setDisciplinaSelecionada] = useState("");
     const [salaSelecionada, setSalaSelecionada] = useState("");
+    const [semestreSelecionado, setSemestreSelecionado] = useState("1");
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -303,20 +304,31 @@ export default function GradeAlocacaoAula() {
             ? `${a.sala.tipo} ${a.sala.numero}`
             : "Sem sala";
 
-        return `${a.disciplina?.nome} • ${a.turma?.nome} • ${sala} • ${a.professor?.nome}`;
+        return `${a.turma?.nome} (${a.turma?.turno}) • ${a.disciplina?.nome} • ${sala} • ${a.professor?.nome}`;
     }
 
-    const alocacoesOptions = alocacoes.map((a) => ({
-        key: a.id,
-        value: a.id,
-        text: formatAlocacao(a),
-    }));
+    const alocacoesOptions = alocacoes
+        .filter(a => a.semestreLetivo === semestreSelecionado)
+        .filter(a =>
+            a.turma?.turno?.toLowerCase() === turnoSelecionado.toLowerCase()
+        )
+        .map(a => ({
+            key: a.id,
+            value: a.id,
+            text: formatAlocacao(a),
+        }));
 
     const turmaOptions = [
         ...new Map(
             alocacoes
-                .filter((a) => a.turma)
-                .map((a) => [
+                .filter(a =>
+                    a.semestreLetivo === semestreSelecionado
+                )
+                .filter(a =>
+                    a.turma &&
+                    a.turma.turno?.toLowerCase() === turnoSelecionado.toLowerCase()
+                )
+                .map(a => [
                     a.turma.id,
                     {
                         key: a.turma.id,
@@ -345,8 +357,19 @@ export default function GradeAlocacaoAula() {
     const disciplinaOptions = [
         ...new Map(
             alocacoes
-                .filter((a) => a.disciplina)
-                .map((a) => [
+                .filter(a =>
+                    a.semestreLetivo === semestreSelecionado
+                )
+                .filter(a => {
+                    if (!a.disciplina) return false;
+
+                    if (turmaSelecionada) {
+                        return a.turma?.id === turmaSelecionada;
+                    }
+
+                    return true;
+                })
+                .map(a => [
                     a.disciplina.id,
                     {
                         key: a.disciplina.id,
@@ -372,6 +395,19 @@ export default function GradeAlocacaoAula() {
         ).values(),
     ];
 
+    const semestreOptions = [
+        ...new Map(
+            alocacoes.map(a => [
+                a.semestreLetivo,
+                {
+                    key: a.semestreLetivo,
+                    value: a.semestreLetivo,
+                    text: a.semestreLetivo,
+                },
+            ])
+        ).values(),
+    ];
+
     const turnosFiltrados = TURNOS.filter(
         (t) => t.nome === turnoSelecionado
     );
@@ -379,6 +415,13 @@ export default function GradeAlocacaoAula() {
     const horariosFiltrados = useMemo(() => {
         return horarios.filter((h) => {
             const a = h.alocacaoAula;
+
+            if (
+                semestreSelecionado &&
+                a?.semestreLetivo !== semestreSelecionado
+            ) {
+                return false;
+            }
 
             if (
                 turmaSelecionada &&
@@ -412,11 +455,19 @@ export default function GradeAlocacaoAula() {
         });
     }, [
         horarios,
+        semestreSelecionado,
         turmaSelecionada,
         professorSelecionado,
         disciplinaSelecionada,
         salaSelecionada,
     ]);
+
+    const limparFiltros = () => {
+        setTurmaSelecionada("");
+        setDisciplinaSelecionada("");
+        setSalaSelecionada("");
+        setProfessorSelecionado("");
+    };
 
     const horarioMap = useMemo(() => {
         const map = new Map();
@@ -483,6 +534,22 @@ export default function GradeAlocacaoAula() {
                             <div style={{ display: "flex", gap: "16px" }}>
 
                                 <div style={{ flex: 1 }}>
+                                    <div style={{ marginBottom: "8px", fontWeight: "bold" }}>
+                                        Semestre
+                                    </div>
+
+                                    <Select
+                                        fluid
+                                        selection
+                                        options={semestreOptions}
+                                        value={semestreSelecionado}
+                                        onChange={(e, data) =>
+                                            setSemestreSelecionado(data.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div style={{ flex: 1 }}>
                                     <div style={{ marginBottom: "8px", fontWeight: "bold" }}>Turno</div>
                                     <Select
                                         fluid
@@ -493,7 +560,10 @@ export default function GradeAlocacaoAula() {
                                             { key: "Noite", value: "Noite", text: "Noite" },
                                         ]}
                                         value={turnoSelecionado}
-                                        onChange={(e, data) => setTurnoSelecionado(data.value)}
+                                        onChange={(e, data) => {
+                                            setTurnoSelecionado(data.value);
+                                            setTurmaSelecionada("");
+                                        }}
                                     />
                                 </div>
 
@@ -504,7 +574,10 @@ export default function GradeAlocacaoAula() {
                                         placeholder="Todas"
                                         options={turmaOptions}
                                         value={turmaSelecionada}
-                                        onChange={(e, data) => setTurmaSelecionada(data.value)}
+                                        onChange={(e, data) => {
+                                            setTurmaSelecionada(data.value);
+                                            setDisciplinaSelecionada("");
+                                        }}
                                     />
                                 </div>
 
@@ -547,6 +620,24 @@ export default function GradeAlocacaoAula() {
                                         value={professorSelecionado}
                                         onChange={(e, data) => setProfessorSelecionado(data.value)}
                                     />
+                                </div>
+
+                                <div
+                                    style={{
+                                        flex: 1,
+                                        display: "flex",
+                                        alignItems: "flex-end",
+                                    }}
+                                >
+                                    <Button
+                                        basic
+                                        color="grey"
+                                        fluid
+                                        onClick={limparFiltros}
+                                    >
+                                        <Icon name="close" />
+                                        Limpar Filtros
+                                    </Button>
                                 </div>
 
                             </div>

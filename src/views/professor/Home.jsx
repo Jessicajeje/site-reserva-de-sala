@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import {
@@ -8,6 +8,8 @@ import {
   Divider,
   Grid,
   Header,
+  Select,
+  Segment,
   Icon,
   Modal
 } from "semantic-ui-react";
@@ -41,6 +43,96 @@ export default function Home() {
   const [openCancelarModal, setOpenCancelarModal] = useState(false);
 
   const [reposicaoSelecionada, setReposicaoSelecionada] = useState(null);
+
+  const [turmaFiltro, setTurmaFiltro] = useState("");
+  const [disciplinaFiltro, setDisciplinaFiltro] = useState("");
+  const [salaFiltro, setSalaFiltro] = useState("");
+  const [statusFiltro, setStatusFiltro] = useState("");
+
+  const opcoesTurmaFiltro = useMemo(
+    () => [
+      ...new Map(
+        reposicoes
+          .filter(r => r.turma)
+          .map(r => [
+            r.turma.id,
+            {
+              key: r.turma.id,
+              value: r.turma.id,
+              text: r.turma.nome,
+            },
+          ])
+      ).values(),
+    ],
+    [reposicoes]
+  );
+
+  const opcoesDisciplinaFiltro = useMemo(
+    () => [
+      ...new Map(
+        reposicoes
+          .filter(
+            r =>
+              r.disciplina &&
+              (!turmaFiltro || r.turma?.id === Number(turmaFiltro))
+          )
+          .map(r => [
+            r.disciplina.id,
+            {
+              key: r.disciplina.id,
+              value: r.disciplina.id,
+              text: r.disciplina.nome,
+            },
+          ])
+      ).values(),
+    ],
+    [reposicoes, turmaFiltro]
+  );
+
+  const opcoesSalaFiltro = useMemo(
+    () => [
+      ...new Map(
+        reposicoes
+          .filter(r => r.sala)
+          .map(r => [
+            r.sala.id,
+            {
+              key: r.sala.id,
+              value: r.sala.id,
+              text: `${r.sala.tipo === "laboratorio" ? "Laboratório" : "Sala"} ${r.sala.numero}`,
+            },
+          ])
+      ).values(),
+    ],
+    [reposicoes]
+  );
+
+  const opcoesStatusFiltro = [
+    {
+      key: "PENDENTE",
+      value: "PENDENTE",
+      text: "Pendente",
+    },
+    {
+      key: "CONCLUIDA",
+      value: "CONCLUIDA",
+      text: "Concluída",
+    },
+  ];
+
+  const filtrosAtivos = !!(
+    turmaFiltro ||
+    disciplinaFiltro ||
+    salaFiltro ||
+    statusFiltro
+  );
+
+  const limparFiltros = () => {
+    setTurmaFiltro("");
+    setDisciplinaFiltro("");
+    setSalaFiltro("");
+    setStatusFiltro("");
+  };
 
   const formatarParaBR = (dataISO) => {
     if (!dataISO) return "";
@@ -120,6 +212,32 @@ export default function Home() {
 
   }
 
+  const reposicoesFiltradasOrdenadas = [...reposicoes]
+    .filter((r) => {
+      const turmaOk =
+        !turmaFiltro || r.turma?.id === Number(turmaFiltro);
+
+      const disciplinaOk =
+        !disciplinaFiltro || r.disciplina?.id === Number(disciplinaFiltro);
+
+      const salaOk =
+        !salaFiltro || r.sala?.id === Number(salaFiltro);
+
+      const statusOk =
+        !statusFiltro || r.statusReposicao === statusFiltro;
+
+      return turmaOk && disciplinaOk && salaOk && statusOk;
+    })
+    .sort((a, b) => {
+      // Pendentes primeiro
+      if (a.statusReposicao !== b.statusReposicao) {
+        return a.statusReposicao === "PENDENTE" ? -1 : 1;
+      }
+
+      // Mais recente primeiro
+      return new Date(b.dataReposicao) - new Date(a.dataReposicao);
+    });
+
   return (
     <div style={{ backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
 
@@ -150,8 +268,123 @@ export default function Home() {
             </Button>
           </Container>
 
+          <Segment
+            secondary
+            style={{
+              marginBottom: "1.2em",
+              borderRadius: "10px",
+              padding: "14px 18px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "16px",
+                alignItems: "flex-end",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  height: "38px",
+                }}
+              >
+                <Icon name="filter" color="green" size="large" style={{ margin: 0 }} />
+              </div>
+
+              <div style={{ flex: "1 1 160px", minWidth: "160px" }}>
+                <div style={{ fontSize: "11px", fontWeight: "bold", color: "grey", marginBottom: "4px" }}>
+                  TURMA
+                </div>
+                <Select
+                  fluid
+                  clearable
+                  search
+                  selection
+                  placeholder="Todas"
+                  options={opcoesTurmaFiltro}
+                  value={turmaFiltro}
+                  onChange={(e, { value }) => {
+                    setTurmaFiltro(value);
+                    setDisciplinaFiltro("");
+                  }}
+                />
+              </div>
+
+              <div style={{ flex: "1 1 160px", minWidth: "160px" }}>
+                <div style={{ fontSize: "11px", fontWeight: "bold", color: "grey", marginBottom: "4px" }}>
+                  DISCIPLINA
+                </div>
+                <Select
+                  fluid
+                  clearable
+                  search
+                  selection
+                  placeholder="Todas"
+                  options={opcoesDisciplinaFiltro}
+                  value={disciplinaFiltro}
+                  onChange={(e, { value }) => setDisciplinaFiltro(value)}
+                />
+              </div>
+
+              <div style={{ flex: "1 1 160px", minWidth: "160px" }}>
+                <div style={{ fontSize: "11px", fontWeight: "bold", color: "grey", marginBottom: "4px" }}>
+                  SALA
+                </div>
+                <Select
+                  fluid
+                  clearable
+                  search
+                  selection
+                  placeholder="Todas"
+                  options={opcoesSalaFiltro}
+                  value={salaFiltro}
+                  onChange={(e, { value }) => setSalaFiltro(value)}
+                />
+              </div>
+
+              <div style={{ flex: "1 1 160px", minWidth: "160px" }}>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                    color: "grey",
+                    marginBottom: "4px",
+                  }}
+                >
+                  STATUS
+                </div>
+
+                <Select
+                  fluid
+                  clearable
+                  selection
+                  placeholder="Todos"
+                  options={opcoesStatusFiltro}
+                  value={statusFiltro}
+                  onChange={(e, { value }) => setStatusFiltro(value)}
+                />
+              </div>
+
+              <div style={{ flex: "0 0 auto" }}>
+                <Button
+                  basic
+                  color="grey"
+                  size="small"
+                  disabled={!filtrosAtivos}
+                  onClick={limparFiltros}
+                >
+                  <Icon name="close" />
+                  Limpar
+                </Button>
+              </div>
+            </div>
+          </Segment>
+
           <Grid stackable style={{ marginTop: "20px" }}>
-            {reposicoes.map((r) => (
+            {reposicoesFiltradasOrdenadas.map((r) => (
               <Grid.Column
                 key={r.id}
                 computer={5}
