@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
 import { registerSuccessfulLoginForJwt } from "../util/AuthenticationService";
+import { getErrorMessage } from "../util/getErrorMessage";
 import { notifyError } from "../util/Util";
 import "./estilo.css";
 
@@ -17,6 +18,7 @@ const LoginProfessor = () => {
       let authenticationRequest = {
         username: username,
         password: senha,
+        loginAdmin: false,
       };
 
       axios
@@ -32,7 +34,7 @@ const LoginProfessor = () => {
           navigate("/home");
         })
         .catch((error) => {
-          notifyError("Usuário não encontrado");
+          notifyError(getErrorMessage(error) || "Usuário não encontrado");
         });
     }
   }

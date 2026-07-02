@@ -9,9 +9,10 @@ import {
   Segment,
   Select,
   Table,
-  Modal
+  Modal,
 } from "semantic-ui-react";
 import { notifyError, notifySuccess } from "../../views/util/Util";
+import { getErrorMessage } from "../util/getErrorMessage";
 
 /* --- FUNÇÕES UTILITÁRIAS --- */
 const eHoje = (data) => {
@@ -65,15 +66,7 @@ const gerarDiasDaSemana = (timestampSegunda) => {
 
 // FIX 1 — Removido "12:45" (slot inexistente)
 const horariosTurno = {
-  Manhã: [
-    "07:15",
-    "08:00",
-    "08:45",
-    "09:45",
-    "10:30",
-    "11:15",
-    "12:00",
-  ],
+  Manhã: ["07:15", "08:00", "08:45", "09:45", "10:30", "11:15", "12:00"],
   Tarde: ["13:45", "14:30", "15:15", "16:00", "16:45"],
   Noite: ["18:15", "19:00", "19:45", "20:30", "21:15"],
 };
@@ -136,15 +129,22 @@ export default function Reposicao() {
     })?.value || opcoesSemanas[0].value;
 
   // Estados
-  const [semanaSelecionada, setSemanaSelecionada] = useState(semanaAtualOuPrimeira);
-  const [preview, setPreview] = useState({ dia: null, horarioInicio: null, horarioFim: null });
+  const [semanaSelecionada, setSemanaSelecionada] = useState(
+    semanaAtualOuPrimeira,
+  );
+  const [preview, setPreview] = useState({
+    dia: null,
+    horarioInicio: null,
+    horarioFim: null,
+  });
   const [idReposicao, setIdReposicao] = useState(null);
   const [turnoAtivo, setTurnoAtivo] = useState("Manhã");
-  const [dataSelecionada, setDataSelecionada] = useState("");
+  const [dataReposicao, setDataReposicao] = useState("");
   const [dataAulaOriginal, setDataAulaOriginal] = useState("");
   const [horarioInicio, setHorarioInicio] = useState("");
   const [horarioFim, setHorarioFim] = useState("");
   const [salas, setSalas] = useState([]);
+  const [salasDisponiveis, setSalasDisponiveis] = useState([]);
   const [salaSelecionada, setSalaSelecionada] = useState("");
   const [idTurma, setIdTurma] = useState("");
   const [opcoesTurma, setOpcoesTurma] = useState([]);
@@ -255,67 +255,34 @@ export default function Reposicao() {
     return true;
   };
 
-  // ─── SALAS DISPONÍVEIS PARA O HORÁRIO SELECIONADO ────────────────────────────
-  // Aqui consideramos TODOS os professores: uma sala ocupada por qualquer
-  // professor não pode ser oferecida como disponível, independente de quem
-  // está logado. Essa é a única checagem de conflito física que faz sentido
-  // manter no front — o resto (turma/sala repetida na reposição em si) é
-  // validado no back-end.
-  const salasDisponiveis = useMemo(() => {
-    if (!dataSelecionada || !horarioInicio || !horarioFim) return salas;
-
-    const [ano, mes, dia] = dataSelecionada.split("-").map(Number);
-    const diaObj = new Date(ano, mes - 1, dia);
-    const diaSemana = obterDiaSemana(diaObj);
-
-    const toMin = (t) => {
-      const [h, m] = (t ?? "00:00").substring(0, 5).split(":").map(Number);
-      return h * 60 + m;
-    };
-
-    const inicioMin = toMin(horarioInicio);
-    const fimMin = toMin(horarioFim);
-    const salasOcupadasIds = new Set();
-
-    alocacoesDoSemestre.forEach((al) => {
-      al.horarios?.forEach((h) => {
-        if (h.diaSemana !== diaSemana) return;
-        const alocInicio = toMin(h.horarioInicio);
-        const alocFim = toMin(h.horarioFim);
-        if (!(fimMin <= alocInicio || inicioMin >= alocFim)) {
-          if (al.sala?.id) salasOcupadasIds.add(al.sala.id);
-        }
-      });
-    });
-
-    reposicoesDoSemestre.forEach((r) => {
-      if (r.dataReposicao !== dataSelecionada) return;
-      const repInicio = toMin(r.horarioInicio);
-      const repFim = toMin(r.horarioFim);
-      if (!(fimMin <= repInicio || inicioMin >= repFim)) {
-        if (r.sala?.id) salasOcupadasIds.add(r.sala.id);
-      }
-    });
-
-    return salas.filter((sala) => !salasOcupadasIds.has(sala.id));
-  }, [dataSelecionada, horarioInicio, horarioFim, salas, alocacoesDoSemestre, reposicoesDoSemestre]);
-
   // ─── INICIALIZAÇÃO ────
   useEffect(() => {
-    setIdProfessor(Number(localStorage.getItem("idProfessor")));
-    setEmailProfessor(localStorage.getItem("username") || "");
+    const idSalvo = Number(localStorage.getItem("idProfessor"));
+
+    if (idSalvo) {
+      setIdProfessor(idSalvo);
+      axios
+        .get(`http://localhost:8080/api/professor/${idSalvo}`)
+        .then((response) => {
+          setNomeProfessor(response.data.nome);
+        })
+        .catch((err) => {
+          console.error("Erro ao buscar nome do professor:", err);
+          notifyError(
+            "Erro ao carregar nome do professor. Verifique a conexão.",
+          );
+        });
+    }
 
     axios
       .get("http://localhost:8080/api/sala")
-      .then((response) => setSalas(response.data))
-      .catch((err) => {
-        console.error("Erro ao buscar salas:", err);
-        notifyError("Erro ao carregar salas. Verifique a conexão.");
-      });
+      .then((res) => setSalas(res.data))
+      .catch((err) => console.error(err));
 
     axios
       .get("http://localhost:8080/api/alocacao-aula")
-      .then((res) => setAlocacoes(res.data));
+      .then((res) => setAlocacoes(res.data))
+      .catch((err) => console.error(err));
 
     axios
       .get("http://localhost:8080/api/reposicao")
@@ -328,29 +295,41 @@ export default function Reposicao() {
         setReposicoes([]);
       });
 
-    const idProf = Number(localStorage.getItem("idProfessor"));
-    setIdProfessor(idProf);
-
-    axios
-      .get(`http://localhost:8080/api/professor/${idProf}`)
-      .then((res) => setNomeProfessor(res.data.nome))
-      .catch((err) => console.error("Erro ao buscar professor:", err));
-
     if (state?.id) {
       axios
         .get(`http://localhost:8080/api/reposicao/${state.id}`)
         .then((res) => {
           setIdReposicao(res.data.id);
-          setDataSelecionada(res.data.dataSelecionada || "");
+          setDataReposicao(res.data.dataReposicao || "");
           setDataAulaOriginal(res.data.dataAulaOriginal || "");
           setHorarioInicio(res.data.horarioInicio || "");
           setHorarioFim(res.data.horarioFim || "");
           setIdTurma(res.data.idTurma || "");
           setIdDisciplina(res.data.idDisciplina || "");
-          setSalas(res.data.salas || []);
-        });
+        })
+        .catch((err) => console.error(err));
     }
   }, [state]);
+
+  useEffect(() => {
+    if (dataReposicao && horarioInicio && horarioFim) {
+      axios
+        .get("http://localhost:8080/api/reposicao/salas-disponiveis", {
+          params: {
+            dataReposicao,
+            horarioInicio,
+            horarioFim,
+          },
+        })
+        .then((response) => {
+          setSalasDisponiveis(Array.isArray(response.data) ? response.data : []);
+        })
+        .catch((err) => {
+          console.error("Erro ao buscar salas disponíveis:", err);
+          setSalasDisponiveis([]);
+        });
+    }
+  }, [dataReposicao, horarioInicio, horarioFim]);
 
   useEffect(() => {
     if (!idProfessor) return;
@@ -399,7 +378,7 @@ export default function Reposicao() {
         key: d.id,
         text: d.nome,
         value: d.id,
-      }))
+      })),
     );
   }, [idTurma, idProfessor, alocacoesDoSemestre]);
 
@@ -415,9 +394,10 @@ export default function Reposicao() {
 
     if (preview.dia === diaStr && preview.horarioInicio === hora) {
       setPreview({ dia: null, horarioInicio: null, horarioFim: null });
-      setDataSelecionada("");
+      setDataReposicao("");
       setHorarioInicio("");
       setHorarioFim("");
+      setSalasDisponiveis([]);
       return;
     }
 
@@ -425,7 +405,7 @@ export default function Reposicao() {
       const dataLocal = new Date(
         dia.getTime() - dia.getTimezoneOffset() * 60000,
       );
-      setDataSelecionada(dataLocal.toISOString().split("T")[0]);
+      setDataReposicao(dataLocal.toISOString().split("T")[0]);
       setPreview({ dia: diaStr, horarioInicio: hora, horarioFim: hora });
       setHorarioInicio(hora);
       setHorarioFim(getProximoHorario(hora));
@@ -483,7 +463,7 @@ export default function Reposicao() {
       idDisciplina,
       idSala: salaSelecionada?.id,
       idProfessor,
-      dataReposicao: formatarParaBR(dataSelecionada),
+      dataReposicao: formatarParaBR(dataReposicao),
       dataAulaOriginal: formatarParaBR(dataAulaOriginal),
       horarioInicio,
       horarioFim,
@@ -498,7 +478,7 @@ export default function Reposicao() {
         notifySuccess("Agendado!");
         setTimeout(() => window.location.reload(), 1000);
       })
-      .catch((err) => notifyError(err.response?.data?.message));
+      .catch((err) => notifyError(getErrorMessage(err)));
   };
 
   // Só bloqueia com base nas alocações do PRÓPRIO professor logado —
@@ -549,7 +529,7 @@ export default function Reposicao() {
         const inicio = h.horarioInicio.substring(0, 5);
         const fim = h.horarioFim.substring(0, 5);
         return hora >= inicio && hora < fim;
-      })
+      }),
     );
   };
 
@@ -631,7 +611,7 @@ export default function Reposicao() {
   };
 
   const validarAntesDeSalvar = () => {
-    const [ano, mes, dia] = dataSelecionada.split("-").map(Number);
+    const [ano, mes, dia] = dataReposicao.split("-").map(Number);
     const diaObj = new Date(ano, mes - 1, dia);
     if (conflitoNoIntervalo(diaObj, horarioInicio, horarioFim)) {
       notifyError("Você já tem uma aula ou reposição nesse horário.");
@@ -647,7 +627,7 @@ export default function Reposicao() {
 
   return (
     <div style={{ padding: "2% 4%", fontFamily: "sans-serif" }}>
-      <Header as="h2" dividing>
+      <Header as="h2" dividing textAlign="left" style={{ width: "100%" }}>
         <Icon name="calendar alternate outline" /> Reposição de Aulas
       </Header>
 
@@ -673,10 +653,14 @@ export default function Reposicao() {
           <Button
             icon
             labelPosition="left"
-            color="grey"
-            size="small"
             onClick={() => navigate("/home")}
-            style={{ marginBottom: "1rem", alignSelf: "flex-start" }}
+            style={{
+              marginBottom: "1rem",
+              display: "block",
+              marginRight: "auto",
+              background: "rgba(255, 255, 255, 0.7)"
+
+            }}
           >
             <Icon name="arrow left" />
             Voltar
@@ -913,7 +897,8 @@ export default function Reposicao() {
                         hora >= preview.horarioInicio &&
                         hora <= preview.horarioFim;
 
-                      const isStart = isSelected && hora === preview.horarioInicio;
+                      const isStart =
+                        isSelected && hora === preview.horarioInicio;
                       const isEnd = isSelected && hora === preview.horarioFim;
 
                       return (
@@ -1077,7 +1062,10 @@ export default function Reposicao() {
                               }}
                             >
                               <b>{nomeProfessor}</b>
-                              <Icon name="user circle" style={{ margin: "1px 0" }} />
+                              <Icon
+                                name="user circle"
+                                style={{ margin: "1px 0" }}
+                              />
                               <span>
                                 {horarioInicio} - {horarioFim}
                               </span>
@@ -1173,14 +1161,14 @@ export default function Reposicao() {
           <div style={{ marginTop: "1em" }}>
             <Header as="h3" style={{ marginBottom: "1em" }}>
               <Icon name="building outline" />
-              {dataSelecionada && horarioInicio
-                ? `Salas Disponíveis — ${formatarData(dataSelecionada)} · ${horarioInicio}–${horarioFim}`
+              {dataReposicao && horarioInicio
+                ? `Salas Disponíveis — ${formatarData(dataReposicao)} · ${horarioInicio}–${horarioFim}`
                 : "Salas Disponíveis"}
             </Header>
 
             {salasDisponiveis.length === 0 ? (
               <Segment textAlign="center" secondary style={{ color: "grey", borderRadius: "10px" }}>
-                {dataSelecionada && horarioInicio
+                {dataReposicao && horarioInicio
                   ? "Nenhuma sala disponível para o horário selecionado."
                   : "Selecione um horário no calendário para ver as salas disponíveis."}
               </Segment>
@@ -1212,7 +1200,8 @@ export default function Reposicao() {
                     }}
                   >
                     <Header as="h4" color="green" style={{ margin: 0 }}>
-                      {sala.nome || `${sala.tipo === "laboratorio" ? "Laboratório" : "Sala"} ${sala.numero}`}
+                      {sala.nome ||
+                        `${sala.tipo === "laboratorio" ? "Laboratório" : "Sala"} ${sala.numero}`}
                     </Header>
                     <div
                       style={{
@@ -1250,8 +1239,8 @@ export default function Reposicao() {
               <Form.Input
                 label="Dia:"
                 type="date"
-                value={dataSelecionada}
-                onChange={(e) => setDataSelecionada(e.target.value)}
+                value={dataReposicao}
+                onChange={(e) => setDataReposicao(e.target.value)}
               />
 
               <div
@@ -1263,7 +1252,12 @@ export default function Reposicao() {
                 }}
               >
                 <div style={{ flex: 1 }}>
-                  <Form.Input label="Início" value={horarioInicio} readOnly fluid />
+                  <Form.Input
+                    label="Início"
+                    value={horarioInicio}
+                    readOnly
+                    fluid
+                  />
                 </div>
                 <div style={{ flex: 1 }}>
                   <Form.Input label="Fim" value={horarioFim} readOnly fluid />
@@ -1302,14 +1296,21 @@ export default function Reposicao() {
 
               <Form.Select
                 label="Disciplina"
-                placeholder={idTurma ? "Selecione" : "Selecione uma turma primeiro"}
+                placeholder={
+                  idTurma ? "Selecione" : "Selecione uma turma primeiro"
+                }
                 options={opcoesDisciplina}
                 value={idDisciplina}
                 disabled={!idTurma}
                 onChange={(e, { value }) => setIdDisciplina(value)}
               />
 
-              <Form.Input label="Professor" value={nomeProfessor} readOnly fluid />
+              <Form.Input
+                label="Professor"
+                value={nomeProfessor}
+                readOnly
+                fluid
+              />
 
               <Button
                 fluid
@@ -1381,8 +1382,7 @@ export default function Reposicao() {
                     {eventoSelecionado.dados.dataAulaOriginal}
                   </p>
                   <p>
-                    <b>Horário:</b>{" "}
-                    {eventoSelecionado.dados.horarioInicio} às{" "}
+                    <b>Horário:</b> {eventoSelecionado.dados.horarioInicio} às{" "}
                     {eventoSelecionado.dados.horarioFim}
                   </p>
                   <p>
