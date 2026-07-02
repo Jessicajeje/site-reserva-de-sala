@@ -23,3 +23,10 @@ npm install
 npm start
 
 ```
+
+## Authors
+
+- [@robertogomesbr](https://github.com/robertogomesbr)
+- [@rhuangomes10](https://github.com/rhuangomes10)
+- [@Jessicajeje](https://github.com/Jessicajeje)
+- [@Ciber42](https://github.com/Ciber42)
