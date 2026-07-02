@@ -12,13 +12,13 @@ Projeto desenvolvido no IFPE com objetivo de gerenciar salas e laboratórios, e 
 
 1. Baixe o projeto do repositório git, exemplo:
 
-```http
+```bash
   git clone https://github.com/robertogomesbr/gestacad-api.git
 ```
 
 2. Entre na pasta do projeto e execute o comando abaixo para rodar o projeto:
 
-```http
+```bash
 npm install    
 npm start
 
